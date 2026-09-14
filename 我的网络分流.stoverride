@@ -141,11 +141,15 @@ proxy-groups: #!replace
     interval: 300
     lazy: false
 
-  # 默认自动切换；也可在同一入口手选本地区家宽节点。
+  # 默认自动切换；选择“手选节点”后可固定本地区家宽出口。
   - name: 🤖 AI工具
     type: select
     proxies:
       - 🤖 AI自动切换
+      - 🤖 AI手选节点
+
+  - name: 🤖 AI手选节点
+    type: select
     include-all: true
     filter: '日本.*家宽'
 
@@ -157,11 +161,15 @@ proxy-groups: #!replace
     interval: 300
     lazy: false
 
-  # 默认自动切换；也可在同一入口手选本地区家宽节点。
+  # 默认自动切换；选择“手选节点”后可固定本地区家宽出口。
   - name: 💰 Web3交易
     type: select
     proxies:
       - 💰 交易自动切换
+      - 💰 交易手选节点
+
+  - name: 💰 交易手选节点
+    type: select
     include-all: true
     filter: '马来西亚.*家宽'
 
