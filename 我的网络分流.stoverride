@@ -25,8 +25,16 @@ dns: #!replace
   - '*.lan'
   - '*.linksys.com'
   - '*.linksyssmartwifi.com'
-  - swscan.apple.com
+  - +.apps.apple.com
+  - +.itunes.apple.com
+  - +.mzstatic.com
+  - appldnld.apple.com
+  - gdmf.apple.com
+  - gg.apple.com
+  - gs.apple.com
+  - ig.apple.com
   - mesu.apple.com
+  - swscan.apple.com
   - swquery.apple.com
   - swdownload.apple.com
   - swcdn.apple.com
@@ -112,8 +120,6 @@ dns: #!replace
   - shark007.net
 
 # 保留 MESL 原始 proxies 节点列表，只替换策略组。
-# 地区/家宽筛选不依赖旗帜和编号；订阅改名后仍须确认各组非空。
-# url 为组连通性检查目标；不代表具体 AI/交易业务可用。
 proxy-groups: #!replace
   - name: 🌐 日常上网
     type: select
@@ -124,8 +130,8 @@ proxy-groups: #!replace
   - name: ⚡ 自动选快
     type: url-test
     include-all: true
-    filter: '(新加坡|日本)'
-    url: https://cp.cloudflare.com/generate_204
+    filter: '^(🇸🇬 新加坡 0[1-3]|🇯🇵 日本 0[1-3])'
+    url: http://1.1.1.1/generate_204
     interval: 600
     lazy: true
 
@@ -136,56 +142,32 @@ proxy-groups: #!replace
   - name: 🔎 Google服务
     type: fallback
     include-all: true
-    filter: '日本'
-    url: https://cp.cloudflare.com/generate_204
+    filter: '^🇯🇵 日本 0[1-3]'
+    url: http://1.1.1.1/generate_204
     interval: 300
     lazy: false
 
-  # 默认自动切换；选择“手选节点”后可固定本地区家宽出口。
   - name: 🤖 AI工具
-    type: select
-    proxies:
-      - 🤖 AI自动切换
-      - 🤖 AI手选节点
-
-  - name: 🤖 AI手选节点
-    type: select
-    include-all: true
-    filter: '日本.*家宽'
-
-  - name: 🤖 AI自动切换
     type: fallback
     include-all: true
-    filter: '日本.*家宽'
-    url: https://cp.cloudflare.com/generate_204
+    filter: '^🇯🇵 日本 (08|09|10) 家宽'
+    url: http://1.1.1.1/generate_204
     interval: 300
     lazy: false
 
-  # 默认自动切换；选择“手选节点”后可固定本地区家宽出口。
   - name: 💰 Web3交易
-    type: select
-    proxies:
-      - 💰 交易自动切换
-      - 💰 交易手选节点
-
-  - name: 💰 交易手选节点
-    type: select
-    include-all: true
-    filter: '马来西亚.*家宽'
-
-  - name: 💰 交易自动切换
     type: fallback
     include-all: true
-    filter: '马来西亚.*家宽'
-    url: https://cp.cloudflare.com/generate_204
+    filter: '^🇲🇾 马来西亚 0[1-3] 家宽'
+    url: http://1.1.1.1/generate_204
     interval: 300
     lazy: false
 
   - name: ⛓️ Web3链上数据
     type: url-test
     include-all: true
-    filter: '马来西亚.*家宽'
-    url: https://cp.cloudflare.com/generate_204
+    filter: '^🇲🇾 马来西亚 0[1-3] 家宽'
+    url: http://1.1.1.1/generate_204
     interval: 300
     lazy: true
 
@@ -322,14 +304,31 @@ rules: #!replace
   - DOMAIN-SUFFIX,ytimg.com,🔎 Google服务
   - DOMAIN-SUFFIX,googlevideo.com,🔎 Google服务
 
-  # Apple：普通服务直连；不单独强制 mzstatic.com，避免改变 App Store CDN 路径
+  # Apple App 安装 / App Store 更新：真实 DNS + 非 Fake-IP + DIRECT
+  - DOMAIN-SUFFIX,apps.apple.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
+  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
+
+  # Apple 系统 / 软件更新
+  - DOMAIN,appldnld.apple.com,DIRECT
+  - DOMAIN,gdmf.apple.com,DIRECT
+  - DOMAIN,gg.apple.com,DIRECT
+  - DOMAIN,gs.apple.com,DIRECT
+  - DOMAIN,ig.apple.com,DIRECT
+  - DOMAIN,mesu.apple.com,DIRECT
+  - DOMAIN,swscan.apple.com,DIRECT
+  - DOMAIN,swquery.apple.com,DIRECT
+  - DOMAIN,swdownload.apple.com,DIRECT
+  - DOMAIN,swcdn.apple.com,DIRECT
+  - DOMAIN,swdist.apple.com,DIRECT
+
+  # Apple：其他普通服务直连
   - DOMAIN-SUFFIX,appsto.re,DIRECT
   - DOMAIN-SUFFIX,me.com,DIRECT
   - DOMAIN-SUFFIX,apple.com,DIRECT
   - DOMAIN-SUFFIX,icloud.com,DIRECT
   - DOMAIN-SUFFIX,itunes.com,DIRECT
   - DOMAIN-SUFFIX,aaplimg.com,DIRECT
-  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
   - DOMAIN-SUFFIX,appstore.com,DIRECT
   - DOMAIN-SUFFIX,cdn-apple.com,DIRECT
   - DOMAIN-SUFFIX,apple-mapkit.com,DIRECT
