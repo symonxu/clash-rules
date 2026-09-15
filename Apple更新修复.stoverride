@@ -1,0 +1,71 @@
+name: Apple 更新修复
+desc: >-
+  Apple App Store 与系统更新兼容层。仅补充 Apple 官方安装/更新域名：
+  使用真实 DNS、排除 Fake-IP，并强制 DIRECT；不改 Google、AI、Web3 或大陆分流。
+
+# 不使用 #!replace：只把这些域名追加到现有 fake-ip-filter 前面。
+dns:
+  fake-ip-filter:
+    # App Store / App 安装与更新
+    - +.apps.apple.com
+    - +.itunes.apple.com
+    - +.mzstatic.com
+    - ppq.apple.com
+    - api.apple-cloudkit.com
+
+    # iOS / iPadOS / macOS 软件更新
+    - appldnld.apple.com
+    - appldnld.apple.com.edgesuite.net
+    - configuration.apple.com
+    - gdmf.apple.com
+    - gg.apple.com
+    - gs.apple.com
+    - ig.apple.com
+    - mesu.apple.com
+    - oscdn.apple.com
+    - osrecovery.apple.com
+    - skl.apple.com
+    - swcdn.apple.com
+    - swdist.apple.com
+    - swdownload.apple.com
+    - swscan.apple.com
+    - updates-http.cdn-apple.com
+    - updates.cdn-apple.com
+    - xp.apple.com
+    - gdmf-ados.apple.com
+    - gsra.apple.com
+    - wkms-public.apple.com
+    - fcs-keys-pub-prod.cdn-apple.com
+
+# 数组会插入现有 rules 前面，因此这些规则优先命中 DIRECT。
+rules:
+  # App Store / App 安装与更新
+  - DOMAIN-SUFFIX,apps.apple.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
+  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
+  - DOMAIN,ppq.apple.com,DIRECT
+  - DOMAIN,api.apple-cloudkit.com,DIRECT
+
+  # iOS / iPadOS / macOS 软件更新
+  - DOMAIN,appldnld.apple.com,DIRECT
+  - DOMAIN,appldnld.apple.com.edgesuite.net,DIRECT
+  - DOMAIN,configuration.apple.com,DIRECT
+  - DOMAIN,gdmf.apple.com,DIRECT
+  - DOMAIN,gg.apple.com,DIRECT
+  - DOMAIN,gs.apple.com,DIRECT
+  - DOMAIN,ig.apple.com,DIRECT
+  - DOMAIN,mesu.apple.com,DIRECT
+  - DOMAIN,oscdn.apple.com,DIRECT
+  - DOMAIN,osrecovery.apple.com,DIRECT
+  - DOMAIN,skl.apple.com,DIRECT
+  - DOMAIN,swcdn.apple.com,DIRECT
+  - DOMAIN,swdist.apple.com,DIRECT
+  - DOMAIN,swdownload.apple.com,DIRECT
+  - DOMAIN,swscan.apple.com,DIRECT
+  - DOMAIN,updates-http.cdn-apple.com,DIRECT
+  - DOMAIN,updates.cdn-apple.com,DIRECT
+  - DOMAIN,xp.apple.com,DIRECT
+  - DOMAIN,gdmf-ados.apple.com,DIRECT
+  - DOMAIN,gsra.apple.com,DIRECT
+  - DOMAIN,wkms-public.apple.com,DIRECT
+  - DOMAIN,fcs-keys-pub-prod.cdn-apple.com,DIRECT
