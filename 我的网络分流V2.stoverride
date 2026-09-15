@@ -1,4 +1,4 @@
-name: 我的网络分流
+name: 我的网络分流V2
 desc: >-
   以 MESL 为节点来源，但完全替换其策略组和分流规则。
   MESL 更新节点参数后继续自动生效；日常自动优选不使用香港节点。
@@ -21,6 +21,38 @@ dns: #!replace
   nameserver:
   - 223.5.5.5
   - 119.29.29.29
+
+  # Apple App Store / 系统更新：使用系统 DNS，优先获得当前网络最合适的 CDN 解析结果。
+  nameserver-policy:
+    '+.apps.apple.com': system
+    '+.itunes.apple.com': system
+    '+.mzstatic.com': system
+    'ppq.apple.com': system
+    'api.apple-cloudkit.com': system
+    'appldnld.apple.com': system
+    'appldnld.apple.com.edgesuite.net': system
+    'configuration.apple.com': system
+    'gdmf.apple.com': system
+    'gg.apple.com': system
+    'gs.apple.com': system
+    'ig.apple.com': system
+    'mesu.apple.com': system
+    'oscdn.apple.com': system
+    'osrecovery.apple.com': system
+    'skl.apple.com': system
+    'swscan.apple.com': system
+    'swquery.apple.com': system
+    'swdownload.apple.com': system
+    'swcdn.apple.com': system
+    'swdist.apple.com': system
+    'updates-http.cdn-apple.com': system
+    'updates.cdn-apple.com': system
+    'xp.apple.com': system
+    'gdmf-ados.apple.com': system
+    'gsra.apple.com': system
+    'wkms-public.apple.com': system
+    'fcs-keys-pub-prod.cdn-apple.com': system
+
   fake-ip-filter:
   - '*.lan'
   - '*.linksys.com'
