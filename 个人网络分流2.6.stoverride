@@ -1,0 +1,422 @@
+name: 个人网络分流2.6
+category: 个人网络分流
+desc: >-
+  以 MESL 为节点来源，但完全替换其策略组和分流规则。
+  MESL 更新节点参数后继续自动生效；日常自动优选不使用香港节点。
+  Google、AI、Web3、Apple 和中国大陆流量按个人策略分流；Web3 各地区内部自动选快，交易优先马来西亚并按日本家宽、菲律宾家宽、南美/拉美家宽自动备用，链上数据全局低延迟优先。
+
+# 固定自己的基础网络设置；MESL 后续修改这些字段不会覆盖个人设置。
+mode: rule
+ipv6: false
+
+dns: #!replace
+  enable: true
+  listen: 0.0.0.0:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  use-hosts: true
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  - 114.114.114.114
+  nameserver:
+  - https://dns.alidns.com/dns-query
+  - https://doh.pub/dns-query
+  fake-ip-filter:
+  - '*.lan'
+  - '*.linksys.com'
+  - '*.linksyssmartwifi.com'
+  - +.apps.apple.com
+  - +.itunes.apple.com
+  - +.mzstatic.com
+  - ppq.apple.com
+  - api.apple-cloudkit.com
+  - appldnld.apple.com.edgesuite.net
+  - configuration.apple.com
+  - oscdn.apple.com
+  - osrecovery.apple.com
+  - skl.apple.com
+  - updates-http.cdn-apple.com
+  - updates.cdn-apple.com
+  - xp.apple.com
+  - gdmf-ados.apple.com
+  - gsra.apple.com
+  - wkms-public.apple.com
+  - fcs-keys-pub-prod.cdn-apple.com
+  - appldnld.apple.com
+  - gdmf.apple.com
+  - gg.apple.com
+  - gs.apple.com
+  - ig.apple.com
+  - mesu.apple.com
+  - swscan.apple.com
+  - swquery.apple.com
+  - swdownload.apple.com
+  - swcdn.apple.com
+  - swdist.apple.com
+  - '*.msftconnecttest.com'
+  - '*.msftncsi.com'
+  - xbox.*.microsoft.com
+  - xbox.*.*.microsoft.com
+  - +.xboxlive.com
+  - time.*.com
+  - time.*.gov
+  - time.*.edu.cn
+  - time.*.apple.com
+  - time1.*.com
+  - time2.*.com
+  - time3.*.com
+  - time4.*.com
+  - time5.*.com
+  - time6.*.com
+  - time7.*.com
+  - ntp.*.com
+  - ntp.*.com
+  - ntp1.*.com
+  - ntp2.*.com
+  - ntp3.*.com
+  - ntp4.*.com
+  - ntp5.*.com
+  - ntp6.*.com
+  - ntp7.*.com
+  - '*.time.edu.cn'
+  - '*.ntp.org.cn'
+  - +.pool.ntp.org
+  - time1.cloud.tencent.com
+  - lens.l.google.com
+  - +.music.163.com
+  - +.126.net
+  - musicapi.taihe.com
+  - music.taihe.com
+  - songsearch.kugou.com
+  - trackercdn.kugou.com
+  - '*.kuwo.cn'
+  - api-jooxtt.sanook.com
+  - api.joox.com
+  - joox.com
+  - +.y.qq.com
+  - +.music.tc.qq.com
+  - aqqmusic.tc.qq.com
+  - +.stream.qqmusic.qq.com
+  - +.xiami.com
+  - +.music.migu.cn
+  - +.stun.*.*
+  - +.stun.*.*.*
+  - +.stun.*.*.*.*
+  - +.stun.*.*.*.*.*
+  - +.srv.nintendo.net
+  - '*.n.n.srv.nintendo.net'
+  - +.stun.playstation.net
+  - +.battlenet.com.cn
+  - +.wotgame.cn
+  - +.wggames.cn
+  - +.wowsgame.cn
+  - +.wargaming.net
+  - '*.square-enix.com'
+  - '*.finalfantasyxiv.com'
+  - '*.ffxiv.com'
+  - '*.ff14.sdo.com'
+  - ff.dorado.sdo.com
+  - localhost.ptlogin2.qq.com
+  - localhost.sec.qq.com
+  - proxy.golang.org
+  - +.qq.com
+  - +.baidu.com
+  - +.163.com
+  - +.126.net
+  - +.taobao.com
+  - +.jd.com
+  - +.tmall.com
+  - '*.mcdn.bilivideo.cn'
+  - +.nvidia.com
+  - +.nvidia.cn
+  - +.nvgs.nvidia.com
+  - +.nvgs.nvidia.cn
+  - shark007.net
+
+# 保留 MESL 原始 proxies 节点列表，只替换策略组。
+proxy-groups: #!replace
+  - name: 🌐 日常上网
+    type: select
+    proxies:
+      - ⚡ 自动选快
+      - 🧭 全部节点
+
+  - name: ⚡ 自动选快
+    type: url-test
+    include-all: true
+    filter: '^(🇸🇬 新加坡 0[1-3]|🇯🇵 日本 0[1-3])'
+    url: http://1.1.1.1/generate_204
+    interval: 600
+    lazy: true
+
+  - name: 🧭 全部节点
+    type: select
+    include-all: true
+
+  - name: 🔎 Google服务
+    type: fallback
+    include-all: true
+    filter: '^🇯🇵 日本 0[1-3]'
+    url: http://1.1.1.1/generate_204
+    interval: 300
+    lazy: false
+
+  - name: 🤖 AI工具
+    type: fallback
+    include-all: true
+    filter: '^🇯🇵 日本 (08|09|10) 家宽'
+    url: http://1.1.1.1/generate_204
+    interval: 300
+    lazy: false
+
+  - name: 🇲🇾 Web3主力-马来西亚家宽
+    type: url-test
+    include-all: true
+    filter: '马来西亚 0[1-3] 家宽$'
+    url: http://1.1.1.1/generate_204
+    interval: 300
+    lazy: false
+
+  - name: 🇯🇵 Web3备用-日本家宽
+    type: url-test
+    include-all: true
+    filter: '日本 (08|09|10) 家宽$'
+    url: http://1.1.1.1/generate_204
+    interval: 300
+    lazy: false
+
+  - name: 🇵🇭 Web3备用-菲律宾家宽
+    type: url-test
+    include-all: true
+    filter: '菲律宾 .*家宽$'
+    url: http://1.1.1.1/generate_204
+    interval: 300
+    lazy: false
+
+  - name: 🌎 Web3备用-南美家宽
+    type: url-test
+    include-all: true
+    filter: '(墨西哥|巴西|智利|阿根廷|秘鲁|哥伦比亚|厄瓜多尔|乌拉圭|巴拉圭|玻利维亚|委内瑞拉).*家宽$'
+    url: http://1.1.1.1/generate_204
+    interval: 300
+    lazy: false
+
+  - name: 💰 Web3交易
+    type: fallback
+    proxies:
+      - 🇲🇾 Web3主力-马来西亚家宽
+      - 🇯🇵 Web3备用-日本家宽
+      - 🇵🇭 Web3备用-菲律宾家宽
+      - 🌎 Web3备用-南美家宽
+    url: http://1.1.1.1/generate_204
+    interval: 300
+    lazy: false
+
+  - name: ⛓️ Web3链上数据
+    type: url-test
+    include-all: true
+    filter: '(马来西亚 0[1-3] 家宽$|日本 (08|09|10) 家宽$|菲律宾 .*家宽$|(墨西哥|巴西|智利|阿根廷|秘鲁|哥伦比亚|厄瓜多尔|乌拉圭|巴拉圭|玻利维亚|委内瑞拉).*家宽$)'
+    url: http://1.1.1.1/generate_204
+    interval: 180
+    lazy: false
+
+rule-providers: #!replace
+  中国大陆域名:
+    type: http
+    behavior: domain
+    format: yaml
+    url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
+    path: ./rule-providers/china-direct-domain.yaml
+    interval: 86400
+
+  中国大陆IP:
+    type: http
+    behavior: ipcidr
+    format: yaml
+    url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
+    path: ./rule-providers/china-direct-ip.yaml
+    interval: 86400
+
+# 完全替换 MESL 原有 rules；节点本身仍由 MESL 订阅提供和更新。
+rules: #!replace
+  # 局域网
+  - DOMAIN-SUFFIX,local,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+
+  # Web3 链上数据 / RPC（必须在 Web3 钱包与平台规则前）
+  - DOMAIN-SUFFIX,infura.io,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,alchemy.com,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,alchemyapi.io,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,llamarpc.com,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,ankr.com,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,1rpc.io,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,publicnode.com,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,polygon-rpc.com,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,quiknode.pro,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,drpc.org,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,nodereal.io,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,helius-rpc.com,⛓️ Web3链上数据
+  - DOMAIN,api.mainnet-beta.solana.com,⛓️ Web3链上数据
+  - DOMAIN,api.devnet.solana.com,⛓️ Web3链上数据
+  - DOMAIN,arb1.arbitrum.io,⛓️ Web3链上数据
+  - DOMAIN,mainnet.optimism.io,⛓️ Web3链上数据
+  - DOMAIN,mainnet.base.org,⛓️ Web3链上数据
+  - DOMAIN,bsc-dataseed.binance.org,⛓️ Web3链上数据
+  - DOMAIN,api.avax.network,⛓️ Web3链上数据
+  - DOMAIN,mainnet.era.zksync.io,⛓️ Web3链上数据
+  - DOMAIN,rpc.gnosischain.com,⛓️ Web3链上数据
+  - DOMAIN-SUFFIX,trongrid.io,⛓️ Web3链上数据
+
+  # Web3 钱包 / DApp / 交易平台
+  - DOMAIN-SUFFIX,metamask.io,💰 Web3交易
+  - DOMAIN-SUFFIX,phantom.app,💰 Web3交易
+  - DOMAIN-SUFFIX,phantom.com,💰 Web3交易
+  - DOMAIN-SUFFIX,walletconnect.com,💰 Web3交易
+  - DOMAIN-SUFFIX,walletconnect.org,💰 Web3交易
+  - DOMAIN-SUFFIX,reown.com,💰 Web3交易
+  - DOMAIN-SUFFIX,web3modal.com,💰 Web3交易
+  - DOMAIN-SUFFIX,web3modal.org,💰 Web3交易
+  - DOMAIN-SUFFIX,magic.link,💰 Web3交易
+  - DOMAIN-SUFFIX,fomo.family,💰 Web3交易
+  - DOMAIN-SUFFIX,fomotrading.app,💰 Web3交易
+  - DOMAIN-SUFFIX,uniswap.org,💰 Web3交易
+  - DOMAIN-SUFFIX,jup.ag,💰 Web3交易
+  - DOMAIN-SUFFIX,pump.fun,💰 Web3交易
+  - DOMAIN-SUFFIX,bitget.com,💰 Web3交易
+  - DOMAIN-SUFFIX,polymarket.com,💰 Web3交易
+  - DOMAIN-SUFFIX,polymarket.io,💰 Web3交易
+  - DOMAIN-SUFFIX,pancakeswap.finance,💰 Web3交易
+  - DOMAIN-SUFFIX,hyperliquid.xyz,💰 Web3交易
+
+  # Apple 特殊服务（必须在 apple.com DIRECT 前）
+  - DOMAIN-SUFFIX,apple-relay.apple.com,🤖 AI工具
+  - DOMAIN-SUFFIX,apple-relay.cloudflare.com,🤖 AI工具
+  - DOMAIN-SUFFIX,apple-relay.fastly-edge.com,🤖 AI工具
+  - DOMAIN-KEYWORD,apple-relay,🤖 AI工具
+  - DOMAIN,smoot.apple.com,🤖 AI工具
+  - DOMAIN,guzzoni.apple.com,🤖 AI工具
+  - DOMAIN-SUFFIX,push.apple.com,🌐 日常上网
+  - DOMAIN-SUFFIX,push-apple.com.akadns.net,🌐 日常上网
+  - DOMAIN-SUFFIX,courier-push-apple.com.akadns.net,🌐 日常上网
+
+  # AI
+  - DOMAIN-SUFFIX,chatgpt.com,🤖 AI工具
+  - DOMAIN-SUFFIX,openai.com,🤖 AI工具
+  - DOMAIN-SUFFIX,oaistatic.com,🤖 AI工具
+  - DOMAIN-SUFFIX,oaiusercontent.com,🤖 AI工具
+  - DOMAIN-SUFFIX,sora.com,🤖 AI工具
+  - DOMAIN-SUFFIX,chatgpt.livekit.cloud,🤖 AI工具
+  - DOMAIN-SUFFIX,host.livekit.cloud,🤖 AI工具
+  - DOMAIN-SUFFIX,turn.livekit.cloud,🤖 AI工具
+  - DOMAIN,openai-api.arkoselabs.com,🤖 AI工具
+  - DOMAIN-SUFFIX,anthropic.com,🤖 AI工具
+  - DOMAIN-SUFFIX,claude.ai,🤖 AI工具
+  - DOMAIN-SUFFIX,claude.com,🤖 AI工具
+  - DOMAIN-SUFFIX,claudeusercontent.com,🤖 AI工具
+  - DOMAIN-SUFFIX,perplexity.ai,🤖 AI工具
+  - DOMAIN-SUFFIX,perplexity.com,🤖 AI工具
+  - DOMAIN-SUFFIX,pplx.ai,🤖 AI工具
+  - DOMAIN-SUFFIX,cursor.com,🤖 AI工具
+  - DOMAIN-SUFFIX,cursor.sh,🤖 AI工具
+  - DOMAIN-SUFFIX,cursor-cdn.com,🤖 AI工具
+  - DOMAIN-SUFFIX,openrouter.ai,🤖 AI工具
+  - DOMAIN-SUFFIX,x.ai,🤖 AI工具
+  - DOMAIN-SUFFIX,grok.com,🤖 AI工具
+
+  # Gemini / Google AI（必须在普通 Google 前）
+  - DOMAIN-SUFFIX,gemini.google.com,🤖 AI工具
+  - DOMAIN-SUFFIX,gemini.google,🤖 AI工具
+  - DOMAIN-SUFFIX,aistudio.google.com,🤖 AI工具
+  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,🤖 AI工具
+  - DOMAIN-SUFFIX,ai.google.dev,🤖 AI工具
+  - DOMAIN,proactivebackend-pa.googleapis.com,🤖 AI工具
+  - DOMAIN,geller-pa.googleapis.com,🤖 AI工具
+
+  # Google / Gmail / YouTube
+  - DOMAIN-SUFFIX,google.com,🔎 Google服务
+  - DOMAIN-SUFFIX,googleapis.com,🔎 Google服务
+  - DOMAIN-SUFFIX,googleapis.cn,🔎 Google服务
+  - DOMAIN-SUFFIX,gstatic.com,🔎 Google服务
+  - DOMAIN-SUFFIX,googleusercontent.com,🔎 Google服务
+  - DOMAIN-SUFFIX,gmail.com,🔎 Google服务
+  - DOMAIN-SUFFIX,googlemail.com,🔎 Google服务
+  - DOMAIN-SUFFIX,ggpht.com,🔎 Google服务
+  - DOMAIN-SUFFIX,gvt1.com,🔎 Google服务
+  - DOMAIN-SUFFIX,gvt2.com,🔎 Google服务
+  - DOMAIN-SUFFIX,gvt3.com,🔎 Google服务
+  - DOMAIN-SUFFIX,youtube.com,🔎 Google服务
+  - DOMAIN-SUFFIX,youtube-nocookie.com,🔎 Google服务
+  - DOMAIN-SUFFIX,youtu.be,🔎 Google服务
+  - DOMAIN-SUFFIX,ytimg.com,🔎 Google服务
+  - DOMAIN-SUFFIX,googlevideo.com,🔎 Google服务
+
+  # Apple App 安装 / App Store 更新：真实 DNS + 非 Fake-IP + DIRECT
+  - DOMAIN-SUFFIX,apps.apple.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
+  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
+  - DOMAIN,ppq.apple.com,DIRECT
+  - DOMAIN,api.apple-cloudkit.com,DIRECT
+
+  # Apple 系统 / 软件更新
+  - DOMAIN,appldnld.apple.com,DIRECT
+  - DOMAIN,appldnld.apple.com.edgesuite.net,DIRECT
+  - DOMAIN,configuration.apple.com,DIRECT
+  - DOMAIN,gdmf.apple.com,DIRECT
+  - DOMAIN,gg.apple.com,DIRECT
+  - DOMAIN,gs.apple.com,DIRECT
+  - DOMAIN,ig.apple.com,DIRECT
+  - DOMAIN,mesu.apple.com,DIRECT
+  - DOMAIN,oscdn.apple.com,DIRECT
+  - DOMAIN,osrecovery.apple.com,DIRECT
+  - DOMAIN,skl.apple.com,DIRECT
+  - DOMAIN,swscan.apple.com,DIRECT
+  - DOMAIN,swquery.apple.com,DIRECT
+  - DOMAIN,swdownload.apple.com,DIRECT
+  - DOMAIN,swcdn.apple.com,DIRECT
+  - DOMAIN,swdist.apple.com,DIRECT
+  - DOMAIN,updates-http.cdn-apple.com,DIRECT
+  - DOMAIN,updates.cdn-apple.com,DIRECT
+  - DOMAIN,xp.apple.com,DIRECT
+  - DOMAIN,gdmf-ados.apple.com,DIRECT
+  - DOMAIN,gsra.apple.com,DIRECT
+  - DOMAIN,wkms-public.apple.com,DIRECT
+  - DOMAIN,fcs-keys-pub-prod.cdn-apple.com,DIRECT
+
+  # Apple：其他普通服务直连
+  - DOMAIN-SUFFIX,appsto.re,DIRECT
+  - DOMAIN-SUFFIX,me.com,DIRECT
+  - DOMAIN-SUFFIX,apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.com,DIRECT
+  - DOMAIN-SUFFIX,aaplimg.com,DIRECT
+  - DOMAIN-SUFFIX,appstore.com,DIRECT
+  - DOMAIN-SUFFIX,cdn-apple.com,DIRECT
+  - DOMAIN-SUFFIX,apple-mapkit.com,DIRECT
+  - DOMAIN-SUFFIX,apple-cloudkit.com,DIRECT
+  - DOMAIN-SUFFIX,icloud-content.com,DIRECT
+  - DOMAIN-SUFFIX,organicfruitapps.com,DIRECT
+  - DOMAIN-SUFFIX,apple-dns.net,DIRECT
+  - DOMAIN-SUFFIX,apple.news,DIRECT
+  - DOMAIN-SUFFIX,apple.com.cn,DIRECT
+  - DOMAIN-SUFFIX,icloud.com.cn,DIRECT
+  - DOMAIN,api.smoot.apple.cn,DIRECT
+
+  # 抖音 / 字节
+  - DOMAIN-SUFFIX,douyin.com,DIRECT
+  - DOMAIN-SUFFIX,douyinvod.com,DIRECT
+  - DOMAIN-SUFFIX,douyinpic.com,DIRECT
+  - DOMAIN-SUFFIX,byteimg.com,DIRECT
+  - DOMAIN-SUFFIX,snssdk.com,DIRECT
+  - DOMAIN-SUFFIX,zijieapi.com,DIRECT
+
+  # 中国大陆
+  - RULE-SET,中国大陆域名,DIRECT
+  - RULE-SET,中国大陆IP,DIRECT
+  - GEOIP,CN,DIRECT
+
+  # 其他海外
+  - MATCH,🌐 日常上网
