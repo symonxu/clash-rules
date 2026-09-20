@@ -132,6 +132,8 @@ dns: #!replace
 proxy-groups: #!replace
   - name: 🌐 日常上网
     type: select
+    # 由常用子组自行测速，避免父组递归触发全部节点测速。
+    interval: -1
     proxies:
       - ⚡ 自动选快
       - 🧭 全部节点
