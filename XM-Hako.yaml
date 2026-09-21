@@ -243,13 +243,6 @@ rule-providers:
     url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/apple-direct.yaml
     path: ./rule-providers/xm-apple-direct.yaml
     interval: 3600
-  中国补充规则:
-    type: http
-    behavior: classical
-    format: yaml
-    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/china-extra.yaml
-    path: ./rule-providers/xm-china-extra.yaml
-    interval: 3600
   中国大陆域名:
     type: http
     behavior: domain
@@ -286,7 +279,6 @@ rules:
   - RULE-SET,Apple直连规则,DIRECT
 
   # 中国大陆
-  - RULE-SET,中国补充规则,DIRECT
   - RULE-SET,中国大陆域名,DIRECT
   - RULE-SET,中国大陆IP,DIRECT
   - GEOIP,CN,DIRECT
