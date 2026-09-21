@@ -1,4 +1,4 @@
-# XM-Hako V1.0 — Hako 规则方案
+# XM-个人配置V1.0 — Hako 规则方案
 # 已验证：iOS Wi-Fi / 蜂窝网络切换正常。
 # Hako 节点库独立管理 MESL；本文件不包含 MESL 订阅地址或 Proxy Provider。
 # GitHub 负责策略组、DNS 与模块化远程规则；节点由 Hako 创建配置时注入。
