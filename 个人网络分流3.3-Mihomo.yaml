@@ -1,8 +1,15 @@
 # 个人网络分流 3.3 — Mihomo 通用覆写
 # 适用：Clash Mi (iOS) + Clash Verge Rev (macOS)
-# 用法：先添加 MESL Clash/Mihomo 订阅，再将本文件作为自定义覆写/合并配置。
-# 节点不写入 GitHub；策略组通过 include-all 从当前订阅读取节点，避免暴露订阅凭据。
+# 用法：在 Clash Mi / Clash Verge Rev 中添加 MESL Clash/Mihomo 订阅，再将本文件作为自定义覆写/合并配置。
+# MESL 仍只负责下发节点；本文件覆写其端口、DNS、策略组和规则。节点/订阅凭据不写入 GitHub。
 # 基于个人网络分流 3.2：保留 AI / Google / Web3 / Apple / 中国大陆分流边界。
+
+# iOS/Clash Mi: MESL 当前完整订阅同时带本地监听字段；只保留一个 mixed-port，避免 7890 重复绑定。
+# TUN 模式本身不依赖独立 HTTP/SOCKS 端口。
+port: 0
+socks-port: 0
+mixed-port: 7890
+allow-lan: false
 
 mode: rule
 ipv6: false
