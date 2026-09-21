@@ -1,0 +1,23 @@
+payload:
+  - DOMAIN-SUFFIX,infura.io
+  - DOMAIN-SUFFIX,alchemy.com
+  - DOMAIN-SUFFIX,alchemyapi.io
+  - DOMAIN-SUFFIX,llamarpc.com
+  - DOMAIN-SUFFIX,ankr.com
+  - DOMAIN-SUFFIX,1rpc.io
+  - DOMAIN-SUFFIX,publicnode.com
+  - DOMAIN-SUFFIX,polygon-rpc.com
+  - DOMAIN-SUFFIX,quiknode.pro
+  - DOMAIN-SUFFIX,drpc.org
+  - DOMAIN-SUFFIX,nodereal.io
+  - DOMAIN-SUFFIX,helius-rpc.com
+  - DOMAIN,api.mainnet-beta.solana.com
+  - DOMAIN,api.devnet.solana.com
+  - DOMAIN,arb1.arbitrum.io
+  - DOMAIN,mainnet.optimism.io
+  - DOMAIN,mainnet.base.org
+  - DOMAIN,bsc-dataseed.binance.org
+  - DOMAIN,api.avax.network
+  - DOMAIN,mainnet.era.zksync.io
+  - DOMAIN,rpc.gnosischain.com
+  - DOMAIN-SUFFIX,trongrid.io
