@@ -1,0 +1,25 @@
+{
+  "date": "2026-09-21",
+  "baseline_commit": "6243135cc6a6f2ac930dcc0d86088c8d36cc3c1d",
+  "baseline_rules": 153,
+  "expanded_rules_exact_order_equal": true,
+  "groups": 9,
+  "static_domain_cases_passed": 12,
+  "empty_pool_build_rejected": true,
+  "mihomo_version": "1.19.29",
+  "macos_profile_syntax": "passed",
+  "ios_profile_mihomo_syntax": "passed",
+  "isolated_runtime": {
+    "nodes": "loopback SOCKS fixtures only, no real proxy traffic",
+    "rule_providers_loaded": 10,
+    "custom_rule_counts": [5, 22, 17, 6, 3, 29, 16, 51],
+    "china_domain_rules": 111169,
+    "china_ip_rules": 9741,
+    "group_filters_and_web3_dependency_order": "passed"
+  },
+  "mesl_live_request": "HTTP 403",
+  "node_filter_evidence_date": "2026-09-20 cached YAML",
+  "cached_matching_nodes": [6, 3, 3, 3, 3, 6],
+  "hako_iphone_runtime": "not tested",
+  "client_active_profile_changed": false
+}
