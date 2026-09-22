@@ -1,0 +1,285 @@
+# XM-个人配置V1.0 — Hako 规则方案
+# 已验证：iOS Wi-Fi / 蜂窝网络切换正常。
+# Hako 节点库独立管理 MESL；本文件不包含 MESL 订阅地址或 Proxy Provider。
+# GitHub 负责策略组、DNS 与模块化远程规则；节点由 Hako 创建配置时注入。
+
+mode: rule
+ipv6: false
+
+dns:
+  enable: true
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+  - 223.5.5.5
+  - 119.29.29.29
+  nameserver:
+  - https://dns.alidns.com/dns-query
+  - https://doh.pub/dns-query
+  fake-ip-filter:
+  - '*.lan'
+  - '*.linksys.com'
+  - '*.linksyssmartwifi.com'
+  - +.apps.apple.com
+  - ppq.apple.com
+  - api.apple-cloudkit.com
+  - appldnld.apple.com.edgesuite.net
+  - configuration.apple.com
+  - oscdn.apple.com
+  - osrecovery.apple.com
+  - skl.apple.com
+  - updates-http.cdn-apple.com
+  - updates.cdn-apple.com
+  - xp.apple.com
+  - gdmf-ados.apple.com
+  - gsra.apple.com
+  - wkms-public.apple.com
+  - fcs-keys-pub-prod.cdn-apple.com
+  - appldnld.apple.com
+  - gdmf.apple.com
+  - gg.apple.com
+  - gs.apple.com
+  - ig.apple.com
+  - mesu.apple.com
+  - swscan.apple.com
+  - swquery.apple.com
+  - swdownload.apple.com
+  - swcdn.apple.com
+  - swdist.apple.com
+  - '*.msftconnecttest.com'
+  - '*.msftncsi.com'
+  - xbox.*.microsoft.com
+  - xbox.*.*.microsoft.com
+  - +.xboxlive.com
+  - time.*.com
+  - time.*.gov
+  - time.*.edu.cn
+  - time.*.apple.com
+  - time1.*.com
+  - time2.*.com
+  - time3.*.com
+  - time4.*.com
+  - time5.*.com
+  - time6.*.com
+  - time7.*.com
+  - ntp.*.com
+  - ntp1.*.com
+  - ntp2.*.com
+  - ntp3.*.com
+  - ntp4.*.com
+  - ntp5.*.com
+  - ntp6.*.com
+  - ntp7.*.com
+  - '*.time.edu.cn'
+  - '*.ntp.org.cn'
+  - +.pool.ntp.org
+  - time1.cloud.tencent.com
+  - lens.l.google.com
+  - +.music.163.com
+  - +.126.net
+  - musicapi.taihe.com
+  - music.taihe.com
+  - songsearch.kugou.com
+  - trackercdn.kugou.com
+  - '*.kuwo.cn'
+  - api-jooxtt.sanook.com
+  - api.joox.com
+  - joox.com
+  - +.y.qq.com
+  - +.music.tc.qq.com
+  - aqqmusic.tc.qq.com
+  - +.stream.qqmusic.qq.com
+  - +.xiami.com
+  - +.music.migu.cn
+  - +.stun.*.*
+  - +.stun.*.*.*
+  - +.stun.*.*.*.*
+  - +.stun.*.*.*.*.*
+  - +.srv.nintendo.net
+  - '*.n.n.srv.nintendo.net'
+  - +.stun.playstation.net
+  - +.battlenet.com.cn
+  - +.wotgame.cn
+  - +.wggames.cn
+  - +.wowsgame.cn
+  - +.wargaming.net
+  - '*.square-enix.com'
+  - '*.finalfantasyxiv.com'
+  - '*.ffxiv.com'
+  - '*.ff14.sdo.com'
+  - ff.dorado.sdo.com
+  - localhost.ptlogin2.qq.com
+  - localhost.sec.qq.com
+  - proxy.golang.org
+  - +.qq.com
+  - +.baidu.com
+  - +.163.com
+  - +.taobao.com
+  - +.jd.com
+  - +.tmall.com
+  - '*.mcdn.bilivideo.cn'
+  - +.nvidia.com
+  - +.nvidia.cn
+  - +.nvgs.nvidia.com
+  - +.nvgs.nvidia.cn
+  - shark007.net
+
+profile:
+  store-selected: true
+  store-fake-ip: true
+
+proxy-groups:
+  - name: 🌐 日常上网
+    type: select
+    proxies:
+      - ⚡ 自动选快
+      - 🧭 全部节点
+
+  - name: ⚡ 自动选快
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    include-all: true
+    exclude-type: direct
+    filter: '^(🇸🇬 新加坡 0[1-3]|🇯🇵 日本 0[1-3])'
+    interval: 600
+    lazy: true
+
+  - name: 🧭 全部节点
+    type: select
+    include-all: true
+    exclude-type: direct
+    # 只关闭该组的定时测速；同一节点仍可被其他常用组测速。
+
+  - name: 🔎 Google服务
+    type: fallback
+    url: https://www.gstatic.com/generate_204
+    include-all: true
+    exclude-type: direct
+    filter: '^🇯🇵 日本 0[1-3]'
+    interval: 300
+    lazy: false
+
+  - name: 🤖 AI工具
+    type: fallback
+    url: https://www.gstatic.com/generate_204
+    include-all: true
+    exclude-type: direct
+    filter: '^🇯🇵 日本 (08|09|10) 家宽'
+    interval: 300
+    lazy: false
+
+  - name: 🇯🇵 Web3-日本家宽
+    # 按订阅顺序选择可用节点；故障或恢复时仍可能切换，不保证固定 IP。
+    type: fallback
+    url: https://www.gstatic.com/generate_204
+    include-all: true
+    exclude-type: direct
+    filter: '^🇯🇵 日本 (08|09|10) 家宽'
+    interval: 300
+    lazy: false
+
+  - name: 🇯🇵 Web3-日本普通
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    include-all: true
+    exclude-type: direct
+    filter: '^🇯🇵 日本 0[1-3]'
+    interval: 300
+    lazy: false
+
+  - name: 💰 Web3交易
+    type: fallback
+    url: https://www.gstatic.com/generate_204
+    proxies:
+      - 🇯🇵 Web3-日本家宽
+      - 🇯🇵 Web3-日本普通
+    interval: 300
+    lazy: false
+
+  - name: ⛓️ Web3链上数据
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    include-all: true
+    exclude-type: direct
+    filter: '^(🇯🇵 日本 (08|09|10) 家宽|🇯🇵 日本 0[1-3])'
+    interval: 300
+    lazy: false
+
+rule-providers:
+  Web3链上:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/web3-rpc.yaml
+    path: ./rule-providers/xm-web3-rpc.yaml
+    interval: 3600
+  Web3交易规则:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/web3.yaml
+    path: ./rule-providers/xm-web3.yaml
+    interval: 3600
+  AI规则:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/ai.yaml
+    path: ./rule-providers/xm-ai.yaml
+    interval: 3600
+  Google规则:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/google.yaml
+    path: ./rule-providers/xm-google.yaml
+    interval: 3600
+  Apple直连规则:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/apple-direct.yaml
+    path: ./rule-providers/xm-apple-direct.yaml
+    interval: 3600
+  中国大陆域名:
+    type: http
+    behavior: domain
+    format: yaml
+    url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
+    path: ./rule-providers/china-direct-domain.yaml
+    interval: 86400
+  中国大陆IP:
+    type: http
+    behavior: ipcidr
+    format: yaml
+    url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
+    path: ./rule-providers/china-direct-ip.yaml
+    interval: 86400
+
+rules:
+  # 局域网
+  - DOMAIN-SUFFIX,local,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+
+  # 顺序很重要：链上 RPC → Web3 → AI → Google → Apple/中国
+  - RULE-SET,Web3链上,⛓️ Web3链上数据
+  - RULE-SET,Web3交易规则,💰 Web3交易
+  - RULE-SET,AI规则,🤖 AI工具
+  - RULE-SET,Google规则,🔎 Google服务
+
+  # Apple Push 保持日常代理；其余 Apple 规则直连
+  - DOMAIN-SUFFIX,push.apple.com,🌐 日常上网
+  - DOMAIN-SUFFIX,push-apple.com.akadns.net,🌐 日常上网
+  - DOMAIN-SUFFIX,courier-push-apple.com.akadns.net,🌐 日常上网
+  - RULE-SET,Apple直连规则,DIRECT
+
+  # 中国大陆
+  - RULE-SET,中国大陆域名,DIRECT
+  - RULE-SET,中国大陆IP,DIRECT
+  - GEOIP,CN,DIRECT
+
+  # 其他海外
+  - MATCH,🌐 日常上网
