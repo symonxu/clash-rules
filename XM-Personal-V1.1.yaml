@@ -274,6 +274,9 @@ rules:
   - DOMAIN-SUFFIX,courier-push-apple.com.akadns.net,🌐 日常上网
   - RULE-SET,Apple直连规则,DIRECT
 
+  # App Store CDN 例外：避免 mzstatic.com 被中国大陆域名规则误判为 DIRECT
+  - DOMAIN-SUFFIX,mzstatic.com,🌐 日常上网
+
   # 中国大陆
   - RULE-SET,中国大陆域名,DIRECT
   - RULE-SET,中国大陆IP,DIRECT
