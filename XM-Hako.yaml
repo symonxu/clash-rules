@@ -21,8 +21,6 @@ dns:
   - '*.linksys.com'
   - '*.linksyssmartwifi.com'
   - +.apps.apple.com
-  - +.itunes.apple.com
-  - +.mzstatic.com
   - ppq.apple.com
   - api.apple-cloudkit.com
   - appldnld.apple.com.edgesuite.net
