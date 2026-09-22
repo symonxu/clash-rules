@@ -1,24 +1,66 @@
-# stash-rules
+# clash-rules
 
-个人 Stash 分流覆写，不包含机场订阅地址、节点密码或认证信息。
+个人 Clash / Hako 规则方案仓库。
 
-## 我的网络分流
+当前采用 **节点源与规则方案分离** 的架构：
 
-`我的网络分流.stoverride` 保留主配置提供的节点，替换 DNS、策略组、规则集和分流规则。
+- **节点库**：MESL 节点订阅，由 Clash / Hako 客户端独立管理。
+- **规则库**：从本仓库导入 `XM-Personal-V1.1.yaml`。
+- **实际配置**：在客户端创建配置时，同时选择 MESL 节点源与本仓库规则方案，由客户端组合生成。
 
-- 日常自动选择日本、新加坡节点；Google 使用日本节点。
-- AI 使用日本家宽，Web3 交易及 RPC 使用马来西亚家宽；按地区与“家宽”标签筛选，不依赖旗帜或固定编号。
-- AI、Web3 交易入口默认选自动故障切换，也可以先选“手选节点”，再在对应手选组固定同地区家宽节点。故障切换不是固定 IP 保证。
-- 自动组的 `url` 统一为 `https://cp.cloudflare.com/generate_204`；基础连通性检查不代表业务登录、地区可用性或交易接口正常。Stash 节点级测速参数及共享测速结果机制以客户端实现为准，不保证修改组 URL 会修复仪表盘读数。
-- Apple 常规服务及 `mzstatic.com` 直连；AI、推送例外保持原有顺序。
-- 中国大陆域名/IP 直连，保留完整方案原有的末尾日常代理规则。
+本仓库不保存 MESL 订阅地址、节点密码、认证信息或其他私密凭据。
 
-订阅若修改地区或家宽标签，仍须检查各组非空；本覆写不会为了填满空组自动改成其他国家或 DIRECT。
+## 当前规则方案
 
-## 更新
+正式入口：
 
-通过远程 URL 安装同名覆写后，可在 Stash 的“覆写”页面更新，无需重新导入。GitHub 提交不会即时推送到客户端；须等客户端成功拉取，且可能受网络和缓存影响。
+`XM-Personal-V1.1.yaml`
 
-主配置自动更新、远程覆写更新、规则提供器更新是不同环节，不应将主配置的更新间隔当作覆写更新保证。需要立即生效时，在覆写页面更新“我的网络分流”，并确认新策略组出现。规则提供器按本文件中的 86400 秒间隔更新。
+Raw：
 
-`china-direct.stoverride` 是独立的国内直连模块，未在本次优化中修改。
+`https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Personal-V1.1.yaml`
+
+该文件负责 DNS、策略组、规则顺序以及远程 Rule Provider 定义，不直接包含代理节点。
+
+## 目录
+
+```text
+clash-rules/
+├── XM-Personal-V1.1.yaml
+└── rules/
+    ├── web3-rpc.yaml
+    ├── web3.yaml
+    ├── ai.yaml
+    ├── google.yaml
+    └── apple-direct.yaml
+```
+
+规则模块用途：
+
+- `web3-rpc.yaml`：Web3 RPC、链上数据相关域名。
+- `web3.yaml`：钱包、DEX、交易平台等 Web3 业务域名。
+- `ai.yaml`：AI 服务相关域名。
+- `google.yaml`：Google 服务相关域名。
+- `apple-direct.yaml`：适合直连的 Apple 服务；App Store 下载相关域名不强制直连。
+
+中国大陆域名与 IP 规则由 `XM-Personal-V1.1.yaml` 直接引用 Loyalsoldier 规则集，不在本仓库重复维护。
+
+## 更新方式
+
+### 仅修改 rules/ 下的规则
+
+在 Clash / Hako 中更新规则库或远程规则集即可，不需要更新 MESL 节点源，也不需要重新创建组合配置。
+
+### 修改 XM-Personal-V1.1.yaml
+
+如果修改 DNS、策略组、Rule Provider 定义或规则顺序等规则方案结构，应在客户端更新规则方案；必要时重新创建由 **MESL + XM-Personal-V1.1** 组合的实际配置。
+
+### MESL 节点变化
+
+MESL 独立更新，与本 GitHub 仓库无关。
+
+## 当前版本
+
+**XM-Personal-V1.1**
+
+V1.1 为当前稳定基线。没有明确需要时，不修改其整体架构；日常域名增删优先维护 `rules/` 下对应模块。
