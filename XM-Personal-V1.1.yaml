@@ -244,15 +244,13 @@ rule-providers:
   中国大陆域名:
     type: http
     behavior: domain
-    format: yaml
-    url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt
     path: ./rule-providers/china-direct-domain.yaml
     interval: 86400
   中国大陆IP:
     type: http
     behavior: ipcidr
-    format: yaml
-    url: https://fastly.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
+    url: https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt
     path: ./rule-providers/china-direct-ip.yaml
     interval: 86400
 
