@@ -155,7 +155,7 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     include-all: true
     exclude-type: direct
-    filter: '^🇯🇵 日本 (08|09|10) 家宽'
+    filter: '^🇯🇵 日本 08 家宽'
     interval: 300
     lazy: false
 
