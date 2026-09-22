@@ -210,35 +210,35 @@ rule-providers:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/web3-rpc.yaml
+    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/web3-rpc.yaml
     path: ./rule-providers/xm-web3-rpc.yaml
     interval: 3600
   Web3交易规则:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/web3.yaml
+    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/web3.yaml
     path: ./rule-providers/xm-web3.yaml
     interval: 3600
   AI规则:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/ai.yaml
+    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/ai.yaml
     path: ./rule-providers/xm-ai.yaml
     interval: 3600
   Google规则:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/google.yaml
+    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/google.yaml
     path: ./rule-providers/xm-google.yaml
     interval: 3600
   Apple直连规则:
     type: http
     behavior: classical
     format: yaml
-    url: https://raw.githubusercontent.com/symonxu/stash-rules/main/rules/apple-direct.yaml
+    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/apple-direct.yaml
     path: ./rule-providers/xm-apple-direct.yaml
     interval: 3600
   中国大陆域名:
