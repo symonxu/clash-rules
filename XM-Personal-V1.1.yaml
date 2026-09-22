@@ -234,6 +234,13 @@ rule-providers:
     url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/google.yaml
     path: ./rule-providers/xm-google.yaml
     interval: 3600
+  Apple代理规则:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/apple-proxy.yaml
+    path: ./rule-providers/xm-apple-proxy.yaml
+    interval: 3600
   Apple直连规则:
     type: http
     behavior: classical
@@ -272,10 +279,8 @@ rules:
   - DOMAIN-SUFFIX,push.apple.com,🌐 日常上网
   - DOMAIN-SUFFIX,push-apple.com.akadns.net,🌐 日常上网
   - DOMAIN-SUFFIX,courier-push-apple.com.akadns.net,🌐 日常上网
+  - RULE-SET,Apple代理规则,🌐 日常上网
   - RULE-SET,Apple直连规则,DIRECT
-
-  # App Store CDN 例外：避免 mzstatic.com 被中国大陆域名规则误判为 DIRECT
-  - DOMAIN-SUFFIX,mzstatic.com,🌐 日常上网
 
   # 中国大陆
   - RULE-SET,中国大陆域名,DIRECT
