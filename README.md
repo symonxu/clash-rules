@@ -54,6 +54,10 @@ clash-rules/
 - 修改 `XM-Personal-V1.1.yaml`：在 Hako 更新“规则库”，现有个人配置会继续从该规则库取得策略组、Rule Provider 和 rules 结构；不把个人配置当作独立远程订阅。
 - MESL 节点变化：只更新节点库，与本 GitHub 仓库独立。
 
+## 提交校验
+
+Pull Request 和 `main` 更新会检查 YAML、规则引用及仓库中的 URL。新增公开 URL 前，应核对来源并更新 `scripts/validate_rules.rb` 中的允许清单。私有订阅地址不得推送到公开分支；GitHub Actions 在推送后运行，无法撤销已公开的内容。
+
 ## 当前版本
 
 **XM-Personal-V1.1**
