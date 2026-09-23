@@ -7,6 +7,21 @@ require "yaml"
 REPO_ROOT = File.expand_path("..", __dir__)
 CONFIG_PATH = "XM-Personal-V1.1.yaml"
 LOCAL_RULE_PREFIX = "/symonxu/clash-rules/main/"
+PUBLIC_RULE_PREFIX = "https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/"
+PUBLIC_RULE_FILE_URL = %r{\A#{Regexp.escape(PUBLIC_RULE_PREFIX)}[a-z0-9-]+\.yaml\z}
+URL_PATTERN = %r{https?://[^\s<>"'\x60)\]]+}
+
+# Any new public endpoint should be reviewed before it enters this public repository.
+ALLOWED_PUBLIC_URLS = Set.new([
+  "https://dns.alidns.com/dns-query",
+  "https://doh.pub/dns-query",
+  "https://www.gstatic.com/generate_204",
+  "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt",
+  "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt",
+  "https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Personal-V1.1.yaml",
+  "https://github.com/symonxu/clash-rules",
+  PUBLIC_RULE_PREFIX
+]).freeze
 
 def fail_with(message)
   warn "Rule validation failed: #{message}"
@@ -25,13 +40,35 @@ rescue Psych::Exception => error
   fail_with("#{path}: #{error.message}")
 end
 
+def allowed_public_url?(url)
+  ALLOWED_PUBLIC_URLS.include?(url) || PUBLIC_RULE_FILE_URL.match?(url)
+end
+
 Dir.chdir(REPO_ROOT)
+
+tracked_files = IO.popen(["git", "ls-files", "-z"], &:read).split("\0")
+tracked_files.each do |path|
+  next unless File.file?(path)
+
+  content = File.binread(path).force_encoding(Encoding::UTF_8)
+  next if content.include?("\0") || !content.valid_encoding?
+
+  content.each_line.with_index(1) do |line, line_number|
+    line.scan(URL_PATTERN).each do |candidate|
+      url = candidate.sub(/[.,;:!]+\z/, "")
+      fail_with("unapproved URL at #{path}:#{line_number}") unless allowed_public_url?(url)
+    end
+  end
+end
 
 yaml_files = (Dir.glob("*.yaml") + Dir.glob("rules/*.yaml")).sort
 yaml_files.each { |path| read_yaml(path) }
 
 config = read_yaml(CONFIG_PATH)
 fail_with("#{CONFIG_PATH} must contain a mapping") unless config.is_a?(Hash)
+%w[proxies proxy-providers].each do |key|
+  fail_with("#{CONFIG_PATH} must not define #{key}; Hako manages nodes") if config.key?(key)
+end
 
 providers = config["rule-providers"]
 rules = config["rules"]
