@@ -31,6 +31,7 @@ clash-rules/
     ├── web3.yaml
     ├── ai.yaml
     ├── google.yaml
+    ├── meta.yaml
     ├── apple-proxy.yaml
     └── apple-direct.yaml
 ```
@@ -41,6 +42,7 @@ clash-rules/
 - `web3.yaml`：钱包、DEX、交易平台等 Web3 业务域名。
 - `ai.yaml`：AI 服务相关域名。
 - `google.yaml`：Google 服务相关域名。
+- `meta.yaml`：Facebook、Instagram、Threads、Messenger、Muse 及共享 Meta 账户/基础设施域名。
 - `apple-proxy.yaml`：需要通过日常代理访问的 Apple / App Store 例外域名。
 - `apple-direct.yaml`：适合直连的 Apple 服务。
 
