@@ -159,6 +159,16 @@ proxy-groups:
     interval: 300
     lazy: false
 
+  - name: 🟦 Meta服务
+    # Muse 当前仅在美国推出；Meta 旗下服务统一保持美国出口，账户与会话更一致。
+    type: fallback
+    url: https://www.gstatic.com/generate_204
+    include-all: true
+    exclude-type: direct
+    filter: '^🇺🇸 美国'
+    interval: 300
+    lazy: false
+
   - name: 🤖 AI工具
     type: fallback
     url: https://www.gstatic.com/generate_204
@@ -234,6 +244,13 @@ rule-providers:
     url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/google.yaml
     path: ./rule-providers/xm-google.yaml
     interval: 3600
+  Meta规则:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/meta.yaml
+    path: ./rule-providers/xm-meta.yaml
+    interval: 3600
   Apple代理规则:
     type: http
     behavior: classical
@@ -269,11 +286,12 @@ rules:
   - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
   - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
 
-  # 顺序很重要：链上 RPC → Web3 → AI → Google → Apple/中国
+  # 顺序很重要：链上 RPC → Web3 → AI → Google → Meta → Apple/中国
   - RULE-SET,Web3链上,⛓️ Web3链上数据
   - RULE-SET,Web3交易规则,💰 Web3交易
   - RULE-SET,AI规则,🤖 AI工具
   - RULE-SET,Google规则,🔎 Google服务
+  - RULE-SET,Meta规则,🟦 Meta服务
 
   # Apple Push 保持日常代理；其余 Apple 规则直连
   - DOMAIN-SUFFIX,push.apple.com,🌐 日常上网
