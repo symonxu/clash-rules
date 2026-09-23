@@ -1,0 +1,25 @@
+payload:
+  # Meta shared account / identity / CDN infrastructure
+  - DOMAIN-SUFFIX,meta.com
+  - DOMAIN-SUFFIX,meta.ai
+  - DOMAIN-SUFFIX,facebook.com
+  - DOMAIN-SUFFIX,facebook.net
+  - DOMAIN-SUFFIX,fb.com
+  - DOMAIN-SUFFIX,fb.me
+  - DOMAIN-SUFFIX,fbcdn.net
+  - DOMAIN-SUFFIX,fbsbx.com
+
+  # Messenger
+  - DOMAIN-SUFFIX,messenger.com
+  - DOMAIN-SUFFIX,m.me
+
+  # Instagram
+  - DOMAIN-SUFFIX,instagram.com
+  - DOMAIN-SUFFIX,cdninstagram.com
+
+  # Threads
+  - DOMAIN-SUFFIX,threads.com
+  - DOMAIN-SUFFIX,threads.net
+
+  # Muse
+  - DOMAIN-SUFFIX,muse.ai
