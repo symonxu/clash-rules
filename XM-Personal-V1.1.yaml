@@ -178,6 +178,13 @@ proxy-groups:
     interval: 300
     lazy: false
 
+  - name: 💹 Bybit网络
+    # 手动选择澳大利亚或格鲁吉亚节点；仅纳入节点名含对应国家名或国旗的代理。
+    type: select
+    include-all: true
+    exclude-type: direct
+    filter: '(?i)(🇦🇺|澳大利亚|澳洲|Australia|🇬🇪|格鲁吉亚|Georgia)'
+
   - name: 🇯🇵 Web3-日本家宽
     # 按订阅顺序选择可用节点；故障或恢复时仍可能切换，不保证固定 IP。
     type: fallback
@@ -265,6 +272,13 @@ rule-providers:
     url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/apple-direct.yaml
     path: ./rule-providers/xm-apple-direct.yaml
     interval: 3600
+  Bybit规则:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/bybit.yaml
+    path: ./rule-providers/xm-bybit.yaml
+    interval: 3600
   中国大陆域名:
     type: http
     behavior: domain
@@ -286,8 +300,9 @@ rules:
   - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
   - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
 
-  # 顺序很重要：链上 RPC → Web3 → AI → Google → Meta → Apple/中国
+  # 顺序很重要：链上 RPC → Bybit → Web3 → AI → Google → Meta → Apple/中国
   - RULE-SET,Web3链上,⛓️ Web3链上数据
+  - RULE-SET,Bybit规则,💹 Bybit网络
   - RULE-SET,Web3交易规则,💰 Web3交易
   - RULE-SET,AI规则,🤖 AI工具
   - RULE-SET,Google规则,🔎 Google服务
