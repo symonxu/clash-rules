@@ -32,6 +32,7 @@ clash-rules/
     ├── ai.yaml
     ├── google.yaml
     ├── meta.yaml
+    ├── bybit.yaml
     ├── apple-proxy.yaml
     └── apple-direct.yaml
 ```
@@ -43,6 +44,7 @@ clash-rules/
 - `ai.yaml`：AI 服务相关域名。
 - `google.yaml`：Google 服务相关域名。
 - `meta.yaml`：Facebook、Instagram、Threads、Messenger、Muse 及共享 Meta 账户/基础设施域名。
+- `bybit.yaml`：Bybit 网站及其 `bybit.com` 子域名，单独走 `💹 Bybit网络` 选择组；组内筛选澳大利亚或格鲁吉亚节点。
 - `apple-proxy.yaml`：需要通过日常代理访问的 Apple / App Store 例外域名。
 - `apple-direct.yaml`：适合直连的 Apple 服务。
 
