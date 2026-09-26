@@ -32,9 +32,7 @@ clash-rules/
     ├── ai.yaml
     ├── google.yaml
     ├── meta.yaml
-    ├── bybit.yaml
-    ├── apple-proxy.yaml
-    └── apple-direct.yaml
+    └── bybit.yaml
 ```
 
 规则模块用途：
@@ -45,10 +43,10 @@ clash-rules/
 - `google.yaml`：Google 服务相关域名。
 - `meta.yaml`：Facebook、Instagram、Threads、Messenger、Muse 及共享 Meta 账户/基础设施域名。
 - `bybit.yaml`：Bybit 网站及其 `bybit.com` 子域名，单独走 `💹 Bybit网络` 选择组；组内筛选澳大利亚或格鲁吉亚节点。
-- `apple-proxy.yaml`：需要通过日常代理访问的 Apple / App Store 例外域名。
-- `apple-direct.yaml`：适合直连的 Apple 服务。
 
 中国大陆域名规则由 `XM-Personal-V1.3.yaml` 直接引用 Loyalsoldier 规则集；中国大陆 IP 归属由 Clash 内核的 `GEOIP,CN` 规则与自动更新的 GeoIP 数据负责，不额外维护 IP Rule Provider。
+
+V1.3 不定义 Apple 专属路由或 Apple 专属 fake-IP DNS 例外；Apple 流量按通用规则顺序处理，具体走向由域名规则、GeoIP 规则和最终规则决定。
 
 ## 更新方式
 
@@ -64,4 +62,4 @@ Pull Request 和 `main` 更新会检查 YAML、规则引用及仓库中的 URL�
 
 **XM-Personal-V1.3**
 
-这是当前正式版本，用户已切换使用。V1.1 已退役并从仓库删除。中国大陆 IP 由自动更新的 GeoIP 数据配合 `GEOIP,CN,DIRECT` 处理；规则库不再单独加载中国大陆 IP Rule Provider。
+这是当前正式版本，用户已切换使用。V1.1 已退役并从仓库删除。中国大陆 IP 由自动更新的 GeoIP 数据配合 `GEOIP,CN,DIRECT` 处理；规则库不再单独加载中国大陆 IP Rule Provider，也不再为 Apple 服务设置专属路由或 fake-IP DNS 例外。

@@ -21,32 +21,6 @@ dns:
   - '*.lan'
   - '*.linksys.com'
   - '*.linksyssmartwifi.com'
-  - +.apps.apple.com
-  - ppq.apple.com
-  - api.apple-cloudkit.com
-  - appldnld.apple.com.edgesuite.net
-  - configuration.apple.com
-  - oscdn.apple.com
-  - osrecovery.apple.com
-  - skl.apple.com
-  - updates-http.cdn-apple.com
-  - updates.cdn-apple.com
-  - xp.apple.com
-  - gdmf-ados.apple.com
-  - gsra.apple.com
-  - wkms-public.apple.com
-  - fcs-keys-pub-prod.cdn-apple.com
-  - appldnld.apple.com
-  - gdmf.apple.com
-  - gg.apple.com
-  - gs.apple.com
-  - ig.apple.com
-  - mesu.apple.com
-  - swscan.apple.com
-  - swquery.apple.com
-  - swdownload.apple.com
-  - swcdn.apple.com
-  - swdist.apple.com
   - '*.msftconnecttest.com'
   - '*.msftncsi.com'
   - xbox.*.microsoft.com
@@ -55,7 +29,6 @@ dns:
   - time.*.com
   - time.*.gov
   - time.*.edu.cn
-  - time.*.apple.com
   - time1.*.com
   - time2.*.com
   - time3.*.com
@@ -267,20 +240,6 @@ rule-providers:
     url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/meta.yaml
     path: ./rule-providers/xm-meta.yaml
     interval: 3600
-  Apple代理规则:
-    type: http
-    behavior: classical
-    format: yaml
-    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/apple-proxy.yaml
-    path: ./rule-providers/xm-apple-proxy.yaml
-    interval: 3600
-  Apple直连规则:
-    type: http
-    behavior: classical
-    format: yaml
-    url: https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/apple-direct.yaml
-    path: ./rule-providers/xm-apple-direct.yaml
-    interval: 3600
   Bybit规则:
     type: http
     behavior: classical
@@ -302,20 +261,13 @@ rules:
   - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
   - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
 
-  # 顺序很重要：链上 RPC → Bybit → Web3 → AI → Google → Meta → Apple/中国
+  # 顺序很重要：链上 RPC → Bybit → Web3 → AI → Google → Meta → 中国
   - RULE-SET,Web3链上,⛓️ Web3链上数据
   - RULE-SET,Bybit规则,💹 Bybit网络
   - RULE-SET,Web3交易规则,💰 Web3交易
   - RULE-SET,AI规则,🤖 AI工具
   - RULE-SET,Google规则,🔎 Google服务
   - RULE-SET,Meta规则,🟦 Meta服务
-
-  # Apple Push 保持日常代理；其余 Apple 规则直连
-  - DOMAIN-SUFFIX,push.apple.com,🌐 日常上网
-  - DOMAIN-SUFFIX,push-apple.com.akadns.net,🌐 日常上网
-  - DOMAIN-SUFFIX,courier-push-apple.com.akadns.net,🌐 日常上网
-  - RULE-SET,Apple代理规则,🌐 日常上网
-  - RULE-SET,Apple直连规则,DIRECT
 
   # 中国大陆
   - RULE-SET,中国大陆域名,DIRECT
