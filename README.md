@@ -48,7 +48,7 @@ clash-rules/
 - `apple-proxy.yaml`：需要通过日常代理访问的 Apple / App Store 例外域名。
 - `apple-direct.yaml`：适合直连的 Apple 服务。
 
-中国大陆域名与 IP 规则由 `XM-Personal-V1.1.yaml` 直接引用 Loyalsoldier 规则集，不在本仓库重复维护。
+中国大陆域名规则由 `XM-Personal-V1.1.yaml` 直接引用 Loyalsoldier 规则集；中国大陆 IP 归属由 Clash 内核的 `GEOIP,CN` 规则与自动更新的 GeoIP 数据负责，不额外维护 IP Rule Provider。
 
 ## 更新方式
 
