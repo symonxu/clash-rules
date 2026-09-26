@@ -5,18 +5,18 @@
 当前采用 **节点库与规则库分离** 的架构：
 
 - **节点库**：MESL 节点订阅，由 Hako 独立管理。
-- **规则库**：从本仓库导入 `XM-Personal-V1.1.yaml`。
+- **规则库**：从本仓库导入 `XM-Personal-V1.3.yaml`。
 - **个人配置**：Hako 将所选节点库与规则库组合使用；个人配置本身不是第三个远程订阅源。
 
 本仓库不保存 MESL 订阅地址、节点密码、认证信息或其他私密凭据。
 
 ## 当前正式入口
 
-`XM-Personal-V1.1.yaml`
+`XM-Personal-V1.3.yaml`
 
 Raw：
 
-`https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Personal-V1.1.yaml`
+`https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Personal-V1.3.yaml`
 
 该文件负责 DNS、策略组、Rule Provider 定义和规则顺序，不直接包含代理节点。
 
@@ -25,7 +25,7 @@ Raw：
 ```text
 clash-rules/
 ├── README.md
-├── XM-Personal-V1.1.yaml
+├── XM-Personal-V1.3.yaml
 └── rules/
     ├── web3-rpc.yaml
     ├── web3.yaml
@@ -48,12 +48,12 @@ clash-rules/
 - `apple-proxy.yaml`：需要通过日常代理访问的 Apple / App Store 例外域名。
 - `apple-direct.yaml`：适合直连的 Apple 服务。
 
-中国大陆域名规则由 `XM-Personal-V1.1.yaml` 直接引用 Loyalsoldier 规则集；中国大陆 IP 归属由 Clash 内核的 `GEOIP,CN` 规则与自动更新的 GeoIP 数据负责，不额外维护 IP Rule Provider。
+中国大陆域名规则由 `XM-Personal-V1.3.yaml` 直接引用 Loyalsoldier 规则集；中国大陆 IP 归属由 Clash 内核的 `GEOIP,CN` 规则与自动更新的 GeoIP 数据负责，不额外维护 IP Rule Provider。
 
 ## 更新方式
 
 - 修改 `rules/*.yaml`：对应 Rule Provider 远程刷新即可。
-- 修改 `XM-Personal-V1.1.yaml`：在 Hako 更新“规则库”，现有个人配置会继续从该规则库取得策略组、Rule Provider 和 rules 结构；不把个人配置当作独立远程订阅。
+- 修改 `XM-Personal-V1.3.yaml`：在 Hako 更新“规则库”，现有个人配置会继续从该规则库取得策略组、Rule Provider 和 rules 结构；不把个人配置当作独立远程订阅。
 - MESL 节点变化：只更新节点库，与本 GitHub 仓库独立。
 
 ## 提交校验
@@ -62,6 +62,6 @@ Pull Request 和 `main` 更新会检查 YAML、规则引用及仓库中的 URL�
 
 ## 当前版本
 
-**XM-Personal-V1.1**
+**XM-Personal-V1.3**
 
-这是当前已验证使用的稳定基线。没有明确故障证据时，不重构整体架构。
+这是当前正式版本，用户已切换使用。V1.1 已退役并从仓库删除。中国大陆 IP 由自动更新的 GeoIP 数据配合 `GEOIP,CN,DIRECT` 处理；规则库不再单独加载中国大陆 IP Rule Provider。
