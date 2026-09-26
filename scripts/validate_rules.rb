@@ -17,7 +17,6 @@ ALLOWED_PUBLIC_URLS = Set.new([
   "https://doh.pub/dns-query",
   "https://www.gstatic.com/generate_204",
   "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt",
-  "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/cncidr.txt",
   "https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Personal-V1.1.yaml",
   "https://github.com/symonxu/clash-rules",
   PUBLIC_RULE_PREFIX
