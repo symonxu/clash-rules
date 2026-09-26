@@ -29,8 +29,6 @@ EXPECTED_RULE_ROUTES = {
   "AI规则" => "🤖 AI工具",
   "Google规则" => "🔎 Google服务",
   "Meta规则" => "🟦 Meta服务",
-  "Apple代理规则" => "🌐 日常上网",
-  "Apple直连规则" => "DIRECT",
   "中国大陆域名" => "DIRECT",
 }.freeze
 
@@ -128,6 +126,15 @@ CONFIG_PATHS.each do |config_path|
     fail_with("#{config_path} is missing rule-providers, proxy-groups, or rules")
   end
 
+  dns = config["dns"]
+  fake_ip_filters = dns.is_a?(Hash) ? dns["fake-ip-filter"] : nil
+  if fake_ip_filters.is_a?(Array) && fake_ip_filters.any? { |entry| entry.is_a?(String) && entry.match?(/apple|icloud|itunes|mzstatic/i) }
+    fail_with("#{config_path} must not define Apple-specific fake-ip filters")
+  end
+  if rules.any? { |rule| rule.is_a?(String) && rule.match?(/apple|icloud|itunes|mzstatic/i) }
+    fail_with("#{config_path} must not define Apple-specific routing rules")
+  end
+
   group_names = groups_list.map do |group|
     fail_with("#{config_path} contains an invalid proxy group") unless group.is_a?(Hash) && group["name"].is_a?(String)
     group["name"]
@@ -199,12 +206,5 @@ end
 
 unreferenced_local_files = local_rule_files - referenced_local_files.uniq
 fail_with("unreferenced local rule files: #{unreferenced_local_files}") unless unreferenced_local_files.empty?
-
-apple_proxy_rules = read_yaml("rules/apple-proxy.yaml")["payload"]
-apple_direct_rules = read_yaml("rules/apple-direct.yaml")["payload"]
-%w[DOMAIN-SUFFIX,mzstatic.com DOMAIN-SUFFIX,itunes.apple.com].each do |rule|
-  fail_with("Apple proxy exception missing: #{rule}") unless apple_proxy_rules.include?(rule)
-  fail_with("Apple proxy exception must not be DIRECT: #{rule}") if apple_direct_rules.include?(rule)
-end
 
 puts "Validated #{yaml_files.length} YAML files, #{CONFIG_PATHS.length} profiles, and #{local_rule_files.length} local rule modules."
