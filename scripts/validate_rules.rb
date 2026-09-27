@@ -32,6 +32,15 @@ EXPECTED_RULE_ROUTES = {
   "中国大陆域名" => "DIRECT",
 }.freeze
 
+AUTO_FAST_FILTER = '^(🇯🇵|日本|Japan|🇺🇸|美国|United States|USA|🇲🇾|马来西亚|Malaysia|🇹🇼|台湾|台灣|Taiwan)'.freeze
+COUNTRY_GROUP_FILTERS = {
+  "🇯🇵 日本" => '^(🇯🇵|日本|Japan)',
+  "🇺🇸 美国" => '^(🇺🇸|美国|United States|USA)',
+  "🇲🇾 马来西亚" => '^(🇲🇾|马来西亚|Malaysia)',
+  "🇹🇼 台湾" => '^(🇹🇼|台湾|台灣|Taiwan)'
+}.freeze
+DAILY_GROUP_OPTIONS = ["⚡ 自动选快", *COUNTRY_GROUP_FILTERS.keys, "🧭 全部节点"].freeze
+
 FIXED_EXIT_FILTERS = {
   "🔎 Google服务" => ["^🇯🇵 日本 08 家宽"],
   "🟦 Meta服务" => ["^🇺🇸 美国"],
@@ -141,6 +150,21 @@ CONFIG_PATHS.each do |config_path|
   end
   fail_with("#{config_path} has duplicate proxy groups") unless group_names.uniq.length == group_names.length
   groups = groups_list.each_with_object({}) { |group, result| result[group["name"]] = group }
+
+  daily_group = groups["🌐 日常上网"]
+  unless daily_group && daily_group["type"] == "select" && daily_group["proxies"] == DAILY_GROUP_OPTIONS
+    fail_with("#{config_path} daily group must expose auto, four country selectors, and all nodes in order")
+  end
+  auto_group = groups["⚡ 自动选快"]
+  unless auto_group && auto_group["type"] == "url-test" && auto_group["filter"] == AUTO_FAST_FILTER && auto_group["interval"] == 600
+    fail_with("#{config_path} auto-fast group must test the four configured countries every 600 seconds")
+  end
+  COUNTRY_GROUP_FILTERS.each do |name, filter|
+    group = groups[name]
+    unless group && group["type"] == "select" && group["include-all"] == true && group["exclude-type"] == "direct" && group["filter"] == filter
+      fail_with("#{config_path} #{name} group must select included proxy nodes using the approved country filter")
+    end
+  end
 
   actual_routes = {}
   rules.each do |rule|
