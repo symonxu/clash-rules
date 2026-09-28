@@ -145,7 +145,7 @@ proxy-groups:
     type: select
     include-all: true
     exclude-type: direct
-    filter: '^(🇹🇼|台湾|台灣|Taiwan)'
+    filter: '^(🇨🇳 台湾|🇹🇼|台湾|台灣|Taiwan)'
 
   - name: 🧭 全部节点
     type: select

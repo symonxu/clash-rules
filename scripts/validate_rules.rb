@@ -37,7 +37,7 @@ COUNTRY_GROUP_FILTERS = {
   "🇯🇵 日本" => '^(🇯🇵|日本|Japan)',
   "🇺🇸 美国" => '^(🇺🇸|美国|United States|USA)',
   "🇲🇾 马来西亚" => '^(🇲🇾|马来西亚|Malaysia)',
-  "🇹🇼 台湾" => '^(🇹🇼|台湾|台灣|Taiwan)'
+  "🇹🇼 台湾" => '^(🇨🇳 台湾|🇹🇼|台湾|台灣|Taiwan)'
 }.freeze
 DAILY_GROUP_OPTIONS = ["⚡ 自动选快", *COUNTRY_GROUP_FILTERS.keys, "🧭 全部节点"].freeze
 
