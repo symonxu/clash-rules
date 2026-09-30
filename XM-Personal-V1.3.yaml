@@ -104,134 +104,36 @@ profile:
   store-fake-ip: true
 
 proxy-groups:
+  # 与 Shadowrocket 对齐：五个手动组，每组普通/家宽各三个节点。
   - name: 🌐 日常上网
     type: select
-    proxies:
-      - ⚡ 自动选快
-      - 🇯🇵 日本
-      - 🇺🇸 美国
-      - 🇲🇾 马来西亚
-      - 🇹🇼 台湾
-      - 🧭 全部节点
-
-  - name: ⚡ 自动选快
-    type: url-test
-    url: https://www.gstatic.com/generate_204
-    expected-status: 204
     include-all: true
     exclude-type: direct
-    filter: '^(🇯🇵|日本|Japan|🇺🇸|美国|United States|USA|🇲🇾|马来西亚|Malaysia|🇹🇼|台湾|台灣|Taiwan)'
-    interval: 600
-    lazy: true
-
-  - name: 🇯🇵 日本
-    type: select
-    include-all: true
-    exclude-type: direct
-    filter: '^(🇯🇵|日本|Japan)'
-
-  - name: 🇺🇸 美国
-    type: select
-    include-all: true
-    exclude-type: direct
-    filter: '^(🇺🇸|美国|United States|USA)'
-
-  - name: 🇲🇾 马来西亚
-    type: select
-    include-all: true
-    exclude-type: direct
-    filter: '^(🇲🇾|马来西亚|Malaysia)'
-
-  - name: 🇹🇼 台湾
-    type: select
-    include-all: true
-    exclude-type: direct
-    filter: '^(🇨🇳 台湾|🇹🇼|台湾|台灣|Taiwan)'
-
-  - name: 🧭 全部节点
-    type: select
-    include-all: true
-    exclude-type: direct
-    # 只关闭该组的定时测速；同一节点仍可被其他常用组测速。
+    filter: '日本 (0[2-4](\s|$)|(08|09|10) 家宽(\s|$))'
 
   - name: 🔎 Google服务
-    type: fallback
-    url: https://www.gstatic.com/generate_204
-    expected-status: 204
-    include-all: true
-    exclude-type: direct
-    filter: '^🇯🇵 日本 08 家宽'
-    interval: 300
-    lazy: false
-
-  - name: 🟦 Meta服务
-    # Muse 当前仅在美国推出；Meta 旗下服务统一保持美国出口，账户与会话更一致。
-    type: fallback
-    url: https://www.gstatic.com/generate_204
-    expected-status: 204
-    include-all: true
-    exclude-type: direct
-    filter: '^🇺🇸 美国'
-    interval: 300
-    lazy: false
-
-  - name: 🤖 AI工具
-    type: fallback
-    url: https://www.gstatic.com/generate_204
-    expected-status: 204
-    include-all: true
-    exclude-type: direct
-    filter: '^🇯🇵 日本 (08|09|10) 家宽'
-    interval: 300
-    lazy: false
-
-  - name: 💹 Bybit网络
-    # 手动选择澳大利亚或格鲁吉亚节点；仅纳入节点名含对应国家名或国旗的代理。
     type: select
     include-all: true
     exclude-type: direct
-    filter: '(?i)(🇦🇺|澳大利亚|澳洲|Australia|🇬🇪|格鲁吉亚|Georgia)'
+    filter: '日本 (0[2-4](\s|$)|(08|09|10) 家宽(\s|$))'
 
-  - name: 🇯🇵 Web3-日本家宽
-    # 按订阅顺序选择可用节点；故障或恢复时仍可能切换，不保证固定 IP。
-    type: fallback
-    url: https://www.gstatic.com/generate_204
-    expected-status: 204
+  - name: 🤖 AI工具
+    type: select
     include-all: true
     exclude-type: direct
-    filter: '^🇯🇵 日本 (08|09|10) 家宽'
-    interval: 300
-    lazy: false
+    filter: '日本 (0[2-4](\s|$)|(08|09|10) 家宽(\s|$))'
 
-  - name: 🇯🇵 Web3-日本普通
-    type: url-test
-    url: https://www.gstatic.com/generate_204
-    expected-status: 204
+  - name: 🟦 Meta服务
+    type: select
     include-all: true
     exclude-type: direct
-    filter: '^🇯🇵 日本 0[1-3]'
-    interval: 300
-    lazy: false
+    filter: '美国 (0[1-3](\s|$)|1[0-2] 家宽(\s|$))'
 
   - name: 💰 Web3交易
-    type: fallback
-    url: https://www.gstatic.com/generate_204
-    expected-status: 204
-    proxies:
-      - 🇯🇵 Web3-日本家宽
-      - 🇯🇵 Web3-日本普通
-    interval: 300
-    lazy: false
-
-  - name: ⛓️ Web3链上数据
-    type: url-test
-    url: https://www.gstatic.com/generate_204
-    expected-status: 204
+    type: select
     include-all: true
     exclude-type: direct
-    filter: '^(🇯🇵 日本 (08|09|10) 家宽|🇯🇵 日本 0[1-3])'
-    interval: 300
-    lazy: false
+    filter: '日本 (0[2-4](\s|$)|(08|09|10) 家宽(\s|$))'
 
 rule-providers:
   Web3链上:
@@ -291,8 +193,8 @@ rules:
   - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
 
   # 顺序很重要：链上 RPC → Bybit → Web3 → AI → Google → Meta → 中国
-  - RULE-SET,Web3链上,⛓️ Web3链上数据
-  - RULE-SET,Bybit规则,💹 Bybit网络
+  - RULE-SET,Web3链上,💰 Web3交易
+  - RULE-SET,Bybit规则,💰 Web3交易
   - RULE-SET,Web3交易规则,💰 Web3交易
   - RULE-SET,AI规则,🤖 AI工具
   - RULE-SET,Google规则,🔎 Google服务

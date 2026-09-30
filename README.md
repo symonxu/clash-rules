@@ -22,7 +22,9 @@ Raw：
 
 该文件目前作为 Clash Verge Rev 的个人分流策略源使用。其中 DNS 等非路由字段保留为历史完整配置兼容内容，**本机同步程序不会读取或应用这些字段**。不要直接将本文件作为 MESL 完整订阅导入，也不要以它覆写 MESL 专用 DNS。
 
-“日常上网”提供自动选快、日本、美国、马来西亚、台湾及全部节点入口。国家组按 MESL 节点名称中的国旗、中文名或常见英文名动态筛选；自动选快在日本、美国、马来西亚和台湾节点中测速选择，不纳入不稳定的新加坡节点。
+个人策略与 Shadowrocket 对齐为五个手动组：日常上网、Google、AI、Meta、Web3。Meta 使用美国普通 01–03、家宽 10–12；其余四组使用日本普通 02–04、家宽 08–10。Bybit 与 Web3 交易、RPC 共用 Web3 组，不再使用独立 Bybit 或 Web3 子组。没有定时测速或自动换节点；节点失败时需手动选择。
+
+国内域名及中国大陆 IP 直连，其他未匹配请求走日常上网。固定 V1.3 地址及 MESL 节点/DNS 不变。首次从旧版切换时，请重新确认五组所选节点。
 
 ## 当前目录
 
@@ -46,7 +48,7 @@ clash-rules/
 - `ai.yaml`：AI 服务相关域名。
 - `google.yaml`：Google 服务相关域名。
 - `meta.yaml`：Facebook、Instagram、Threads、Messenger、Muse 及共享 Meta 账户/基础设施域名。
-- `bybit.yaml`：Bybit 网站及其 `bybit.com` 子域名，单独走 `💹 Bybit网络` 选择组；组内筛选澳大利亚或格鲁吉亚节点。
+- `bybit.yaml`：Bybit 网站及其 `bybit.com` 子域名，走 `💰 Web3交易` 选择组；与 Web3 共用日本普通 02–04、家宽 08–10。
 
 中国大陆域名规则由 `XM-Personal-V1.3.yaml` 直接引用 Loyalsoldier 规则集；中国大陆 IP 归属由 Clash 内核的 `GEOIP,CN` 规则与自动更新的 GeoIP 数据负责，不额外维护 IP Rule Provider。
 
