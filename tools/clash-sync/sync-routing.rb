@@ -19,6 +19,7 @@ module XMClashSync
   LEGACY_LABEL = 'com.xumeng.clash-verge-routing-sync'.freeze
   KEYS = %w[proxy-groups rule-providers rules].freeze
   GROUPS = %w[XM-Google XM-AI XM-Meta XM-Web3 XM-日常上网].freeze
+  CLIENT_DNS_ADDITIONS = %w[ipv6 fake-ip-range6].freeze
   MESSAGES = {
     'download' => '无法取得 GitHub 最新策略；现有配置保留，缓存如被使用会标明。',
     'invalid' => '策略格式、规则或六节点分组校验失败；现有配置保留。',
@@ -308,7 +309,12 @@ module XMClashSync
     def ready?(snapshot, live)
       raw, runtime = snapshot.values_at('raw', 'runtime')
       return false unless raw['dns'].is_a?(Hash) && raw['dns']['nameserver'].is_a?(Array) && !raw['dns']['nameserver'].empty?
-      return false unless raw['dns'] == runtime['dns'] && raw['proxies'] == runtime['proxies'] && raw.fetch('proxy-providers', {}) == runtime.fetch('proxy-providers', {})
+      # Verge adds IPv6 defaults even when DNS override is disabled. All MESL
+      # fields must still match; only those known extra client fields are allowed.
+      dns = runtime['dns']
+      return false unless dns.is_a?(Hash) && raw['dns'].all? { |key, value| dns.key?(key) && dns[key] == value }
+      return false unless (dns.keys - raw['dns'].keys - CLIENT_DNS_ADDITIONS).empty?
+      return false unless raw['proxies'] == runtime['proxies'] && raw.fetch('proxy-providers', {}) == runtime.fetch('proxy-providers', {})
       names = raw.fetch('proxies', []).map { |n| n['name'] }
       names.all? { |name| live['proxies'].key?(name) }
     end

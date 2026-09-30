@@ -185,6 +185,25 @@ class SyncTest < Minitest::Test
     assert_equal 'unchanged', @runner.tick
     assert_equal 2, @system.fetches.size
   end
+  def test_client_ipv6_dns_defaults_are_preserved_without_false_wait
+    generated = Marshal.load(Marshal.dump(@runtime))
+    generated['dns'].merge!('ipv6' => true, 'fake-ip-range6' => 'fc00::/18')
+    write_runtime(generated)
+    @system.reflect(generated)
+    initial
+    assert_equal generated['dns'], XMClashSync.parse(File.read(runtime_path))['dns']
+    assert_equal 'current', state['status']
+  end
+  def test_unrecognized_dns_overlay_still_waits_for_client
+    generated = Marshal.load(Marshal.dump(@runtime))
+    generated['dns']['nameserver-policy'] = {'unknown.invalid' => 'OTHER-DNS-CANARY'}
+    write_runtime(generated)
+    @system.reflect(generated)
+    before = config_bytes
+    assert_equal 'waiting_client', @runner.tick
+    assert_equal before, config_bytes
+    assert_equal [], @system.fetches
+  end
   def test_stuck_generation_notifies_only_once
     node_change(generate: false)
     assert_equal 'waiting_client', @runner.tick
