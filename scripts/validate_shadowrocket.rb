@@ -46,6 +46,9 @@ allowed_urls = Set.new([
   'https://github.com/symonxu/clash-rules',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-iOS.sgmodule',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml',
+  'https://www.clashverge.dev/guide/extend.html',
+  'https://www.clashverge.dev/guide/script.html',
   'https://shadowlaunch.com/',
   'https://dash.mesurl.com/#/docs/10',
   'https://github.com/LOWERTOP/Shadowrocket'
