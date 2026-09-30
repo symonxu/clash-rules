@@ -1,0 +1,129 @@
+#!name=XM iOS 个人分流
+#!desc=在 MESL 官方配置上增加个人服务分流；不修改 DNS、节点或通用兜底。
+# iOS / Shadowrocket 专用模块，不是节点订阅或完整配置。
+# 先使用 MESL 官方 Shadowrocket 分流配置，再启用本模块。
+# 全局路由选择 配置；订阅节点名须匹配下方筛选条件。
+# 不设置周期测速；各组使用手动选择。
+
+[Proxy Group]
+XM-Google = select,policy-regex-filter=日本 08 家宽
+XM-AI = select,policy-regex-filter=日本 (08|09|10) 家宽
+XM-Meta = select,policy-regex-filter=(美国|United States|USA)
+XM-Bybit = select,policy-regex-filter=(澳大利亚|澳洲|Australia|格鲁吉亚|Georgia)
+XM-Web3 = select,policy-regex-filter=(日本 (08|09|10) 家宽|日本 0[1-3])
+
+[Rule]
+# web3-rpc
+DOMAIN-SUFFIX,infura.io,XM-Web3
+DOMAIN-SUFFIX,alchemy.com,XM-Web3
+DOMAIN-SUFFIX,alchemyapi.io,XM-Web3
+DOMAIN-SUFFIX,llamarpc.com,XM-Web3
+DOMAIN-SUFFIX,ankr.com,XM-Web3
+DOMAIN-SUFFIX,1rpc.io,XM-Web3
+DOMAIN-SUFFIX,publicnode.com,XM-Web3
+DOMAIN-SUFFIX,polygon-rpc.com,XM-Web3
+DOMAIN-SUFFIX,quiknode.pro,XM-Web3
+DOMAIN-SUFFIX,drpc.org,XM-Web3
+DOMAIN-SUFFIX,nodereal.io,XM-Web3
+DOMAIN-SUFFIX,helius-rpc.com,XM-Web3
+DOMAIN,api.mainnet-beta.solana.com,XM-Web3
+DOMAIN,api.devnet.solana.com,XM-Web3
+DOMAIN,arb1.arbitrum.io,XM-Web3
+DOMAIN,mainnet.optimism.io,XM-Web3
+DOMAIN,mainnet.base.org,XM-Web3
+DOMAIN,bsc-dataseed.binance.org,XM-Web3
+DOMAIN,api.avax.network,XM-Web3
+DOMAIN,mainnet.era.zksync.io,XM-Web3
+DOMAIN,rpc.gnosischain.com,XM-Web3
+DOMAIN-SUFFIX,trongrid.io,XM-Web3
+# bybit
+DOMAIN-SUFFIX,bybit.com,XM-Bybit
+# web3
+DOMAIN-SUFFIX,metamask.io,XM-Web3
+DOMAIN-SUFFIX,phantom.app,XM-Web3
+DOMAIN-SUFFIX,phantom.com,XM-Web3
+DOMAIN-SUFFIX,walletconnect.com,XM-Web3
+DOMAIN-SUFFIX,walletconnect.org,XM-Web3
+DOMAIN-SUFFIX,reown.com,XM-Web3
+DOMAIN-SUFFIX,web3modal.com,XM-Web3
+DOMAIN-SUFFIX,web3modal.org,XM-Web3
+DOMAIN-SUFFIX,magic.link,XM-Web3
+DOMAIN-SUFFIX,fomo.family,XM-Web3
+DOMAIN-SUFFIX,fomotrading.app,XM-Web3
+DOMAIN-SUFFIX,uniswap.org,XM-Web3
+DOMAIN-SUFFIX,jup.ag,XM-Web3
+DOMAIN-SUFFIX,pump.fun,XM-Web3
+DOMAIN-SUFFIX,bitget.com,XM-Web3
+DOMAIN-SUFFIX,pancakeswap.finance,XM-Web3
+DOMAIN-SUFFIX,hyperliquid.xyz,XM-Web3
+# ai
+DOMAIN-SUFFIX,apple-relay.apple.com,XM-AI
+DOMAIN-SUFFIX,apple-relay.cloudflare.com,XM-AI
+DOMAIN-SUFFIX,apple-relay.fastly-edge.com,XM-AI
+DOMAIN-KEYWORD,apple-relay,XM-AI
+DOMAIN,smoot.apple.com,XM-AI
+DOMAIN,guzzoni.apple.com,XM-AI
+DOMAIN-SUFFIX,chatgpt.com,XM-AI
+DOMAIN-SUFFIX,openai.com,XM-AI
+DOMAIN-SUFFIX,oaistatic.com,XM-AI
+DOMAIN-SUFFIX,oaiusercontent.com,XM-AI
+DOMAIN-SUFFIX,sora.com,XM-AI
+DOMAIN-SUFFIX,chatgpt.livekit.cloud,XM-AI
+DOMAIN-SUFFIX,host.livekit.cloud,XM-AI
+DOMAIN-SUFFIX,turn.livekit.cloud,XM-AI
+DOMAIN,openai-api.arkoselabs.com,XM-AI
+DOMAIN-SUFFIX,anthropic.com,XM-AI
+DOMAIN-SUFFIX,claude.ai,XM-AI
+DOMAIN-SUFFIX,claude.com,XM-AI
+DOMAIN-SUFFIX,claudeusercontent.com,XM-AI
+DOMAIN-SUFFIX,perplexity.ai,XM-AI
+DOMAIN-SUFFIX,perplexity.com,XM-AI
+DOMAIN-SUFFIX,pplx.ai,XM-AI
+DOMAIN-SUFFIX,cursor.com,XM-AI
+DOMAIN-SUFFIX,cursor.sh,XM-AI
+DOMAIN-SUFFIX,cursor-cdn.com,XM-AI
+DOMAIN-SUFFIX,openrouter.ai,XM-AI
+DOMAIN-SUFFIX,x.ai,XM-AI
+DOMAIN-SUFFIX,grok.com,XM-AI
+DOMAIN-SUFFIX,gemini.google.com,XM-AI
+DOMAIN-SUFFIX,gemini.google,XM-AI
+DOMAIN-SUFFIX,aistudio.google.com,XM-AI
+DOMAIN-SUFFIX,generativelanguage.googleapis.com,XM-AI
+DOMAIN-SUFFIX,ai.google.dev,XM-AI
+DOMAIN,proactivebackend-pa.googleapis.com,XM-AI
+DOMAIN,geller-pa.googleapis.com,XM-AI
+# google
+DOMAIN-SUFFIX,google.com,XM-Google
+DOMAIN-SUFFIX,google.com.hk,XM-Google
+DOMAIN-SUFFIX,googleapis.com,XM-Google
+DOMAIN-SUFFIX,googleapis.cn,XM-Google
+DOMAIN-SUFFIX,gstatic.com,XM-Google
+DOMAIN-SUFFIX,googleusercontent.com,XM-Google
+DOMAIN-SUFFIX,gmail.com,XM-Google
+DOMAIN-SUFFIX,googlemail.com,XM-Google
+DOMAIN-SUFFIX,ggpht.com,XM-Google
+DOMAIN-SUFFIX,gvt1.com,XM-Google
+DOMAIN-SUFFIX,gvt2.com,XM-Google
+DOMAIN-SUFFIX,gvt3.com,XM-Google
+DOMAIN-SUFFIX,youtube.com,XM-Google
+DOMAIN-SUFFIX,youtube-nocookie.com,XM-Google
+DOMAIN-SUFFIX,youtu.be,XM-Google
+DOMAIN-SUFFIX,ytimg.com,XM-Google
+DOMAIN-SUFFIX,googlevideo.com,XM-Google
+# meta
+DOMAIN-SUFFIX,meta.com,XM-Meta
+DOMAIN-SUFFIX,meta.ai,XM-Meta
+DOMAIN-SUFFIX,facebook.com,XM-Meta
+DOMAIN-SUFFIX,facebook.net,XM-Meta
+DOMAIN-SUFFIX,fb.com,XM-Meta
+DOMAIN-SUFFIX,fb.me,XM-Meta
+DOMAIN-SUFFIX,fbcdn.net,XM-Meta
+DOMAIN-SUFFIX,fbsbx.com,XM-Meta
+DOMAIN-SUFFIX,messenger.com,XM-Meta
+DOMAIN-SUFFIX,m.me,XM-Meta
+DOMAIN-SUFFIX,instagram.com,XM-Meta
+DOMAIN-SUFFIX,cdninstagram.com,XM-Meta
+DOMAIN-SUFFIX,threads.com,XM-Meta
+DOMAIN-SUFFIX,threads.net,XM-Meta
+DOMAIN-SUFFIX,muse.ai,XM-Meta
+# 其余请求继续交给 MESL 基础配置；此处不添加 FINAL / GEOIP。
