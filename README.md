@@ -70,3 +70,7 @@ Pull Request 和 `main` 更新会检查 YAML、规则引用及仓库中的 URL�
 **XM-Personal-V1.3**
 
 当前 Mac 使用 Clash Verge Rev，V1.3 固定地址作为个人分流策略源。历史 V1.1 已退役。中国大陆 IP 由 Clash 内核 GeoIP 数据及 `GEOIP,CN,DIRECT` 处理；Apple 使用通用分流规则，DNS 例外由 MESL 原始订阅保留。
+
+## iOS / Shadowrocket
+
+Mac 与 iOS 可分别维护：iOS 使用 MESL 官方基础配置及专用 DNS，再叠加 [Shadowrocket 个人分流模块](Shadowrocket-iOS.md)。新入口为 `XM-Shadowrocket-iOS.sgmodule`，不修改 Mac 原 V1.3 地址。该模块采用五个手动选择组，未在 iPhone 实测。

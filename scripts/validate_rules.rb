@@ -19,7 +19,11 @@ ALLOWED_PUBLIC_URLS = Set.new([
   "https://cdn.jsdelivr.net/gh/Loyalsoldier/clash-rules@release/direct.txt",
   "https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Personal-V1.3.yaml",
   "https://github.com/symonxu/clash-rules",
-  PUBLIC_RULE_PREFIX
+  PUBLIC_RULE_PREFIX,
+  "https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-iOS.sgmodule",
+  "https://shadowlaunch.com/",
+  "https://dash.mesurl.com/#/docs/10",
+  "https://github.com/LOWERTOP/Shadowrocket"
 ]).freeze
 
 EXPECTED_RULE_ROUTES = {
@@ -232,3 +236,5 @@ unreferenced_local_files = local_rule_files - referenced_local_files.uniq
 fail_with("unreferenced local rule files: #{unreferenced_local_files}") unless unreferenced_local_files.empty?
 
 puts "Validated #{yaml_files.length} YAML files, #{CONFIG_PATHS.length} profiles, and #{local_rule_files.length} local rule modules."
+
+require_relative "validate_shadowrocket"
