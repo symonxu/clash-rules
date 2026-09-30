@@ -1,6 +1,18 @@
-# Shadowrocket 个人分流配置
+# Mac / iOS 个人分流配置
 
-供 Mac 与 iOS 的 Shadowrocket 使用。MESL 提供节点与基础配置，GitHub 维护个人分组和域名规则。
+Mac 使用 Clash Verge Rev，iOS 使用 Shadowrocket。MESL 提供节点与基础 DNS，GitHub 维护个人分组和域名规则。
+
+## Mac：Clash Verge Rev
+
+固定策略链接（由本机手动同步工具接入 MESL 订阅）：
+
+https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml
+
+这不是含节点的普通订阅。点击本机“更新 Clash 个人规则.command”更新分组和规则；MESL 节点订阅单独更新，DNS 覆写关闭。五个手动组，每组六个节点，规则由个人策略完整替换。
+
+[Mac 接入与回退说明](ClashVerge-Mac.md)
+
+## iOS：Shadowrocket
 
 固定配置链接：
 
