@@ -1,16 +1,18 @@
 # clash-rules
 
-个人 Clash / Hako 规则仓库。
+个人 Clash Verge Rev 分流策略与远程规则仓库。
 
-当前采用 **节点库与规则库分离** 的架构：
+## 当前 Mac 使用方式
 
-- **节点库**：MESL 节点订阅，由 Hako 独立管理。
-- **规则库**：从本仓库导入 `XM-Personal-V1.3.yaml`。
-- **个人配置**：Hako 将所选节点库与规则库组合使用；个人配置本身不是第三个远程订阅源。
+- **MESL 完整订阅**：提供节点与升级所需的专用 DNS。Clash Verge Rev 的全局与订阅 DNS 覆写均保持关闭。
+- **本 GitHub 仓库**：提供个人策略组、Rule Provider 和 rules。
+- **本机同步程序**：每 15 分钟读取固定 V1.3 Raw 文件，只提取 `proxy-groups`、`rule-providers`、`rules`，校验后更新 MESL 订阅扩展脚本并重新加载内核。
+
+同步程序是本机另行安装的任务，不是 Clash Verge Rev 内置远程扩展功能。仅在客户端运行且当前订阅为 MESL 时应用；下载或校验失败时保留当前策略。MESL 订阅地址和 DNS 不受 GitHub 策略更新影响。
 
 本仓库不保存 MESL 订阅地址、节点密码、认证信息或其他私密凭据。
 
-## 当前正式入口
+## 当前正式策略入口
 
 `XM-Personal-V1.3.yaml`
 
@@ -18,7 +20,7 @@ Raw：
 
 `https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Personal-V1.3.yaml`
 
-该文件负责 DNS、策略组、Rule Provider 定义和规则顺序，不直接包含代理节点。
+该文件目前作为 Clash Verge Rev 的个人分流策略源使用。其中 DNS 等非路由字段保留为历史完整配置兼容内容，**本机同步程序不会读取或应用这些字段**。不要直接将本文件作为 MESL 完整订阅导入，也不要以它覆写 MESL 专用 DNS。
 
 “日常上网”提供自动选快、日本、美国、马来西亚、台湾及全部节点入口。国家组按 MESL 节点名称中的国旗、中文名或常见英文名动态筛选；自动选快在日本、美国、马来西亚和台湾节点中测速选择，不纳入不稳定的新加坡节点。
 
@@ -52,9 +54,12 @@ V1.3 不定义 Apple 专属路由或 Apple 专属 fake-IP DNS 例外；Apple 流
 
 ## 更新方式
 
-- 修改 `rules/*.yaml`：对应 Rule Provider 远程刷新即可。
-- 修改 `XM-Personal-V1.3.yaml`：在 Hako 更新“规则库”，现有个人配置会继续从该规则库取得策略组、Rule Provider 和 rules 结构；不把个人配置当作独立远程订阅。
-- MESL 节点变化：只更新节点库，与本 GitHub 仓库独立。
+- 修改 `XM-Personal-V1.3.yaml` 的策略组、Rule Provider 定义或规则顺序：合并到 `main` 后，本机同步任务每 15 分钟检查；通过成员引用、过滤结果和 Mihomo 配置校验后自动加载。休眠或退出客户端期间不立即更新。
+- 修改 `rules/*.yaml` 的域名：Mihomo 按对应 Rule Provider 周期刷新，个人规则通常 1 小时、中国大陆域名 24 小时；不保证在上述 15 分钟内刷新域名内容。
+- MESL 节点或 DNS 更新：更新 MESL 完整订阅，与本仓库策略同步独立。按 MESL 官网要求，更新前开启订阅的 10 分钟有效窗口。
+- 本机扩展只负责个人分流，不设置或修改 DNS。
+
+历史 Hako 使用节点库注入的组合方式。Mac 迁移到 Clash Verge Rev 后，应采用上述完整 MESL 订阅加个人分流扩展的方式。
 
 ## 提交校验
 
@@ -64,4 +69,4 @@ Pull Request 和 `main` 更新会检查 YAML、规则引用及仓库中的 URL�
 
 **XM-Personal-V1.3**
 
-这是当前正式版本，用户已切换使用。V1.1 已退役并从仓库删除。中国大陆 IP 由自动更新的 GeoIP 数据配合 `GEOIP,CN,DIRECT` 处理；规则库不再单独加载中国大陆 IP Rule Provider，也不再为 Apple 服务设置专属路由或 fake-IP DNS 例外。
+当前 Mac 使用 Clash Verge Rev，V1.3 固定地址作为个人分流策略源。历史 V1.1 已退役。中国大陆 IP 由 Clash 内核 GeoIP 数据及 `GEOIP,CN,DIRECT` 处理；Apple 使用通用分流规则，DNS 例外由 MESL 原始订阅保留。
