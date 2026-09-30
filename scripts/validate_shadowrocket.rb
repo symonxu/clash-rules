@@ -26,3 +26,11 @@ rule_text.each_line do |line|
 end
 abort 'Empty iOS rules' if count.zero?
 puts "Validated Shadowrocket module: #{groups.size} groups, #{count} domain rules; no DNS or fallback override."
+
+extension = File.read(File.join(root, 'XM-Shadowrocket-Groups.conf'))
+abort 'Invalid extension sections' unless extension.scan(/^\[([^\]]+)\]$/).flatten == ['General', 'Proxy Group']
+general, extension_groups = extension.split('[General]', 2).last.split('[Proxy Group]', 2)
+expected = ["include = get.conf", "update-url = https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf"]
+abort 'Unexpected general setting' unless general.lines.map(&:strip).reject(&:empty?) == expected
+abort 'Extension groups differ from rule policies' unless extension_groups.strip == group_text.strip
+puts 'Validated group extension: inherits get.conf; no explicit DNS, nodes or rules. Device verification remains required.'

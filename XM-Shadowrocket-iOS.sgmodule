@@ -1,7 +1,7 @@
 #!name=XM iOS 个人分流
 #!desc=在 MESL 官方配置上增加个人服务分流；不修改 DNS、节点或通用兜底。
 # iOS / Shadowrocket 专用模块，不是节点订阅或完整配置。
-# 先使用 MESL 官方 Shadowrocket 分流配置，再启用本模块。
+# 必须配合 XM-Shadowrocket-Groups.conf 使用；模块不能作为分组已加载的证明。
 # 全局路由选择 配置；订阅节点名须匹配下方筛选条件。
 # 不设置周期测速；各组使用手动选择。
 

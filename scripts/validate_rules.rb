@@ -21,6 +21,7 @@ ALLOWED_PUBLIC_URLS = Set.new([
   "https://github.com/symonxu/clash-rules",
   PUBLIC_RULE_PREFIX,
   "https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-iOS.sgmodule",
+  "https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf",
   "https://shadowlaunch.com/",
   "https://dash.mesurl.com/#/docs/10",
   "https://github.com/LOWERTOP/Shadowrocket"
