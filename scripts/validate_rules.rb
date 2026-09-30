@@ -28,8 +28,8 @@ ALLOWED_PUBLIC_URLS = Set.new([
 ]).freeze
 
 EXPECTED_RULE_ROUTES = {
-  "Web3链上" => "⛓️ Web3链上数据",
-  "Bybit规则" => "💹 Bybit网络",
+  "Web3链上" => "💰 Web3交易",
+  "Bybit规则" => "💰 Web3交易",
   "Web3交易规则" => "💰 Web3交易",
   "AI规则" => "🤖 AI工具",
   "Google规则" => "🔎 Google服务",
@@ -37,25 +37,16 @@ EXPECTED_RULE_ROUTES = {
   "中国大陆域名" => "DIRECT",
 }.freeze
 
-AUTO_FAST_FILTER = '^(🇯🇵|日本|Japan|🇺🇸|美国|United States|USA|🇲🇾|马来西亚|Malaysia|🇹🇼|台湾|台灣|Taiwan)'.freeze
-COUNTRY_GROUP_FILTERS = {
-  "🇯🇵 日本" => '^(🇯🇵|日本|Japan)',
-  "🇺🇸 美国" => '^(🇺🇸|美国|United States|USA)',
-  "🇲🇾 马来西亚" => '^(🇲🇾|马来西亚|Malaysia)',
-  "🇹🇼 台湾" => '^(🇨🇳 台湾|🇹🇼|台湾|台灣|Taiwan)'
-}.freeze
-DAILY_GROUP_OPTIONS = ["⚡ 自动选快", *COUNTRY_GROUP_FILTERS.keys, "🧭 全部节点"].freeze
-
+JAPAN_SIX_FILTER = '日本 (0[2-4](\s|$)|(08|09|10) 家宽(\s|$))'.freeze
+US_SIX_FILTER = '美国 (0[1-3](\s|$)|1[0-2] 家宽(\s|$))'.freeze
 FIXED_EXIT_FILTERS = {
-  "🔎 Google服务" => ["^🇯🇵 日本 08 家宽"],
-  "🟦 Meta服务" => ["^🇺🇸 美国"],
-  "🤖 AI工具" => ["^🇯🇵 日本 (08|09|10) 家宽"],
-  "💹 Bybit网络" => ["(?i)(🇦🇺|澳大利亚|澳洲|Australia|🇬🇪|格鲁吉亚|Georgia)"],
-  "💰 Web3交易" => ["^🇯🇵 日本 (08|09|10) 家宽", "^🇯🇵 日本 0[1-3]"],
-  "⛓️ Web3链上数据" => ["^(🇯🇵 日本 (08|09|10) 家宽|🇯🇵 日本 0[1-3])"]
+  "🌐 日常上网" => [JAPAN_SIX_FILTER],
+  "🔎 Google服务" => [JAPAN_SIX_FILTER],
+  "🤖 AI工具" => [JAPAN_SIX_FILTER],
+  "🟦 Meta服务" => [US_SIX_FILTER],
+  "💰 Web3交易" => [JAPAN_SIX_FILTER]
 }.freeze
-
-BROAD_GROUPS = Set.new(["🌐 日常上网", "⚡ 自动选快", "🧭 全部节点"]).freeze
+BROAD_GROUPS = Set.new.freeze
 
 def fail_with(message)
   warn "Rule validation failed: #{message}"
@@ -156,18 +147,12 @@ CONFIG_PATHS.each do |config_path|
   fail_with("#{config_path} has duplicate proxy groups") unless group_names.uniq.length == group_names.length
   groups = groups_list.each_with_object({}) { |group, result| result[group["name"]] = group }
 
-  daily_group = groups["🌐 日常上网"]
-  unless daily_group && daily_group["type"] == "select" && daily_group["proxies"] == DAILY_GROUP_OPTIONS
-    fail_with("#{config_path} daily group must expose auto, four country selectors, and all nodes in order")
+  unless groups.keys.sort == FIXED_EXIT_FILTERS.keys.sort
+    fail_with("#{config_path} must expose exactly the five personal groups")
   end
-  auto_group = groups["⚡ 自动选快"]
-  unless auto_group && auto_group["type"] == "url-test" && auto_group["filter"] == AUTO_FAST_FILTER && auto_group["interval"] == 600
-    fail_with("#{config_path} auto-fast group must test the four configured countries every 600 seconds")
-  end
-  COUNTRY_GROUP_FILTERS.each do |name, filter|
-    group = groups[name]
-    unless group && group["type"] == "select" && group["include-all"] == true && group["exclude-type"] == "direct" && group["filter"] == filter
-      fail_with("#{config_path} #{name} group must select included proxy nodes using the approved country filter")
+  groups.each_value do |group|
+    unless group["type"] == "select" && group["include-all"] == true && !group.key?("proxies")
+      fail_with("#{config_path} personal groups must manually select included nodes")
     end
   end
 
