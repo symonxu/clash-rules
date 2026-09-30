@@ -40,6 +40,9 @@ module XMClashSync
       super(MESSAGES.fetch(@code, MESSAGES['internal']))
     end
   end
+  def self.read(path)
+    File.read(path, encoding: 'UTF-8')
+  end
   def self.parse(text)
     raise Fault.new('invalid') if text.bytesize > 1_048_576
     if RUBY_VERSION.split('.').first.to_i < 3
@@ -64,7 +67,7 @@ module XMClashSync
     tmp.close! if tmp
   end
   def self.json(path, fallback = {})
-    File.file?(path) ? JSON.parse(File.read(path)) : fallback
+    File.file?(path) ? JSON.parse(XMClashSync.read(path)) : fallback
   rescue JSON::ParserError
     raise Fault.new('local')
   end
@@ -235,8 +238,8 @@ module XMClashSync
         args += ['--header', "If-None-Match: #{etag}"] if etag.is_a?(String) && etag.bytesize <= 200 && !etag.match?(/[\r\n]/)
         output, _error, status = Open3.capture3(*(args + [SOURCE]))
         next unless status.success? && %w[200 304].include?(output)
-        tag = File.read(headers.path)[/^etag:\s*([^\r\n]+)/i, 1]
-        return {'body' => output == '304' ? nil : File.read(body.path), 'etag' => tag || etag}
+        tag = XMClashSync.read(headers.path)[/^etag:\s*([^\r\n]+)/i, 1]
+        return {'body' => output == '304' ? nil : XMClashSync.read(body.path), 'etag' => tag || etag}
       ensure
         body.close! if body
         headers.close! if headers
@@ -279,7 +282,7 @@ module XMClashSync
     end
     def snapshot(binding)
       profiles_path = File.join(paths.app, 'profiles.yaml')
-      files = {profiles_path => File.read(profiles_path)}
+      files = {profiles_path => XMClashSync.read(profiles_path)}
       profiles = XMClashSync.parse(files[profiles_path])
       items = profiles.fetch('items')
       current = items.find { |i| i['uid'] == binding['uid'] }
@@ -293,7 +296,7 @@ module XMClashSync
       runtime_path = File.join(paths.app, 'clash-verge.yaml')
       [raw_path, script_path, runtime_path].each do |path|
         raise Fault.new('local') if File.symlink?(path)
-        files[path] = File.read(path)
+        files[path] = XMClashSync.read(path)
       end
       raw, runtime = [raw_path, runtime_path].map { |path| XMClashSync.parse(files[path]) }
       raise Fault.new('local') unless raw.is_a?(Hash) && runtime.is_a?(Hash)
@@ -304,7 +307,7 @@ module XMClashSync
       raise Fault.new('local')
     end
     def unchanged?(snapshot)
-      snapshot['files'].all? { |path, bytes| File.file?(path) && File.read(path) == bytes }
+      snapshot['files'].all? { |path, bytes| File.file?(path) && XMClashSync.read(path) == bytes }
     end
     def ready?(snapshot, live)
       raw, runtime = snapshot.values_at('raw', 'runtime')
@@ -348,7 +351,7 @@ module XMClashSync
       raise Fault.new('busy') unless snap && XMClashSync.hash(snap['files'][snap['raw_path']]) == journal['raw_hash'] && XMClashSync.hash(snap['files'][File.join(paths.app, 'profiles.yaml')]) == journal['profiles_hash']
       raise Fault.new('busy') unless journal['script_path'] == snap['script_path'] && journal['runtime_path'] == snap['runtime_path']
       backup = File.join(paths.state, 'last-backup')
-      old_runtime, old_script = %w[runtime.yaml script.js].map { |name| File.read(File.join(backup, name)) }
+      old_runtime, old_script = %w[runtime.yaml script.js].map { |name| XMClashSync.read(File.join(backup, name)) }
       runtime_bytes, script_bytes = snap['files'].values_at(snap['runtime_path'], snap['script_path'])
       raise Fault.new('busy') unless [XMClashSync.hash(old_runtime), journal['new_runtime_hash']].include?(XMClashSync.hash(runtime_bytes)) && [XMClashSync.hash(old_script), journal['new_script_hash']].include?(XMClashSync.hash(script_bytes))
       XMClashSync.atomic(snap['script_path'], old_script)
@@ -401,7 +404,7 @@ module XMClashSync
         raise Fault.new('apply') unless loaded?(routing, members, after)
         restore_choices(runtime, choices, after)
         expected = snapshot['files'].merge(snapshot['script_path'] => new_script, snapshot['runtime_path'] => candidate_bytes)
-        raise Fault.new('busy') unless expected.all? { |path, bytes| File.read(path) == bytes }
+        raise Fault.new('busy') unless expected.all? { |path, bytes| XMClashSync.read(path) == bytes }
         File.unlink(paths.journal)
       rescue StandardError => original
         begin
@@ -452,7 +455,7 @@ module XMClashSync
           return persist(state, 'backoff') if !force && !previous_inactive && state.fetch('retry_at', 0) > now && state.fetch('last_event_at', 0) <= now
           raw_hash = XMClashSync.hash(snap['files'][snap['raw_path']])
           identity = system.identity(snap['runtime'])
-          cache_body = File.file?(paths.cache) ? File.read(paths.cache) : nil
+          cache_body = File.file?(paths.cache) ? XMClashSync.read(paths.cache) : nil
           due = force || previous_inactive || !cache_body || state['base_hash'] != raw_hash || state['core_identity'] != identity || state.fetch('next_check_at', 0) <= now || state.fetch('last_checked_at', 0) > now
           stale = false
           fetched = nil
@@ -522,7 +525,7 @@ module XMClashSync
       File.chmod(0700, @paths.state)
       File.open(File.join(@paths.state, 'sync.lock'), File::RDWR | File::CREAT, 0600) do |lock|
         raise Fault.new('busy') unless lock.flock(File::LOCK_EX | File::LOCK_NB)
-        profiles = XMClashSync.parse(File.read(File.join(@paths.app, 'profiles.yaml')))
+        profiles = XMClashSync.parse(XMClashSync.read(File.join(@paths.app, 'profiles.yaml')))
         binding = XMClashSync.json(@paths.binding)
         if binding['uid']
           item = profiles.fetch('items').find { |i| i['uid'] == binding['uid'] }
@@ -538,11 +541,11 @@ module XMClashSync
           path = File.join(@paths.app, 'profiles', XMClashSync.filename(entry.fetch('file')))
           raise Fault.new('local') unless File.file?(path) && !File.symlink?(path)
         end
-        bytes = File.read(source_file)
+        bytes = XMClashSync.read(source_file)
         parent = File.join(@paths.state, 'installer-backup')
         FileUtils.mkdir_p(parent, mode: 0700)
         backup = Dir.mktmpdir("#{@system.now}-", parent)
-        old_files = [@paths.installed, @paths.agent, @paths.legacy_agent, @paths.binding].each_with_object({}) { |file, result| result[file] = File.file?(file) ? File.read(file) : nil }
+        old_files = [@paths.installed, @paths.agent, @paths.legacy_agent, @paths.binding].each_with_object({}) { |file, result| result[file] = File.file?(file) ? XMClashSync.read(file) : nil }
         old_loaded = [LABEL, LEGACY_LABEL].select { |label| @system.loaded?(label) }
         old_files.each do |file, content|
           XMClashSync.atomic(File.join(backup, File.basename(file)), content) if content
@@ -585,7 +588,7 @@ module XMClashSync
         @system.unload(LABEL)
         File.unlink(@paths.agent) if File.file?(@paths.agent)
         if File.file?(@paths.binding)
-          XMClashSync.atomic(File.join(@paths.state, 'previous-binding.json'), File.read(@paths.binding))
+          XMClashSync.atomic(File.join(@paths.state, 'previous-binding.json'), XMClashSync.read(@paths.binding))
           File.unlink(@paths.binding)
         end
       end

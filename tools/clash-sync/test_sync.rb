@@ -78,7 +78,7 @@ class SyncTest < Minitest::Test
     @home = Dir.mktmpdir('xm-offline-')
     @paths = XMClashSync::Paths.new(@home)
     FileUtils.mkdir_p(File.join(@paths.app, 'profiles'))
-    @routing = XMClashSync.parse(File.read(File.expand_path('../../XM-ClashVerge-Routing.yaml', __dir__)))
+    @routing = XMClashSync.parse(XMClashSync.read(File.expand_path('../../XM-ClashVerge-Routing.yaml', __dir__)))
     nodes = (1..15).flat_map do |n|
       ["🇯🇵 日本 %02d" % n, "🇯🇵 日本 %02d 家宽" % n, "🇺🇸 美国 %02d" % n, "🇺🇸 美国 %02d 家宽" % n].map do |name|
         {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
@@ -103,7 +103,7 @@ class SyncTest < Minitest::Test
   def write_raw; XMClashSync.atomic(raw_path, YAML.dump(@raw)); end
   def write_runtime(value); XMClashSync.atomic(runtime_path, YAML.dump(value)); end
   def state; XMClashSync.json(@paths.status); end
-  def config_bytes; [File.read(runtime_path), File.read(script_path)]; end
+  def config_bytes; [XMClashSync.read(runtime_path), XMClashSync.read(script_path)]; end
   def policy_change
     @routing['rules'].insert(-2, 'DOMAIN-SUFFIX,new-rule.invalid,XM-日常上网')
     @system.body = YAML.dump(@routing)
@@ -113,16 +113,16 @@ class SyncTest < Minitest::Test
     @raw['dns']['nameserver'] = ['PRIVATE-NEW-DNS-CANARY']
     write_raw
     return unless generate
-    generated = XMClashSync.parse(File.read(runtime_path)).merge('proxies' => @raw['proxies'], 'dns' => @raw['dns'])
+    generated = XMClashSync.parse(XMClashSync.read(runtime_path)).merge('proxies' => @raw['proxies'], 'dns' => @raw['dns'])
     write_runtime(generated)
     @system.reflect(generated)
   end
   def initial; assert_equal 'applied', @runner.tick; end
 
   def test_initial_apply_preserves_every_non_routing_field
-    before = XMClashSync.parse(File.read(runtime_path))
+    before = XMClashSync.parse(XMClashSync.read(runtime_path))
     initial
-    after = XMClashSync.parse(File.read(runtime_path))
+    after = XMClashSync.parse(XMClashSync.read(runtime_path))
     (before.keys - XMClashSync::KEYS - ['profile']).each { |k| assert_equal before[k], after[k], k }
     assert_equal true, after['profile']['store-selected']
     assert_equal true, after['profile']['store-fake-ip']
@@ -130,7 +130,7 @@ class SyncTest < Minitest::Test
     members = XMClashSync.validate(@routing, after)
     assert members.values.all? { |list| list.size == 6 }
     refute members['XM-Google'].include?('🇯🇵 日本 01')
-    assert_equal YAML.dump(@routing), File.read(@paths.cache)
+    assert_equal YAML.dump(@routing), XMClashSync.read(@paths.cache)
     refute File.exist?(@paths.journal)
   end
   def test_unchanged_does_not_write_config_or_reload
@@ -148,9 +148,9 @@ class SyncTest < Minitest::Test
     policy_change
     @system.clock += 300
     assert_equal 'applied', @runner.tick
-    assert_equal @raw['proxies'], XMClashSync.parse(File.read(runtime_path))['proxies']
+    assert_equal @raw['proxies'], XMClashSync.parse(XMClashSync.read(runtime_path))['proxies']
     assert_equal 'mock-etag', @system.fetches.last
-    assert_includes XMClashSync.parse(File.read(runtime_path))['rules'], 'DOMAIN-SUFFIX,new-rule.invalid,XM-日常上网'
+    assert_includes XMClashSync.parse(XMClashSync.read(runtime_path))['rules'], 'DOMAIN-SUFFIX,new-rule.invalid,XM-日常上网'
   end
   def test_node_update_checks_policy_before_five_minutes
     initial
@@ -158,7 +158,7 @@ class SyncTest < Minitest::Test
     @system.clock += 60
     assert_equal 'unchanged', @runner.tick
     assert_equal 2, @system.fetches.size
-    assert_equal @raw['dns'], XMClashSync.parse(File.read(runtime_path))['dns']
+    assert_equal @raw['dns'], XMClashSync.parse(XMClashSync.read(runtime_path))['dns']
     assert_equal 1, @system.reloads.size
   end
   def test_nodes_and_policy_update_together
@@ -167,7 +167,7 @@ class SyncTest < Minitest::Test
     policy_change
     @system.clock += 60
     assert_equal 'applied', @runner.tick
-    current = XMClashSync.parse(File.read(runtime_path))
+    current = XMClashSync.parse(XMClashSync.read(runtime_path))
     assert_equal @raw['dns'], current['dns']
     assert_equal @raw['proxies'], current['proxies']
     assert_equal @routing['rules'], current['rules']
@@ -191,7 +191,7 @@ class SyncTest < Minitest::Test
     write_runtime(generated)
     @system.reflect(generated)
     initial
-    assert_equal generated['dns'], XMClashSync.parse(File.read(runtime_path))['dns']
+    assert_equal generated['dns'], XMClashSync.parse(XMClashSync.read(runtime_path))['dns']
     assert_equal 'current', state['status']
   end
   def test_unrecognized_dns_overlay_still_waits_for_client
@@ -243,7 +243,7 @@ class SyncTest < Minitest::Test
     @system.clock += 300
     assert_equal 'applied', @runner.tick
     assert_equal 'cached_latest_unconfirmed', state['status']
-    assert_equal @routing['rules'], XMClashSync.parse(File.read(runtime_path))['rules']
+    assert_equal @routing['rules'], XMClashSync.parse(XMClashSync.read(runtime_path))['rules']
   end
   def test_repeated_faults_back_off_and_do_not_repeat_notification
     @system.download_error = true
@@ -288,11 +288,11 @@ class SyncTest < Minitest::Test
   end
   def test_invalid_download_does_not_replace_last_good_cache
     initial
-    old_cache, before = File.read(@paths.cache), config_bytes
+    old_cache, before = XMClashSync.read(@paths.cache), config_bytes
     @system.body = 'invalid: true'
     @system.clock += 300
     assert_equal 'invalid', @runner.tick
-    assert_equal old_cache, File.read(@paths.cache)
+    assert_equal old_cache, XMClashSync.read(@paths.cache)
     assert_equal before, config_bytes
   end
   def test_mihomo_validation_failure_keeps_files
@@ -331,10 +331,10 @@ class SyncTest < Minitest::Test
   end
   def test_concurrent_change_before_transaction_does_not_overwrite
     @system.on_check = proc { XMClashSync.atomic(script_path, '// concurrent manual change') }
-    before_runtime = File.read(runtime_path)
+    before_runtime = XMClashSync.read(runtime_path)
     assert_equal 'busy', @runner.tick
-    assert_equal before_runtime, File.read(runtime_path)
-    assert_equal '// concurrent manual change', File.read(script_path)
+    assert_equal before_runtime, XMClashSync.read(runtime_path)
+    assert_equal '// concurrent manual change', XMClashSync.read(script_path)
     assert_equal [], @system.reloads
     @system.on_check = nil
     assert_equal 'applied', @runner.tick
@@ -419,7 +419,7 @@ class SyncTest < Minitest::Test
     refute File.exist?(@paths.legacy_agent)
     assert_equal 0700, File.stat(@paths.installed).mode & 0777
     assert_equal 0600, File.stat(@paths.binding).mode & 0777
-    plist = REXML::Document.new(File.read(@paths.agent))
+    plist = REXML::Document.new(XMClashSync.read(@paths.agent))
     assert_equal '60', REXML::XPath.first(plist, '//integer').text
     assert_equal true, installer.status['enabled']
     before = config_bytes
@@ -447,8 +447,8 @@ class SyncTest < Minitest::Test
     @system.agent_load_failures = 1
     installer = XMClashSync::Installer.new(@paths, @system)
     assert_equal 'install', assert_raises(XMClashSync::Fault) { installer.install(File.expand_path('sync-routing.rb', __dir__)) }.code
-    assert_equal 'previous-tool', File.read(@paths.installed)
-    assert_equal 'legacy-plist', File.read(@paths.legacy_agent)
+    assert_equal 'previous-tool', XMClashSync.read(@paths.installed)
+    assert_equal 'legacy-plist', XMClashSync.read(@paths.legacy_agent)
     assert @system.loaded?(XMClashSync::LEGACY_LABEL)
     refute File.exist?(@paths.agent)
   end
@@ -456,7 +456,7 @@ class SyncTest < Minitest::Test
     XMClashSync.atomic(@paths.installed, 'previous-tool')
     XMClashSync::Installer.new(@paths, @system).install(File.expand_path('sync-routing.rb', __dir__))
     backup = Dir.glob(File.join(@paths.state, 'installer-backup/*/sync-routing.rb')).first
-    assert_equal 'previous-tool', File.read(backup)
+    assert_equal 'previous-tool', XMClashSync.read(backup)
     assert_equal 0600, File.stat(backup).mode & 0777
   end
   def test_uninstall_busy_does_not_interrupt_transaction
@@ -470,7 +470,7 @@ class SyncTest < Minitest::Test
   def test_status_and_fault_text_never_expose_secrets
     @system.download_error = true
     @runner.tick
-    output = JSON.generate(XMClashSync::Installer.new(@paths, @system).status) + File.read(@paths.status) + XMClashSync::MESSAGES.values.join
+    output = JSON.generate(XMClashSync::Installer.new(@paths, @system).status) + XMClashSync.read(@paths.status) + XMClashSync::MESSAGES.values.join
     %w[PRIVATE-SUBSCRIPTION-CANARY PRIVATE-NODE-CANARY PRIVATE-DNS-CANARY PRIVATE-API-CANARY].each { |private_value| refute_includes output, private_value }
     assert_equal 0600, File.stat(@paths.status).mode & 0777
   end
@@ -563,7 +563,7 @@ class AdapterTest < Minitest::Test
     spawn = proc do |*args|
       arguments = args
       temp_path = args[args.index('-f') + 1]
-      assert_equal 'mock-private-config', File.read(temp_path)
+      assert_equal 'mock-private-config', XMClashSync.read(temp_path)
       assert_equal 0600, File.stat(temp_path).mode & 0777
       123456
     end
