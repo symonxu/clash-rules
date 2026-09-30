@@ -4,11 +4,11 @@ Mac 使用 Clash Verge Rev，iOS 使用 Shadowrocket。MESL 提供节点与基�
 
 ## Mac：Clash Verge Rev
 
-固定策略链接（由本机手动同步工具接入 MESL 订阅）：
+固定策略链接（由本机自动同步程序接入 MESL 订阅）：
 
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml
 
-这不是含节点的普通订阅。点击本机“更新 Clash 个人规则.command”更新分组和规则；MESL 节点订阅单独更新，DNS 覆写关闭。五个手动组，每组六个节点，规则由个人策略完整替换。
+这不是含节点的普通订阅。由你一次安装[本地自动同步程序](tools/clash-sync/README.md)，之后自动检查 GitHub 策略；MESL 节点仍由 Clash 更新，私有订阅与 DNS 留在设备。五个手动组，每组六个节点，规则由个人策略完整替换。程序不切换 VPN、TUN、系统代理或 DNS；安装与本机验收由你操作。
 
 [Mac 接入与回退说明](ClashVerge-Mac.md)
 
@@ -37,7 +37,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Group
 本地静态校验：
 
 ```sh
-ruby scripts/validate_shadowrocket.rb
+ruby scripts/validate_rules.rb
 ```
 
-校验覆盖配置结构、分组与规则引用、固定更新地址和公开链接。线路可用性与实际规则命中以客户端运行结果为准。不要提交私有订阅地址或节点凭据。
+校验覆盖配置结构、分组与规则引用、固定更新地址、公开链接及自动同步的隔离测试。线路可用性与实际规则命中以客户端运行结果为准。不要提交私有订阅地址或节点凭据。
