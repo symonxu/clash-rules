@@ -1,8 +1,9 @@
-# XM-个人配置V1.3 — Hako 规则方案
-# 当前正式配置；Hako 用户已切换至此版本。
-# 相比 V1.1，为 generate_204 测速增加 HTTP 204 校验；保留既有 DNS 与分流策略。
-# Hako 节点库独立管理 MESL；本文件不包含 MESL 订阅地址或 Proxy Provider。
-# GitHub 负责策略组、DNS 与模块化远程规则；节点由 Hako 创建配置时注入。
+# XM-个人配置V1.3 — Clash Verge Rev 个人分流策略源
+# MESL 完整订阅提供节点与专用 DNS；客户端 DNS 覆写保持关闭。
+# 本机同步程序只提取 proxy-groups、rule-providers、rules，校验后自动加载。
+# 本文件中的 DNS 等其余字段是历史完整配置的兼容内容，不参与 Clash Verge 同步。
+# 不要将本文件直接作为 MESL 完整订阅导入，也不要用它覆写 MESL DNS。
+# 固定 Raw 地址保持不变；本仓库不包含 MESL 私有订阅地址或节点凭据。
 
 mode: rule
 ipv6: false
