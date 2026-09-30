@@ -15,7 +15,7 @@ group_text.each_line do |line|
   abort 'Duplicate group' if groups.key?(name)
   groups[name] = Regexp.new(filter)
 end
-abort 'Expected five iOS service groups' unless groups.keys.sort == %w[XM-Google XM-AI XM-Meta XM-Bybit XM-Web3].sort
+abort 'Expected four iOS service groups' unless groups.keys.sort == %w[XM-Google XM-AI XM-Meta XM-Web3].sort
 count = 0
 rule_text.each_line do |line|
   next if line.strip.empty? || line.start_with?('#')
@@ -25,6 +25,7 @@ rule_text.each_line do |line|
   count += 1
 end
 abort 'Empty iOS rules' if count.zero?
+abort 'Bybit must share Web3 policy' unless rule_text.lines.any? { |line| line.strip == 'DOMAIN-SUFFIX,bybit.com,XM-Web3' }
 puts "Validated Shadowrocket module: #{groups.size} groups, #{count} domain rules; no DNS or fallback override."
 
 extension = File.read(File.join(root, 'XM-Shadowrocket-Groups.conf'))
@@ -36,4 +37,4 @@ abort 'Unexpected general setting' unless general.lines.map(&:strip).reject(&:em
 abort 'Extension groups differ from rule policies' unless extension_groups.strip == group_text.strip
 abort 'Extension rules differ from validated personal rules' unless extension_rules.strip == rule_text.strip
 abort 'Unexpected DNS or node section' if extension.match?(/^\[(DNS|Host|Proxy|MITM)\]$/)
-puts 'Validated iOS extension: get.conf inheritance, five groups and 107 personal rules; no explicit DNS, nodes or fallback.'
+puts 'Validated iOS extension: get.conf inheritance, four groups and 107 personal rules; no explicit DNS, nodes or fallback.'

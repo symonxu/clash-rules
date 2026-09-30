@@ -4,17 +4,17 @@
 
 `https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf`
 
-这是包含 `get.conf` 的个人分流配置，包含五个组和个人域名规则。旧模块链接保留兼容，不需要再启用。Mac 仍使用原 V1.3 策略源和本机同步任务，iOS 独立维护此配置，不要求两端策略逐项一致。
+这是包含 `get.conf` 的个人分流配置，包含四个组和个人域名规则。Bybit 与 Web3 共用日本节点组。旧模块链接保留兼容，不需要再启用。Mac 仍使用原 V1.3 策略源和本机同步任务，iOS 独立维护此配置，不要求两端策略逐项一致。
 
 ## 保留 MESL DNS 的使用方法
 
-设备已确认：原模块无法单独新增分组；`XM-Shadowrocket-Groups.conf` 能显示五个组。现在已把 107 条个人规则也并入该配置，以后只维护一个链接。
+设备已确认：原模块无法单独新增分组；`XM-Shadowrocket-Groups.conf` 能显示个人组。107 条个人规则也已并入该配置，以后只维护一个链接。
 
 1. 保留 MESL 官方 `get.conf`。在“配置”中使用 `XM-Shadowrocket-Groups.conf`；它通过 `include = get.conf` 继承 MESL 的 DNS 与基础策略。
 2. 在“配置 → 模块”停用原 XM iOS 模块；无需删除，避免新旧规则重复。回到新配置，更新配置并点击“使用配置”。
-3. 首页全局路由选择“配置”。确认五个 XM 组有节点，分别检查 Google、AI、Meta、Bybit、Web3 及国内服务的实际规则命中。若合并后异常，切回 `get.conf` 并反馈。
+3. 首页全局路由选择“配置”。确认四个 XM 组有节点，分别检查 Google、AI、Meta、Bybit、Web3 及国内服务的实际规则命中。Bybit 应命中 XM-Web3；若合并后异常，切回 `get.conf` 并反馈。
 
-配置自身只有 include、公开更新地址、五个分组、个人域名规则，没有 DNS、节点、GEOIP 或 FINAL 项。基础配置按 MESL 官方方式维护。不要删除或改名 `get.conf`，也不要把私有订阅链接提交到 GitHub。
+配置自身只有 include、公开更新地址、四个分组、个人域名规则，没有 DNS、节点、GEOIP 或 FINAL 项。基础配置按 MESL 官方方式维护。不要删除或改名 `get.conf`，也不要把私有订阅链接提交到 GitHub。
 
 合并后的规则仍需 iPhone 端复核；GitHub 静态校验无法证明手机实际流量命中。`XM-Shadowrocket-Groups.conf` 文件名保持原样，避免用户更换导入链接。
 
@@ -25,7 +25,7 @@
 | Google | XM-Google：日本 08 家宽 |
 | AI | XM-AI：日本 08–10 家宽，手动选择 |
 | Meta / Instagram / Threads | XM-Meta：美国节点，手动选择 |
-| Bybit | XM-Bybit：澳大利亚或格鲁吉亚，手动选择 |
+| Bybit | XM-Web3：与 Web3 共用所选日本节点 |
 | Web3 交易与 RPC | XM-Web3：日本 08–10 家宽或日本 01–03，合并为一个手动组 |
 | 日常上网、国内直连、Apple、兜底 | 沿用 MESL 基础配置 |
 
