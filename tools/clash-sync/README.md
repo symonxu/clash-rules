@@ -34,6 +34,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 
 - 登录后每分钟检查一次；Clash 未运行或当前订阅不是绑定的 MESL 时跳过，不启动客户端、不切换订阅。
 - MESL 本地订阅变化时，先等运行配置的节点及 DNS 与新订阅一致，再检查 GitHub 最新策略。Clash 自身生成配置时也会继续执行已保存的个人扩展。
+- DNS 检查要求 MESL 提供的每个字段一致；允许 Clash 额外补入 `ipv6` 和 `fake-ip-range6`，并保留其现有值。其他未知 DNS 覆盖仍等待客户端处理。
 - GitHub 策略每五分钟检查一次，有效内容变化才应用。无变化时不写扩展脚本或运行配置，不重载内核。
 - Clash 重启、重新登录或唤醒后，在下一次检查补做同步。睡眠期间不会运行，也不会阻止整机睡眠。
 - 保留仍在候选列表中的组内手动选择，同时设置 `profile.store-selected: true`。只替换 `proxy-groups`、`rule-providers`、`rules`；保留节点、DNS、TUN、模式、端口及其他运行字段。
