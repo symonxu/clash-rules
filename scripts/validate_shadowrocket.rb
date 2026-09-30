@@ -15,7 +15,7 @@ group_text.each_line do |line|
   abort 'Duplicate group' if groups.key?(name)
   groups[name] = Regexp.new(filter)
 end
-abort 'Expected four iOS service groups' unless groups.keys.sort == %w[XM-Google XM-AI XM-Meta XM-Web3].sort
+abort 'Expected five Shadowrocket groups' unless groups.keys.sort == %w[XM-Google XM-AI XM-Meta XM-Web3 XM-日常上网].sort
 count = 0
 rule_text.each_line do |line|
   next if line.strip.empty? || line.start_with?('#')
@@ -35,6 +35,8 @@ extension_groups, extension_rules = extension_rest.split('[Rule]', 2)
 expected = ["include = get.conf", "update-url = https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf"]
 abort 'Unexpected general setting' unless general.lines.map(&:strip).reject(&:empty?) == expected
 abort 'Extension groups differ from rule policies' unless extension_groups.strip == group_text.strip
-abort 'Extension rules differ from validated personal rules' unless extension_rules.strip == rule_text.strip
+personal_lines = rule_text.lines.map(&:strip).reject { |line| line.empty? || line.start_with?('#') }
+extension_lines = extension_rules.lines.map(&:strip).reject { |line| line.empty? || line.start_with?('#') }
+abort 'Extension personal rules or fallback order differ' unless extension_lines == personal_lines + ['GEOIP,CN,DIRECT', 'FINAL,XM-日常上网']
 abort 'Unexpected DNS or node section' if extension.match?(/^\[(DNS|Host|Proxy|MITM)\]$/)
-puts 'Validated iOS extension: get.conf inheritance, four groups and 107 personal rules; no explicit DNS, nodes or fallback.'
+puts 'Validated Shadowrocket: five groups, 107 personal domains, CN direct and daily fallback; DNS inherited.'
