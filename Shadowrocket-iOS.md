@@ -1,47 +1,41 @@
-# Shadowrocket iOS 专用分流
+# Shadowrocket Mac 与 iOS 使用说明
 
 固定远程配置：
 
-`https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf`
+https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf
 
-这是包含 `get.conf` 的个人分流配置，包含五个组和个人域名规则。Bybit 与 Web3 共用日本节点组。旧模块链接保留兼容，不需要再启用。Mac 仍使用原 V1.3 策略源和本机同步任务，iOS 独立维护此配置，不要求两端策略逐项一致。
+Mac 与 iOS 使用同一份个人配置，包含五个手动选择组和 107 条个人域名规则。Bybit 与 Web3 共用日本节点组。用户已在两端使用，Mac 切换后反馈运行稳定；后续线路情况仍以设备实际测试为准。
 
-## 保留 MESL DNS 的使用方法
+## 导入与更新
 
-设备已确认：原模块无法单独新增分组；`XM-Shadowrocket-Groups.conf` 能显示个人组。107 条个人规则也已并入该配置，以后只维护一个链接。
+1. 保留本地 MESL 官方 `get.conf` 和节点订阅。不要删除或改名 `get.conf`。
+2. 在“配置”中导入上述链接并使用 XM 配置。它通过 `include = get.conf` 继承 MESL 的 DNS 与基础策略。
+3. 在“配置 → 模块”停用旧 XM 模块，避免重复规则。完整 XM 配置已包含个人分组和规则，无需再添加模块。
+4. 首页全局路由选择“配置”，分别选择五个组的节点并测试服务。
+5. GitHub 个人规则变化后，在配置页更新 XM 文件并重新“使用配置”。节点订阅更新与 `get.conf` 更新分别进行；更新 XM 文件不会更新本地 `get.conf`。
 
-1. 保留 MESL 官方 `get.conf`。在“配置”中使用 `XM-Shadowrocket-Groups.conf`；它通过 `include = get.conf` 继承 MESL 的 DNS 与基础策略。
-2. 在“配置 → 模块”停用原 XM iOS 模块；无需删除，避免新旧规则重复。回到新配置，更新配置并点击“使用配置”。
-3. 首页全局路由选择“配置”。确认五个 XM 组有节点，分别检查 Google、AI、Meta、Bybit、Web3 及国内服务的实际规则命中。Bybit 应命中 XM-Web3；若合并后异常，切回 `get.conf` 并反馈。
+XM 文件没有 DNS 或节点定义。DNS 继续继承 MESL 基础配置，私有订阅地址与节点凭据只保留在设备中。
 
-配置自身只有 include、公开更新地址、五个分组、个人域名规则及 GEOIP/CN 直连、FINAL 日常兜底，没有 DNS 或节点项。基础配置按 MESL 官方方式维护。不要删除或改名 `get.conf`，也不要把私有订阅链接提交到 GitHub。
+## 分组与规则
 
-合并后的规则仍需 iPhone 端复核；GitHub 静态校验无法证明手机实际流量命中。`XM-Shadowrocket-Groups.conf` 文件名保持原样，避免用户更换导入链接。
-
-## 与 Mac 的差异
-
-| 用途 | iOS 配置 |
+| 用途 | 分组与节点 |
 | --- | --- |
-| Google | XM-Google：日本普通 02–04、家宽 08–10，手动选择 |
-| AI | XM-AI：日本普通 02–04、家宽 08–10，手动选择 |
-| Meta / Instagram / Threads | XM-Meta：美国普通 01–03、家宽 10–12，手动选择 |
-| Bybit | XM-Web3：与 Web3 共用所选日本节点 |
-| Web3 交易与 RPC | XM-Web3：日本普通 02–04、家宽 08–10，手动选择 |
-| 日常上网 | XM-日常上网：日本普通 02–04、家宽 08–10，手动选择 |
-| 国内 IP | GEOIP,CN,DIRECT；保留 MESL 基础配置专门直连规则 |
-| MESL 专门服务规则 | 仍可在 FINAL 兜底之前命中；不能将 FINAL 视为覆盖所有基础规则 |
+| Google | XM-Google：日本普通 02–04、家宽 08–10 |
+| AI | XM-AI：日本普通 02–04、家宽 08–10 |
+| Meta / Instagram / Threads | XM-Meta：美国普通 01–03、家宽 10–12 |
+| Web3 交易、Bybit 与 RPC | XM-Web3：日本普通 02–04、家宽 08–10 |
+| 日常上网兜底 | XM-日常上网：日本普通 02–04、家宽 08–10 |
 
-长期测试版固定每组为六个节点范围（三个普通、三个家宽），不添加国家切换层级或定时测速。日本普通 01 不纳入，普通节点仅保留 02–04；其他编号不纳入。这里的稳定版指固定策略范围，不代表已长期验证线路质量。筛选条件使用节点名称中的文字，不依赖国旗显示；其他订阅中同名节点也可能被纳入，应确认成员均来自 MESL。
+每组范围为六个节点，三个普通、三个家宽。日本普通 01 不纳入。筛选依赖节点名称；其他订阅中同名节点也可能被纳入，请确认组成员。
 
-域名规则最初来自现有六个个人规则集，顺序为 RPC → Bybit → Web3 → AI → Google → Meta，共 107 条，写在本配置中。以后直接修改此文件；Mac 的 YAML 不会自动覆盖 iOS 配置。需要立即更新时在配置页更新本文件，再“使用配置”。
+个人域名规则顺序为 RPC → Bybit → Web3 → AI → Google → Meta，随后为 `GEOIP,CN,DIRECT` 和 `FINAL,XM-日常上网`。日常上网是未命中此前规则时的兜底；被包含的 MESL 基础配置仍可能提供专门服务规则，实际优先级和命中需在客户端确认。
 
-## 核实来源与验证范围
+配置中的 `update-url` 保持固定。以后个人规则与分组直接维护 `XM-Shadowrocket-Groups.conf`；旧 `XM-Shadowrocket-iOS.sgmodule` 仅保留兼容，不需要启用。说明文件保留原文件名供已有链接继续访问。
 
-开发者官网为 `https://shadowlaunch.com/`，由 App Store 开发者网站链接确认；官网未提供完整配置语法手册。
+## 文档来源与验证范围
 
-- MESL 官方 Shadowrocket 教程：`https://dash.mesurl.com/#/docs/10`，核实先使用官方配置再导入节点的流程。
-- `https://github.com/LOWERTOP/Shadowrocket` 为配置示例作者及手册维护者的原始仓库，**不是开发者官方文档**。其原始配置示例提供 select、policy-regex-filter 和 include 写法；手册说明包含配置的优先级。
+- 开发者网站：https://shadowlaunch.com/ 。此前通过 App Store 开发者网站链接核实；网站未提供完整配置语法手册。
+- MESL Shadowrocket 教程：https://dash.mesurl.com/#/docs/10 。此前核实官方配置与节点导入流程。
+- 配置示例与手册维护者仓库：https://github.com/LOWERTOP/Shadowrocket 。这是第三方文档，提供 select、policy-regex-filter 与 include 示例。
 
-项目校验确认配置结构、规则策略引用及未定义 DNS、节点或通用兜底。分组已在 iPhone 显示；合并规则后的命中仍需设备验证。
-
-日常上网是未命中其他规则时的海外兜底，不是全局代理。使用后在客户端规则预览/测试中确认 FINAL 指向 XM-日常上网，并验证一个普通海外请求。包含 get.conf 时，MESL 现有专门规则仍可能先命中。
+GitHub 静态检查验证结构、规则引用、固定更新地址及没有额外 DNS 或节点项；不能代替实际连接测试。发生异常可切回保留的 `get.conf`，记录请求、规则命中与最终节点后再排查。
