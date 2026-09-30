@@ -40,3 +40,25 @@ extension_lines = extension_rules.lines.map(&:strip).reject { |line| line.empty?
 abort 'Extension personal rules or fallback order differ' unless extension_lines == personal_lines + ['GEOIP,CN,DIRECT', 'FINAL,XM-日常上网']
 abort 'Unexpected DNS or node section' if extension.match?(/^\[(DNS|Host|Proxy|MITM)\]$/)
 puts 'Validated Shadowrocket: five groups, 107 personal domains, CN direct and daily fallback; DNS inherited.'
+
+# Public configuration must not introduce private subscription endpoints.
+allowed_urls = Set.new([
+  'https://github.com/symonxu/clash-rules',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-iOS.sgmodule',
+  'https://shadowlaunch.com/',
+  'https://dash.mesurl.com/#/docs/10',
+  'https://github.com/LOWERTOP/Shadowrocket'
+])
+Dir.chdir(root) do
+  tracked_files = IO.popen(['git', 'ls-files', '-z'], &:read).split("\0")
+  tracked_files.each do |file|
+    next unless File.file?(file)
+    content = File.read(file, encoding: 'UTF-8')
+    abort "Non-text tracked file: #{file}" unless content.valid_encoding? && !content.include?("\0")
+    content.scan(%r{https?://[^\s<>"'`)\]，。；]+}).each do |url|
+      abort "Unexpected public URL in #{file}" unless allowed_urls.include?(url)
+    end
+  end
+end
+puts 'Validated public URL allowlist.'
