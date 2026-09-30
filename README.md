@@ -73,4 +73,4 @@ Pull Request 和 `main` 更新会检查 YAML、规则引用及仓库中的 URL�
 
 ## iOS / Shadowrocket
 
-Mac 与 iOS 可分别维护：iOS 使用 MESL 官方 `get.conf` 并通过 [Shadowrocket 个人分流配置](Shadowrocket-iOS.md) 继承其 DNS 和基础策略。固定入口为 `XM-Shadowrocket-Groups.conf`，内含五个手动选择组与个人规则；旧模块应停用。分组已在 iPhone 显示，合并规则后的命中仍需设备复核。Mac 原 V1.3 地址不变。
+Mac 与 iOS 可分别维护：iOS 使用 MESL 官方 `get.conf` 并通过 [Shadowrocket 个人分流配置](Shadowrocket-iOS.md) 继承其 DNS 和基础策略。固定入口为 `XM-Shadowrocket-Groups.conf`，内含四个手动选择组与个人规则；Bybit 共用 XM-Web3 日本节点。旧模块应停用。合并后的 Bybit 命中仍需设备复核。Mac 原 V1.3 地址不变。
