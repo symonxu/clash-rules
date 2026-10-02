@@ -8,7 +8,7 @@ Mac 使用 Clash Verge Rev，iOS 使用 Shadowrocket。MESL 提供节点与基�
 
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml
 
-这不是含节点的普通订阅。由你一次安装[本地自动同步程序](tools/clash-sync/README.md)，之后自动检查 GitHub 策略；MESL 节点仍由 Clash 更新，私有订阅与 DNS 留在设备。五个手动组，每组六个节点，规则由个人策略完整替换。程序不切换 VPN、TUN、系统代理或 DNS；安装与本机验收由你操作。
+这不是含节点的普通订阅。由你一次安装[本地自动同步程序](tools/clash-sync/README.md)，之后自动检查 GitHub 策略；MESL 节点仍由 Clash 更新，私有订阅与 DNS 留在设备。五组各六个节点，由新版程序每五分钟自动择优，快超过 20ms 才换节点（10ms、20ms 保持，当前节点失败可故障切换）。规则由个人策略完整替换。程序不切换 VPN、TUN、系统代理或 DNS；安装与本机验收由你操作。
 
 [Mac 接入与回退说明](ClashVerge-Mac.md)
 

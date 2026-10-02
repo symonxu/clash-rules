@@ -49,6 +49,8 @@ allowed_urls = Set.new([
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml',
   'https://www.clashverge.dev/guide/extend.html',
   'https://www.clashverge.dev/guide/script.html',
+  'https://www.gstatic.com/generate_204',
+  'https://github.com/MetaCubeX/mihomo/blob/v1.19.31/adapter/outboundgroup/urltest.go#L110-L131',
   'https://shadowlaunch.com/',
   'https://dash.mesurl.com/#/docs/10',
   'https://github.com/LOWERTOP/Shadowrocket'

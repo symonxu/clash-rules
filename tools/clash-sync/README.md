@@ -6,7 +6,7 @@ MESL 节点订阅由 Clash Verge Rev 更新；本程序只下载 GitHub 的公�
 
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml
 
-该入口只有分组和规则，不能作为普通节点订阅导入。现有五组及 Shadowrocket 的配置与入口均不改变。
+该入口只有分组和规则，不能作为普通节点订阅导入。现有五组成员及 Shadowrocket 的配置与入口均不改变。Mac 新版程序增加五组自动择优，iOS 继续手动选择。
 
 ## 一次安装
 
@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 /usr/bin/ruby "$HOME/Library/Application Support/XM-ClashVerge-RoutingSync/sync-routing.rb" --status
 ```
 
-`enabled` 和 `agent_loaded` 应为 `true`。首轮处理完成后，`status` 应为 `current`；`last_checked_at` 是最近成功取得 GitHub 策略的 Unix 时间，`last_applied_at` 是最近实际加载的时间。安装后可删除下载包及桌面的旧手动更新入口，已安装任务仍独立运行；不要删除 Application Support 内的程序和状态目录。
+`enabled` 和 `agent_loaded` 应为 `true`。首轮处理完成后，`status` 应为 `current`；`last_checked_at` 是最近成功取得 GitHub 策略的 Unix 时间，`last_applied_at` 是最近实际加载的时间。`auto_select.status` 应为 `current`，其中包含最近测速时间、300 秒间隔、20ms 阈值及五组选择结果。安装后可删除下载包及桌面的旧手动更新入口，已安装任务仍独立运行；不要删除 Application Support 内的程序和状态目录。
 
 ## 更新方式
 
@@ -37,7 +37,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 - DNS 检查要求 MESL 提供的每个字段一致；允许 Clash 额外补入 `ipv6` 和 `fake-ip-range6`，并保留其现有值。其他未知 DNS 覆盖仍等待客户端处理。
 - GitHub 策略每五分钟检查一次，有效内容变化才应用。无变化时不写扩展脚本或运行配置，不重载内核。
 - Clash 重启、重新登录或唤醒后，在下一次检查补做同步。睡眠期间不会运行，也不会阻止整机睡眠。
-- 保留仍在候选列表中的组内手动选择，同时设置 `profile.store-selected: true`。只替换 `proxy-groups`、`rule-providers`、`rules`；保留节点、DNS、TUN、模式、端口及其他运行字段。
+- 重载时先保留仍在候选列表中的选择，同时设置 `profile.store-selected: true`，随后按自动择优阈值比较。只替换 `proxy-groups`、`rule-providers`、`rules`；保留节点、DNS、TUN、模式、端口及其他运行字段。
 
 需要立即检查时，由你执行：
 
@@ -46,6 +46,25 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 ```
 
 每组必须恰好匹配六个节点。Google、AI、Web3、日常上网使用日本普通 02–04、家宽 08–10；Meta 使用美国普通 01–03、家宽 10–12。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
+
+## 五组自动择优
+
+需要升级本地程序：下载新版后重新执行 `--install`；只刷新公开 YAML 不会给旧程序添加测速能力。程序不会下载并执行远程代码。
+
+新程序每五分钟通过本机 Mihomo 接口测速，使用固定 `https://www.gstatic.com/generate_204`，期望响应 204，单节点超时五秒。最多三路并发；四个日本组复用同一轮结果，加上美国组共测十二个不同节点。使用内核返回的延迟，不改动现有统一延迟设置。
+
+- 当前节点有效时，只有 `当前节点延迟 - 最快候选延迟 > 20` 才换节点。10ms、恰好 20ms 保持，21ms 切换；延迟相同优先保持当前节点，与列表位置无关。
+- 当前节点测速超时或响应不满足 204，而其他候选有效时，允许故障切换。该失败仅表示测不到此测试端点，不代表所有应用都无法使用该节点。全部候选失败的组保持当前节点。
+- 当前选择已不存在时，选择本轮最快有效候选。现有有效选择从首次启用起也遵守阈值；手动选择会在下一轮测速时参与比较。
+- 节点变化、Clash 重启、唤醒跨度或 `--once` 可触发补测。Clash 未运行、当前订阅不是 MESL、路由同步未完成或配置在变化时不切换。
+- 测速与选节点不改写扩展脚本或运行配置，不重载内核。实际选节点仅调用本机组选择接口，客户端会按原有持久化设置保存选择。
+- 本地接口连接、认证或响应异常不当作当前节点超时；这类错误暂停本轮切换。失败时保留仍有效选择，退避重试，同一故障首次提醒。若选择请求的响应丢失，会在配置未变化且没有第三个新选择的情况下尝试恢复该组此前选择；状态无法确认时明确标记。
+
+客户端组类型仍为 `select`，所以界面可能显示“手动选择”；自动择优由本地程序执行。原生 URLTest 的当前版本存在第一位候选绕过容差的边界，[同版本官方源码](https://github.com/MetaCubeX/mihomo/blob/v1.19.31/adapter/outboundgroup/urltest.go#L110-L131)。同版本官方独立内核隔离实测中，仅快 11ms 就发生了这种切换，因此采用程序中的严格整数比较。
+
+最低延迟是该测试端点的响应速度，不是带宽，也不保证每个目标服务最优。Meta 始终在美国六个候选中比较，其余四组始终在日本六个候选中比较。
+
+`--status` 的 `auto_select` 独立于路由同步状态：`current` 表示最近测速及选择成功；`error` 表示测速或选择失败；`deferred` 表示并发变化导致延期；`waiting_client` / `deferred_routing` 表示等待路由生成或同步恢复；`inactive` / `disabled` 表示客户端或任务停用。`groups` 显示各组实际节点、最快候选、延迟和决定原因；`choices_unconfirmed` 为 true 时选择无法确认。
 
 ## 状态与失败处理
 
@@ -88,7 +107,7 @@ mv "$HOME/Library/Application Support/XM-ClashVerge-RoutingSync/transaction.json
 
 如果要恢复 MESL 服务商原分组及规则，需要你在 Clash 中将 MESL 的订阅扩展脚本恢复为 `function main(config) { return config; }`，然后重新激活 MESL。卸载自动任务本身不会撤销已经使用的个人规则。
 
-程序不上传本机文件，网络请求只访问上述公开策略地址；内核控制只通过本机 Unix socket。状态与通知不输出 URL、密钥、节点凭据或原始错误正文。客户端配置和私有回退副本不要提交 GitHub，也不要直接分享。
+程序不上传本机文件，只下载上述公开策略；测速由 Mihomo 使用候选节点访问固定 204 地址，内核控制只通过本机 Unix socket。状态与通知不输出订阅地址、密钥、节点凭据或原始错误正文。客户端配置和私有回退副本不要提交 GitHub，也不要直接分享。
 
 ## 离线测试与本机验收
 
@@ -100,15 +119,16 @@ ruby scripts/validate_rules.rb
 ruby tools/clash-sync/test_sync.rb
 ```
 
-测试使用临时 HOME、假节点、模拟内核/下载/LaunchAgent；HTTP 协议测试仅连接临时模拟 Unix socket。Mihomo 校验进程和 curl 被替换，不启动真实内核、不访问 MESL、不注册系统任务。覆盖节点变化、策略变化、同时变化、无变化、断网缓存、空组、非法规则、校验失败、加载与回退失败、并发修改、暂停恢复、睡眠时间跨度、安装卸载幂等性和安装失败恢复。现有 GitHub 校验任务在普通及无 UTF-8 区域设置的后台环境分别执行同一套测试；配置和脚本始终明确按 UTF-8 读取。
+测试使用临时 HOME、假节点、模拟内核/下载/LaunchAgent；HTTP 协议测试仅连接临时模拟 Unix socket。Mihomo 校验进程、测速和 curl 被替换，不启动真实内核、不访问 MESL、不注册系统任务。覆盖节点变化、策略变化、同时变化、无变化、断网缓存、空组、非法规则、校验失败、加载与回退失败、并发修改、暂停恢复、睡眠时间跨度、安装卸载幂等性和安装失败恢复；另验证所有候选位置的 10/20/21ms 边界、12 节点共用测速、超时、部分或全部失败、接口异常、选节点失败与响应丢失恢复。现有 GitHub 校验任务在普通及无 UTF-8 区域设置的后台环境分别执行同一套测试；配置和脚本始终明确按 UTF-8 读取。
 
 发布完成不代表本机验收通过。由你验证：
 
 1. 安装后自动同步启用，五个 XM 组出现，每组六个节点。
-2. 在 Clash 更新 MESL 后，五组保留，节点和 DNS 使用更新后的 MESL，手动选择仍有效。
+2. 在 Clash 更新 MESL 后，五组保留，节点和 DNS 使用更新后的 MESL，自动选择只使用各组六个候选。
 3. 修改 GitHub 的一条个人规则后，正常联网时通常五分钟内应用，无需刷新节点或点击桌面文件；失败重试时可能更久。
 4. 实测 Google、AI、Meta、Bybit/Web3、国内及普通海外网站，检查规则命中和最终节点。
 5. 重启 Clash、重新登录、唤醒后继续同步，下载失败保持现有连接。
+6. 查看 `auto_select` 的五组结果；下一次自动检查推进测速时间，不因测速重载内核。实际线路的延迟不能人为精确控制，10/20/21ms 边界由隔离测试保证。
 
 本程序不调整电源设置；合盖期间持续联网与唤醒后重连须另外验收。
 
