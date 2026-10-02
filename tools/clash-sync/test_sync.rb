@@ -7,14 +7,16 @@ require_relative 'sync-routing'
 
 class FakeSystem
   attr_accessor :clock, :running, :core_identity, :body, :download_error,
-                :check_error, :reload_failures, :on_check, :bad_loaded_state, :agent_load_failures
-  attr_reader :fetches, :reloads, :checks, :notices, :selected, :agents, :unloads
+                :check_error, :reload_failures, :on_check, :bad_loaded_state, :agent_load_failures,
+                :delays, :measure_error, :on_measure, :select_failure_group, :select_reply_lost, :on_select
+  attr_reader :fetches, :reloads, :checks, :notices, :selected, :agents, :unloads, :measurements
   def initialize(runtime, body)
     @clock, @running, @core_identity = 1000, true, 'mock-core-1'
     @body, @fetches, @reloads, @checks = body, [], [], []
     @notices, @selected, @agents, @unloads = [], [], {}, []
     @reload_failures = 0
     @agent_load_failures = 0
+    @delays, @measurements, @measure_guard = {}, [], Mutex.new
     reflect(runtime)
   end
   def now; clock; end
@@ -58,8 +60,23 @@ class FakeSystem
     @live['rules'] = [] if bad_loaded_state
   end
   def select(_runtime, group, node)
+    if select_failure_group == group
+      if select_reply_lost
+        choose(group, node)
+        self.select_failure_group = nil
+        on_select.call(group, node) if on_select
+      end
+      raise XMClashSync::Fault.new('local')
+    end
     @selected << [group, node]
     choose(group, node)
+  end
+  def group(_runtime, name); Marshal.load(Marshal.dump(@live['proxies'].fetch(name))); end
+  def measure(_runtime, name)
+    @measure_guard.synchronize { @measurements << name }
+    on_measure.call if on_measure
+    raise XMClashSync::Fault.new(measure_error) if measure_error
+    delays.fetch(name, 100)
   end
   def notify(code); @notices << code; end
   def loaded?(label); @agents.key?(label); end
@@ -347,6 +364,214 @@ class SyncTest < Minitest::Test
     assert_equal 'applied', @runner.tick
     assert_equal '🇯🇵 日本 03', @system.live(nil)['proxies']['XM-Google']['now']
   end
+  def auto_state; state.fetch('auto_select'); end
+  def auto_round
+    @system.clock += 300
+    @runner.tick
+  end
+  def jp_node; '🇯🇵 日本 03'; end
+  def test_auto_strict_10_20_21ms_at_every_current_position
+    initial
+    members = XMClashSync.validate(@routing, XMClashSync.parse(XMClashSync.read(runtime_path)))
+    members['XM-Google'].each do |current|
+      challenger = (members['XM-Google'] - [current]).first
+      [10, 20, 21].each do |gap|
+        @system.delays = Hash[members['XM-Google'].map { |node| [node, 300] }]
+        @system.delays[current], @system.delays[challenger] = 100, 100 - gap
+        @system.choose('XM-Google', current)
+        auto_round
+        expected = gap > 20 ? challenger : current
+        assert_equal expected, @system.group(nil, 'XM-Google')['now'], "position=#{members['XM-Google'].index(current)} gap=#{gap}"
+      end
+    end
+  end
+  def test_auto_five_groups_share_twelve_measurements_without_reload_or_config_write
+    initial
+    before, reloads = config_bytes, @system.reloads.size
+    @system.measurements.clear
+    @system.delays[jp_node] = 70
+    @system.delays['🇺🇸 美国 02'] = 70
+    auto_round
+    assert_equal 12, @system.measurements.size
+    assert_equal 12, @system.measurements.uniq.size
+    XMClashSync::GROUPS.each do |group|
+      assert_equal(group == 'XM-Meta' ? '🇺🇸 美国 02' : jp_node, @system.group(nil, group)['now'])
+    end
+    assert_equal before, config_bytes
+    assert_equal reloads, @system.reloads.size
+    assert_equal 300, auto_state['next_test_at'] - auto_state['last_tested_at']
+  end
+  def test_auto_limits_concurrent_probes_to_three
+    initial
+    guard, active, maximum = Mutex.new, 0, 0
+    @system.on_measure = proc do
+      guard.synchronize { active += 1; maximum = [maximum, active].max }
+      sleep 0.005
+      guard.synchronize { active -= 1 }
+    end
+    auto_round
+    assert_operator maximum, :<=, 3
+    assert_operator maximum, :>, 1
+  end
+  def test_auto_no_change_no_switch_and_tie_keeps_current
+    initial
+    @system.choose('XM-Google', jp_node)
+    @system.selected.clear
+    before = config_bytes
+    auto_round
+    assert_equal jp_node, @system.group(nil, 'XM-Google')['now']
+    assert_equal [], @system.selected
+    assert_equal before, config_bytes
+  end
+  def test_auto_current_timeout_uses_fastest_valid_candidate
+    initial
+    current = @system.group(nil, 'XM-Google')['now']
+    @system.delays[current] = nil
+    @system.delays[jp_node] = 99
+    auto_round
+    assert_equal jp_node, @system.group(nil, 'XM-Google')['now']
+    assert_equal 'current_timeout', auto_state['groups']['XM-Google']['decision']
+  end
+  def test_auto_all_failed_holds_choices_and_deduplicates_notice_with_backoff
+    initial
+    @system.measurements.each { |node| @system.delays[node] = nil }
+    choices = @system.live(nil)['proxies'].select { |_, g| g['type'] == 'Selector' }.transform_values { |g| g['now'] }
+    @system.selected.clear
+    3.times do
+      @system.clock = auto_state['next_test_at']
+      @runner.tick
+    end
+    assert_equal [], @system.selected
+    choices.each { |group, current| assert_equal current, @system.group(nil, group)['now'] }
+    assert_equal ['auto_probe'], @system.notices
+    assert_equal 240, auto_state['next_test_at'] - auto_state['last_attempt_at']
+    assert_equal 'current', state['status']
+    assert_equal 'error', auto_state['status']
+    @system.delays.clear
+    @system.clock = auto_state['next_test_at']
+    @runner.tick
+    assert_equal 'current', auto_state['status']
+    refute auto_state.key?('error')
+  end
+  def test_auto_partial_failure_keeps_meta_and_can_improve_japan
+    initial
+    @system.measurements.grep(/美国/).each { |node| @system.delays[node] = nil }
+    previous_meta = @system.group(nil, 'XM-Meta')['now']
+    @system.delays[jp_node] = 50
+    auto_round
+    assert_equal previous_meta, @system.group(nil, 'XM-Meta')['now']
+    assert_equal jp_node, @system.group(nil, 'XM-Google')['now']
+    assert_equal 'no_valid_candidate', auto_state['groups']['XM-Meta']['decision']
+  end
+  def test_auto_control_failure_never_means_current_node_timed_out
+    initial
+    @system.measure_error = 'auto_control'
+    @system.selected.clear
+    auto_round
+    assert_equal [], @system.selected
+    assert_equal 'auto_control', auto_state['error']
+  end
+  def test_auto_invalid_probe_results_never_apply
+    initial
+    [0, -1, 5001, 1.5, '70'].each do |bad|
+      @system.delays[jp_node] = bad
+      @system.selected.clear
+      auto_round
+      assert_equal [], @system.selected
+      assert_equal 'auto_probe', auto_state['error']
+    end
+  end
+  def test_auto_concurrent_subscription_and_core_changes_skip_selection
+    initial
+    @system.delays[jp_node] = 50
+    @system.selected.clear
+    @system.on_measure = proc { @system.core_identity = 'mock-replaced-core' }
+    auto_round
+    assert_equal [], @system.selected
+    assert_equal 'deferred', auto_state['status']
+    @system.on_measure = proc { XMClashSync.atomic(script_path, '// concurrent edit') }
+    auto_round
+    assert_equal [], @system.selected
+    assert_equal 'deferred', auto_state['status']
+  end
+  def test_auto_rechecks_latest_manual_choice_after_measurement
+    initial
+    @system.delays[jp_node] = 70
+    @system.on_measure = proc { @system.choose('XM-Google', jp_node) }
+    @system.selected.clear
+    auto_round
+    refute_includes @system.selected, ['XM-Google', jp_node]
+    assert_equal 'keep_current', auto_state['groups']['XM-Google']['decision']
+  end
+  def test_auto_selection_failure_retains_old_choice_and_files
+    initial
+    before, old = config_bytes, @system.group(nil, 'XM-Google')['now']
+    @system.delays[jp_node] = 50
+    @system.select_failure_group = 'XM-Google'
+    auto_round
+    assert_equal old, @system.group(nil, 'XM-Google')['now']
+    assert_equal 'auto_select', auto_state['error']
+    assert_equal before, config_bytes
+    assert_equal 1, @system.reloads.size
+  end
+  def test_auto_lost_reply_restores_only_affected_group
+    initial
+    old = @system.group(nil, 'XM-Google')['now']
+    @system.delays[jp_node] = 50
+    @system.select_failure_group = 'XM-Google'
+    @system.select_reply_lost = true
+    auto_round
+    assert_equal old, @system.group(nil, 'XM-Google')['now']
+    assert_equal old, auto_state['groups']['XM-Google']['active_node']
+    assert_equal 'auto_select', auto_state['error']
+  end
+  def test_auto_lost_reply_never_overwrites_a_new_third_choice
+    initial
+    third = '🇯🇵 日本 04'
+    @system.delays[jp_node] = 50
+    @system.select_failure_group = 'XM-Google'
+    @system.select_reply_lost = true
+    @system.on_select = proc { |group, _node| @system.choose(group, third) }
+    auto_round
+    assert_equal third, @system.group(nil, 'XM-Google')['now']
+    assert_equal third, auto_state['groups']['XM-Google']['active_node']
+    assert_equal 'auto_select', auto_state['error']
+  end
+  def test_auto_subscription_change_restart_force_and_wake_trigger_measurements
+    initial
+    assert_equal 12, @system.measurements.size
+    @system.clock += 60
+    @runner.tick
+    assert_equal 12, @system.measurements.size
+    node_change
+    @runner.tick
+    assert_equal 24, @system.measurements.size
+    @system.core_identity = 'new-core'
+    @runner.tick
+    assert_equal 36, @system.measurements.size
+    @runner.tick(force: true)
+    assert_equal 48, @system.measurements.size
+    @system.clock += 7200
+    @runner.tick
+    assert_equal 60, @system.measurements.size
+  end
+  def test_auto_inactive_or_other_subscription_never_measures
+    initial
+    @system.running = false
+    auto_round
+    assert_equal 12, @system.measurements.size
+    assert_equal 'inactive', auto_state['status']
+    @system.running = true
+    @profiles['current'] = 'another-uid'
+    write_profiles
+    auto_round
+    assert_equal 12, @system.measurements.size
+    @profiles['current'] = 'mesl-uid'
+    write_profiles
+    @system.clock += 60
+    @runner.tick
+    assert_equal 24, @system.measurements.size
+  end
   def test_stopped_clash_and_restart
     initial
     @system.running = false
@@ -510,6 +735,55 @@ class AdapterTest < Minitest::Test
     assert_equal path, @adapter.socket(runtime)
   ensure
     server.close if server
+    thread.kill if thread && thread.alive?
+  end
+  def test_probe_routes_encode_names_validate_delay_and_classify_http_failures
+    calls = []
+    response = {'delay' => 73}
+    stub_api = proc do |runtime, method, route, body, probe:|
+      calls << [runtime, method, route, body, probe]
+      response
+    end
+    @adapter.stub(:api, stub_api) do
+      assert_equal 73, @adapter.measure({}, '🇯🇵 日本 02')
+      response = {'probe_failed' => true}
+      assert_nil @adapter.measure({}, 'mock')
+      response = {'delay' => 'PRIVATE-BAD-REPLY'}
+      assert_equal 'auto_probe', assert_raises(XMClashSync::Fault) { @adapter.measure({}, 'mock') }.code
+    end
+    _, method, route, body, probe = calls.first
+    assert_equal 'GET', method
+    assert_nil body
+    assert_equal true, probe
+    assert_includes route, '/proxies/%F0%9F%87%AF%F0%9F%87%B5%20%E6%97%A5%E6%9C%AC%2002/delay?'
+    query = URI.decode_www_form(route.split('?').last).to_h
+    assert_equal XMClashSync::AUTO_TEST_URL, query['url']
+    assert_equal '5000', query['timeout']
+    assert_equal '204', query['expected']
+  end
+  def test_probe_http503_is_timeout_but_auth_or_control_failure_is_not
+    server, thread = nil, nil
+    [503, 504, 401].each do |code|
+      path = File.join(@home, "probe-#{code}.sock")
+      server = UNIXServer.new(path)
+      thread = Thread.new do
+        connection = server.accept
+        header = +''
+        header << connection.read(1) until header.end_with?("\r\n\r\n")
+        connection.write("HTTP/1.1 #{code} Failed\r\nContent-Length: 0\r\nConnection: close\r\n\r\n")
+        connection.close
+      end
+      runtime = {'external-controller-unix' => path}
+      if code == 401
+        assert_equal 'auto_control', assert_raises(XMClashSync::Fault) { @adapter.measure(runtime, 'mock') }.code
+      else
+        assert_nil @adapter.measure(runtime, 'mock')
+      end
+      thread.join
+      server.close
+    end
+  ensure
+    server.close if server && !server.closed?
     thread.kill if thread && thread.alive?
   end
   def test_curl_only_requests_fixed_public_source_and_etag

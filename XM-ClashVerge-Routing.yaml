@@ -1,4 +1,6 @@
 # Clash Verge MESL 个人策略；只替换分组与规则，DNS 和节点继承本机订阅。
+# 五组由新版本地同步程序自动择优：每 300 秒测速，快超过 20ms 才切换。
+# select 保留为控制接口；无需在客户端手动选节点。单独导入本 YAML 不会开启自动择优。
 proxy-groups:
   - name: XM-Google
     type: select

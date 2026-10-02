@@ -20,6 +20,10 @@ module XMClashSync
   KEYS = %w[proxy-groups rule-providers rules].freeze
   GROUPS = %w[XM-Google XM-AI XM-Meta XM-Web3 XM-日常上网].freeze
   CLIENT_DNS_ADDITIONS = %w[ipv6 fake-ip-range6].freeze
+  AUTO_INTERVAL = 300
+  AUTO_TOLERANCE = 20
+  AUTO_TIMEOUT = 5000
+  AUTO_TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
   MESSAGES = {
     'download' => '无法取得 GitHub 最新策略；现有配置保留，缓存如被使用会标明。',
     'invalid' => '策略格式、规则或六节点分组校验失败；现有配置保留。',
@@ -31,7 +35,10 @@ module XMClashSync
     'binding' => '找不到绑定的 MESL 订阅；删除重导后需卸载并重新安装同步任务。',
     'busy' => '客户端配置正在变化，本轮延期。',
     'install' => '安装或卸载任务失败，请检查终端提示及当前用户权限。',
-    'internal' => '同步遇到未分类错误；详细配置未输出，请查看状态并重新尝试。'
+    'internal' => '同步遇到未分类错误；详细配置未输出，请查看状态并重新尝试。',
+    'auto_probe' => '自动择优测速未取得有效结果；无有效候选的组保持原节点，稍后重试。',
+    'auto_control' => '自动择优的本地接口不可用；本轮未切换节点，稍后重试。',
+    'auto_select' => '自动择优更新节点失败；查看状态，其他配置保持原样。'
   }.freeze
   class Fault < StandardError
     attr_reader :code
@@ -155,7 +162,7 @@ module XMClashSync
       path = socket(runtime)
       path ? "#{File.stat(path).ino}:#{File.stat(path).mtime.to_f}" : nil
     end
-    def api(runtime, method, route, body = nil)
+    def api(runtime, method, route, body = nil, probe: false)
       Timeout.timeout(15) do
         path = socket(runtime)
         raise Fault.new('local') unless path
@@ -166,7 +173,9 @@ module XMClashSync
         sock.write("#{method} #{route} HTTP/1.1\r\nHost: localhost\r\nAuthorization: Bearer #{secret}\r\nContent-Type: application/json\r\nContent-Length: #{payload.bytesize}\r\nConnection: close\r\n\r\n#{payload}")
         response = sock.read
         headers, data = response.split("\r\n\r\n", 2)
-        raise Fault.new('local') unless headers && headers.split[1].to_i.between?(200, 299)
+        status = headers && headers.split[1].to_i
+        return {'probe_failed' => true} if probe && [503, 504].include?(status)
+        raise Fault.new('local') unless status && status.between?(200, 299)
         if headers.downcase.include?('transfer-encoding: chunked')
           decoded = +''
           until data.empty?
@@ -202,6 +211,22 @@ module XMClashSync
     def select(runtime, group, name)
       route = '/proxies/' + URI.encode_www_form_component(group).gsub('+', '%20')
       api(runtime, 'PUT', route, {'name' => name})
+    end
+    def group(runtime, name)
+      route = '/proxies/' + URI.encode_www_form_component(name).gsub('+', '%20')
+      api(runtime, 'GET', route)
+    end
+    def measure(runtime, name)
+      route = '/proxies/' + URI.encode_www_form_component(name).gsub('+', '%20') + '/delay?'
+      query = URI.encode_www_form('url' => AUTO_TEST_URL, 'timeout' => AUTO_TIMEOUT, 'expected' => '204')
+      result = api(runtime, 'GET', route + query, nil, probe: true)
+      return nil if result['probe_failed']
+      value = result['delay']
+      raise Fault.new('auto_probe') unless value.is_a?(Integer) && value.between?(1, AUTO_TIMEOUT)
+      value
+    rescue Fault => e
+      raise e if e.code == 'auto_probe'
+      raise Fault.new('auto_control')
     end
     def check(paths, candidate)
       temp = Tempfile.new(['.xm-check-', '.yaml'], paths.app)
@@ -426,6 +451,154 @@ module XMClashSync
       end
       state.merge!('error' => code, 'failures' => count, 'retry_at' => now + delay, 'status' => 'error', 'last_event_at' => now)
     end
+    def measure_nodes(runtime, nodes)
+      queue, guard, delays, errors = Queue.new, Mutex.new, {}, []
+      nodes.each { |node| queue << node }
+      workers = Array.new([3, nodes.size].min) do
+        Thread.new do
+          loop do
+            begin
+              node = queue.pop(true)
+            rescue ThreadError
+              break
+            end
+            begin
+              value = system.measure(runtime, node)
+              raise Fault.new('auto_probe') unless value.nil? || (value.is_a?(Integer) && value.between?(1, AUTO_TIMEOUT))
+              guard.synchronize { delays[node] = value }
+            rescue Fault => e
+              guard.synchronize { errors << e.code }
+            rescue StandardError
+              guard.synchronize { errors << 'auto_control' }
+            end
+          end
+        end
+      end
+      workers.each(&:join)
+      raise Fault.new(errors.include?('auto_control') ? 'auto_control' : 'auto_probe') unless errors.empty?
+      delays
+    end
+    def auto_guard!(snap, identity)
+      raise Fault.new('busy') unless unchanged?(snap) && system.running?(paths) && system.identity(snap['runtime']) == identity
+    end
+    def auto_group!(runtime, name, nodes)
+      group = system.group(runtime, name)
+      raise Fault.new('busy') unless group['type'] == 'Selector' && group['all'].is_a?(Array) && group['all'].sort == nodes.sort
+      group
+    end
+    def auto_failure(auto, code, now)
+      count = auto['error'] == code ? auto.fetch('failures', 0) + 1 : 1
+      unless auto['notified_error'] == code
+        system.notify(code)
+        auto['notified_error'] = code
+      end
+      auto.merge!('status' => 'error', 'error' => code, 'failures' => count,
+                  'next_test_at' => now + [60 * (2 ** [count - 1, 4].min), 900].min)
+    end
+    def auto_choose(snap, identity, name, nodes, old, fastest)
+      runtime = snap['runtime']
+      auto_guard!(snap, identity)
+      begin
+        system.select(runtime, name, fastest)
+        raise Fault.new('auto_select') unless auto_group!(runtime, name, nodes)['now'] == fastest
+      rescue StandardError
+        # An IPC reply may fail after the update succeeded. Restore only this
+        # group's old choice, and only if nobody has selected a third node.
+        begin
+          auto_guard!(snap, identity)
+          observed = auto_group!(runtime, name, nodes)['now']
+          if observed == fastest && nodes.include?(old)
+            system.select(runtime, name, old)
+            raise Fault.new('auto_select') unless auto_group!(runtime, name, nodes)['now'] == old
+          end
+        rescue StandardError
+          # Reconcile all reported choices below; never reload for selection.
+        end
+        raise Fault.new('auto_select')
+      end
+    end
+    def auto_select(state, snap, routing, members, raw_hash, identity, now, force: false, resumed: false)
+      auto = state['auto_select'] ||= {}
+      due = force || resumed || auto['base_hash'] != raw_hash || auto['core_identity'] != identity ||
+            auto.fetch('next_test_at', 0) <= now || auto.fetch('last_tested_at', 0) > now
+      return unless due
+      auto.merge!('enabled' => true, 'interval_seconds' => AUTO_INTERVAL, 'tolerance_ms' => AUTO_TOLERANCE,
+                  'base_hash' => raw_hash, 'core_identity' => identity, 'last_attempt_at' => now)
+      begin
+        auto_guard!(snap, identity)
+        delays = measure_nodes(snap['runtime'], members.values.flatten.uniq)
+        auto_guard!(snap, identity)
+        live = system.live(snap['runtime'])
+        raise Fault.new('busy') unless ready?(snap, live) && loaded?(routing, members, live)
+        auto.delete('choices_unconfirmed')
+        auto['groups'] = {}
+        failed = false
+        members.each do |name, nodes|
+          auto_guard!(snap, identity)
+          current = auto_group!(snap['runtime'], name, nodes)['now']
+          valid = nodes.select { |node| delays[node] }
+          # Keep the current node on a tie, independent of list ordering.
+          fastest = valid.min_by { |node| [delays[node], node == current ? 0 : 1, nodes.index(node)] }
+          current_delay = delays[current]
+          decision = if !fastest
+                       'no_valid_candidate'
+                     elsif !nodes.include?(current)
+                       'missing_current'
+                     elsif !current_delay
+                       'current_timeout'
+                     elsif current != fastest && current_delay - delays[fastest] > AUTO_TOLERANCE
+                       'improvement_over_20ms'
+                     else
+                       'keep_current'
+                     end
+          report = {'active_node' => current, 'previous_delay_ms' => current_delay,
+                    'fastest_node' => fastest, 'fastest_delay_ms' => delays[fastest], 'decision' => decision}
+          auto['groups'][name] = report
+          if decision == 'no_valid_candidate'
+            failed = true
+            next
+          end
+          unless decision == 'keep_current'
+            begin
+              auto_choose(snap, identity, name, nodes, current, fastest)
+            rescue Fault
+              report['decision'] = 'selection_failed'
+              raise
+            end
+            report['active_node'] = fastest
+            auto['last_switched_at'] = now
+          end
+          report['active_delay_ms'] = delays[report['active_node']]
+        end
+        auto['last_tested_at'] = now
+        if failed
+          auto_failure(auto, 'auto_probe', now)
+        else
+          %w[error failures notified_error].each { |key| auto.delete(key) }
+          auto.merge!('status' => 'current', 'next_test_at' => now + AUTO_INTERVAL)
+        end
+      rescue Fault => e
+        if e.code == 'busy'
+          auto.merge!('status' => 'deferred', 'next_test_at' => now + 60)
+        else
+          auto_failure(auto, %w[auto_probe auto_select].include?(e.code) ? e.code : 'auto_control', now)
+        end
+        # If selection failed midway, expose the observed choices when safe.
+        if e.code == 'auto_select'
+          begin
+            auto_guard!(snap, identity)
+            auto.fetch('groups', {}).each do |name, report|
+              report['active_node'] = auto_group!(snap['runtime'], name, members[name])['now']
+              report['active_delay_ms'] = delays[report['active_node']]
+            end
+          rescue StandardError
+            auto['choices_unconfirmed'] = true
+          end
+        end
+      rescue StandardError
+        auto_failure(auto, 'auto_control', now)
+      end
+    end
     def tick(force: false)
       FileUtils.mkdir_p(paths.state, mode: 0700)
       File.chmod(0700, paths.state)
@@ -439,6 +612,7 @@ module XMClashSync
           snap = snapshot(binding)
           if !snap || !system.running?(paths) || !system.socket(snap['runtime'])
             state.merge!('status' => 'inactive', 'last_event_at' => now)
+            state['auto_select']['status'] = 'inactive' if state['auto_select']
             return persist(state, 'inactive')
           end
           previous_inactive = state['status'] == 'inactive'
@@ -449,6 +623,7 @@ module XMClashSync
             state['pending_since'] ||= now
             failure(state, 'pending', now) if now - state['pending_since'] >= 300
             state['status'] = 'waiting_client'
+            state['auto_select']['status'] = 'waiting_client' if state['auto_select']
             return persist(state, 'waiting_client')
           end
           state.delete('pending_since')
@@ -477,6 +652,9 @@ module XMClashSync
           same_script = snap['files'][snap['script_path']] == XMClashSync.extension(routing)
           applied = !(same_runtime && same_script && loaded?(routing, members, live))
           apply(snap, routing, members, live) if applied
+          # Routing application changes files; measure against a fresh guarded
+          # snapshot, not the pre-transaction one. Selection never reloads core.
+          auto_snap = applied ? snapshot(binding) : snap
           # Cache is committed only after successful core validation/loading or known matching live state.
           XMClashSync.atomic(paths.cache, body) if fetched && fetched['body'] && cache_body != body
           state.merge!('base_hash' => raw_hash, 'core_identity' => identity, 'routing_hash' => XMClashSync.hash(routing), 'last_event_at' => now)
@@ -491,8 +669,10 @@ module XMClashSync
             %w[error notified_error failures retry_at].each { |key| state.delete(key) }
             state['status'] = 'current'
           end
+          auto_select(state, auto_snap, routing, members, raw_hash, identity, now, force: force, resumed: previous_inactive || applied)
           persist(state, applied ? 'applied' : (stale ? 'cached' : 'unchanged'))
         rescue Fault => e
+          state['auto_select']['status'] = 'deferred_routing' if state['auto_select']
           if e.code == 'busy'
             if File.file?(paths.journal)
               failure(state, 'rollback', now)
@@ -504,6 +684,7 @@ module XMClashSync
           end
           persist(state, e.code)
         rescue StandardError
+          state['auto_select']['status'] = 'deferred_routing' if state['auto_select']
           failure(state, 'internal', now)
           persist(state, 'internal')
         end
@@ -605,7 +786,12 @@ module XMClashSync
     def status
       binding = XMClashSync.json(@paths.binding)
       state = XMClashSync.json(@paths.status)
-      {'installed' => File.file?(@paths.installed), 'enabled' => binding['enabled'] == true, 'agent_loaded' => @system.mac? && @system.loaded?(LABEL), 'status' => state['status'] || 'not_yet_checked', 'last_checked_at' => state['last_checked_at'], 'last_applied_at' => state['last_applied_at'], 'retry_at' => state['retry_at'], 'error' => state['error'] && MESSAGES.fetch(state['error'], MESSAGES['internal'])}
+      auto = state['auto_select'] || {}
+      auto_status = auto.reject { |key, _value| %w[base_hash core_identity notified_error].include?(key) }
+      auto_status['enabled'] = binding['enabled'] == true
+      auto_status['status'] = 'disabled' unless binding['enabled'] == true
+      auto_status['error'] = MESSAGES.fetch(auto['error'], MESSAGES['internal']) if auto['error']
+      {'installed' => File.file?(@paths.installed), 'enabled' => binding['enabled'] == true, 'agent_loaded' => @system.mac? && @system.loaded?(LABEL), 'status' => state['status'] || 'not_yet_checked', 'last_checked_at' => state['last_checked_at'], 'last_applied_at' => state['last_applied_at'], 'retry_at' => state['retry_at'], 'error' => state['error'] && MESSAGES.fetch(state['error'], MESSAGES['internal']), 'auto_select' => auto_status}
     end
   end
 
@@ -621,8 +807,12 @@ module XMClashSync
       puts JSON.pretty_generate(installer.status)
     when ['--once'], ['--tick']
       result = Runner.new(paths).tick(force: args == ['--once'])
-      puts result if args == ['--once']
-      return %w[download invalid core_test apply rollback binding local internal].include?(result) ? 1 : 0
+      auto = XMClashSync.json(paths.status).fetch('auto_select', {})
+      if args == ['--once']
+        puts result
+        puts "auto-select: #{auto['status']}" if auto['status']
+      end
+      return (%w[download invalid core_test apply rollback binding local internal].include?(result) || auto['status'] == 'error') ? 1 : 0
     else
       puts 'Usage: ruby sync-routing.rb --install | --uninstall | --status | --once'
       return 2
