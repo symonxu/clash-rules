@@ -442,10 +442,10 @@ module XMClashSync
         raise Fault.new('apply')
       end
     end
-    def failure(state, code, now)
+    def failure(state, code, now, threshold: 1)
       count = state['error'] == code ? state.fetch('failures', 0) + 1 : 1
       delay = [60 * (2 ** [count - 1, 4].min), 900].min
-      unless state['notified_error'] == code
+      if count >= threshold && state['notified_error'] != code
         system.notify(code)
         state['notified_error'] = code
       end
@@ -660,7 +660,7 @@ module XMClashSync
           state.merge!('base_hash' => raw_hash, 'core_identity' => identity, 'routing_hash' => XMClashSync.hash(routing), 'last_event_at' => now)
           state['last_applied_at'] = now if applied
           if stale
-            failure(state, 'download', now)
+            failure(state, 'download', now, threshold: 3)
             state['status'] = 'cached_latest_unconfirmed'
           else
             if due

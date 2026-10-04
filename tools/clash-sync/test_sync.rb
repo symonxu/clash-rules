@@ -252,6 +252,26 @@ class SyncTest < Minitest::Test
     assert_equal 'current', state['status']
     refute state.key?('error')
   end
+  def test_download_failure_with_cache_delays_notification_until_threshold
+    initial
+    @system.download_error = true
+    # First failure with cache: silent, no notification
+    @system.clock += 300
+    assert_equal 'cached', @runner.tick
+    assert_equal [], @system.notices
+    # Second failure: still silent
+    @system.clock = state['retry_at']
+    assert_equal 'cached', @runner.tick
+    assert_equal [], @system.notices
+    # Third failure: threshold reached, notify once
+    @system.clock = state['retry_at']
+    assert_equal 'cached', @runner.tick
+    assert_equal ['download'], @system.notices
+    # Fourth failure: backed off, no duplicate notification
+    @system.clock = state['retry_at']
+    assert_equal 'cached', @runner.tick
+    assert_equal ['download'], @system.notices
+  end
   def test_offline_cache_can_restore_missing_personal_routing
     initial
     write_runtime(@runtime)
