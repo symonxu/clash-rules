@@ -4,7 +4,7 @@
 
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf
 
-Mac 与 iOS 使用同一份个人配置，包含五个手动选择组和 107 条个人域名规则。Bybit 与 Web3 共用日本节点组。用户已在两端使用，Mac 切换后反馈运行稳定；后续线路情况仍以设备实际测试为准。
+Mac 与 iOS 使用同一份个人配置，包含五个手动选择组和 120 条个人域名规则。Bybit 与 Web3 共用日本节点组。用户已在两端使用，Mac 切换后反馈运行稳定；后续线路情况仍以设备实际测试为准。
 
 ## 导入与更新
 

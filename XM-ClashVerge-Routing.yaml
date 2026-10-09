@@ -105,9 +105,13 @@ rules:
   - DOMAIN-SUFFIX,cursor.com,XM-AI
   - DOMAIN-SUFFIX,cursor.sh,XM-AI
   - DOMAIN-SUFFIX,cursor-cdn.com,XM-AI
+  - DOMAIN-SUFFIX,cursorapi.com,XM-AI
+  - DOMAIN-SUFFIX,cursorvm.com,XM-AI
   - DOMAIN-SUFFIX,openrouter.ai,XM-AI
   - DOMAIN-SUFFIX,x.ai,XM-AI
   - DOMAIN-SUFFIX,grok.com,XM-AI
+  - DOMAIN-SUFFIX,grokusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,grokipedia.com,XM-AI
   - DOMAIN-SUFFIX,gemini.google.com,XM-AI
   - DOMAIN-SUFFIX,gemini.google,XM-AI
   - DOMAIN-SUFFIX,aistudio.google.com,XM-AI
@@ -115,6 +119,15 @@ rules:
   - DOMAIN-SUFFIX,ai.google.dev,XM-AI
   - DOMAIN,proactivebackend-pa.googleapis.com,XM-AI
   - DOMAIN,geller-pa.googleapis.com,XM-AI
+  - DOMAIN-SUFFIX,slack.com,XM-AI
+  - DOMAIN-SUFFIX,slack-core.com,XM-AI
+  - DOMAIN-SUFFIX,slack-edge.com,XM-AI
+  - DOMAIN-SUFFIX,slack-files.com,XM-AI
+  - DOMAIN-SUFFIX,slack-imgs.com,XM-AI
+  - DOMAIN-SUFFIX,slack-msgs.com,XM-AI
+  - DOMAIN-SUFFIX,slack-redir.net,XM-AI
+  - DOMAIN-SUFFIX,slackb.com,XM-AI
+  - DOMAIN-SUFFIX,slackhq.com,XM-AI
   - DOMAIN-SUFFIX,google.com,XM-Google
   - DOMAIN-SUFFIX,google.com.hk,XM-Google
   - DOMAIN-SUFFIX,googleapis.com,XM-Google
