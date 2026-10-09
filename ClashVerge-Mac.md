@@ -12,7 +12,7 @@ Google、AI、Web3（含 Bybit 与 RPC）、日常上网使用日本普通 02–
 
 组类型继续为 `select`，由本地接口控制选择。原生 `url-test` 在当前版本有候选顺序影响容差的边界，因此本程序直接比较整数延迟，保证严格的 20ms 阈值。客户端中显示“手动选择”是组接口类型，自动管理由程序承担；只导入 YAML 而未升级程序时仍是手动选择。iOS 保持手动。
 
-局域网直连 → 107 条个人域名规则（RPC、Bybit、Web3、AI、Google、Meta）→ 中国大陆 IP 直连 → 日常上网兜底。AI 专用 Google 域名优先于一般 Google 域名。MESL 原分组和分流规则被替换，DNS、节点和私有订阅保留。当前全部规则直接写在策略文件中，rule-providers 为空。
+局域网直连 → 120 条个人域名规则（RPC、Bybit、Web3、AI、Google、Meta）→ 中国大陆 IP 直连 → 日常上网兜底。AI 专用 Google 域名优先于一般 Google 域名。MESL 原分组和分流规则被替换，DNS、节点和私有订阅保留。当前全部规则直接写在策略文件中，rule-providers 为空。
 
 ## 自动同步
 

@@ -39,7 +39,7 @@ personal_lines = rule_text.lines.map(&:strip).reject { |line| line.empty? || lin
 extension_lines = extension_rules.lines.map(&:strip).reject { |line| line.empty? || line.start_with?('#') }
 abort 'Extension personal rules or fallback order differ' unless extension_lines == personal_lines + ['GEOIP,CN,DIRECT', 'FINAL,XM-日常上网']
 abort 'Unexpected DNS or node section' if extension.match?(/^\[(DNS|Host|Proxy|MITM)\]$/)
-puts 'Validated Shadowrocket: five groups, 107 personal domains, CN direct and daily fallback; DNS inherited.'
+puts "Validated Shadowrocket: five groups, #{personal_lines.size} personal domains, CN direct and daily fallback; DNS inherited."
 
 # Public configuration must not introduce private subscription endpoints.
 allowed_urls = Set.new([
