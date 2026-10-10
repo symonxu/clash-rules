@@ -75,7 +75,7 @@ Dir.chdir(root) do
     next unless File.file?(file)
     content = File.read(file, encoding: 'UTF-8')
     abort "Non-text tracked file: #{file}" unless content.valid_encoding? && !content.include?("\0")
-    content.scan(%r{https?://[^\s<>"'`)\]，。；]+}).each do |url|
+    content.scan(%r{https?://[^\s<>"'`)\],，。；]+}).each do |url|
       abort "Unexpected public URL in #{file}" unless allowed_urls.include?(url)
     end
   end
