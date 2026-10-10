@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 /usr/bin/ruby "$HOME/Library/Application Support/XM-ClashVerge-RoutingSync/sync-routing.rb" --status
 ```
 
-`enabled` 和 `agent_loaded` 应为 `true`。首轮处理完成后，`status` 应为 `current`；`last_checked_at` 是最近成功取得 GitHub 策略的 Unix 时间，`last_applied_at` 是最近实际加载的时间。`auto_select.status` 应为 `current`，其中包含最近测速时间、300 秒间隔、20ms 阈值及五组选择结果。安装后可删除下载包及桌面的旧手动更新入口，已安装任务仍独立运行；不要删除 Application Support 内的程序和状态目录。
+`enabled` 和 `agent_loaded` 应为 `true`。首轮处理完成后，`status` 应为 `current`；`last_checked_at` 是最近成功取得 GitHub 策略的 Unix 时间，`last_applied_at` 是最近实际加载的时间。`auto_select.status` 应为 `current`，其中包含最近测速时间、900 秒间隔、20ms 阈值及五组选择结果。安装后可删除下载包及桌面的旧手动更新入口，已安装任务仍独立运行；不要删除 Application Support 内的程序和状态目录。
 
 ## 更新方式
 
@@ -51,7 +51,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 
 需要升级本地程序：下载新版后重新执行 `--install`；只刷新公开 YAML 不会给旧程序添加测速能力。程序不会下载并执行远程代码。
 
-新程序每五分钟通过本机 Mihomo 接口测速，使用固定 `https://www.gstatic.com/generate_204`，期望响应 204，单节点超时五秒。最多三路并发；四个日本组复用同一轮结果，加上美国组共测十二个不同节点。使用内核返回的延迟，不改动现有统一延迟设置。
+新程序每十五分钟通过本机 Mihomo 接口测速，使用固定 `https://www.gstatic.com/generate_204`，期望响应 204，单节点超时五秒。最多三路并发；日本三组复用同一轮结果，加上美国组和东南亚 Web3 组共测十八个不同节点。使用内核返回的延迟，不改动现有统一延迟设置。
 
 - 当前节点有效时，只有 `当前节点延迟 - 最快候选延迟 > 20` 才换节点。10ms、恰好 20ms 保持，21ms 切换；延迟相同优先保持当前节点，与列表位置无关。
 - 当前节点测速超时或响应不满足 204，而其他候选有效时，允许故障切换。该失败仅表示测不到此测试端点，不代表所有应用都无法使用该节点。全部候选失败的组保持当前节点。

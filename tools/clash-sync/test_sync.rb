@@ -388,7 +388,7 @@ class SyncTest < Minitest::Test
   end
   def auto_state; state.fetch('auto_select'); end
   def auto_round
-    @system.clock += 300
+    @system.clock += XMClashSync::AUTO_INTERVAL
     @runner.tick
   end
   def jp_node; '🇯🇵 日本 03'; end
@@ -422,7 +422,7 @@ class SyncTest < Minitest::Test
     end
     assert_equal before, config_bytes
     assert_equal reloads, @system.reloads.size
-    assert_equal 300, auto_state['next_test_at'] - auto_state['last_tested_at']
+    assert_equal 900, auto_state['next_test_at'] - auto_state['last_tested_at']
   end
   def test_auto_limits_concurrent_probes_to_three
     initial

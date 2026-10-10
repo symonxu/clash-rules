@@ -20,7 +20,7 @@ module XMClashSync
   KEYS = %w[proxy-groups rule-providers rules].freeze
   GROUPS = %w[XM-Google XM-AI XM-Meta XM-Web3 XM-日常上网].freeze
   CLIENT_DNS_ADDITIONS = %w[ipv6 fake-ip-range6].freeze
-  AUTO_INTERVAL = 300
+  AUTO_INTERVAL = 900
   AUTO_TOLERANCE = 20
   AUTO_TIMEOUT = 5000
   AUTO_TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
