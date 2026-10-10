@@ -45,7 +45,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 /usr/bin/ruby "$HOME/Library/Application Support/XM-ClashVerge-RoutingSync/sync-routing.rb" --once
 ```
 
-每组必须恰好匹配六个节点。Google、AI、Web3、日常上网使用日本普通 02–04、家宽 08–10；Meta 使用美国普通 01–03、家宽 10–12。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
+每组必须恰好匹配六个节点。Google、AI、日常上网使用日本普通 02–04、家宽 08–10；Web3 使用马来西亚家宽 01–03、菲律宾 01、菲律宾 02 家宽、越南家宽；Meta 使用美国普通 01–03、家宽 10–12。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
 
 ## 五组自动择优
 
@@ -119,7 +119,7 @@ ruby scripts/validate_rules.rb
 ruby tools/clash-sync/test_sync.rb
 ```
 
-测试使用临时 HOME、假节点、模拟内核/下载/LaunchAgent；HTTP 协议测试仅连接临时模拟 Unix socket。Mihomo 校验进程、测速和 curl 被替换，不启动真实内核、不访问 MESL、不注册系统任务。覆盖节点变化、策略变化、同时变化、无变化、断网缓存、空组、非法规则、校验失败、加载与回退失败、并发修改、暂停恢复、睡眠时间跨度、安装卸载幂等性和安装失败恢复；另验证所有候选位置的 10/20/21ms 边界、12 节点共用测速、超时、部分或全部失败、接口异常、选节点失败与响应丢失恢复。现有 GitHub 校验任务在普通及无 UTF-8 区域设置的后台环境分别执行同一套测试；配置和脚本始终明确按 UTF-8 读取。
+测试使用临时 HOME、假节点、模拟内核/下载/LaunchAgent；HTTP 协议测试仅连接临时模拟 Unix socket。Mihomo 校验进程、测速和 curl 被替换，不启动真实内核、不访问 MESL、不注册系统任务。覆盖节点变化、策略变化、同时变化、无变化、断网缓存、空组、非法规则、校验失败、加载与回退失败、并发修改、暂停恢复、睡眠时间跨度、安装卸载幂等性和安装失败恢复；另验证所有候选位置的 10/20/21ms 边界、18 节点共用测速、超时、部分或全部失败、接口异常、选节点失败与响应丢失恢复。现有 GitHub 校验任务在普通及无 UTF-8 区域设置的后台环境分别执行同一套测试；配置和脚本始终明确按 UTF-8 读取。
 
 发布完成不代表本机验收通过。由你验证：
 
