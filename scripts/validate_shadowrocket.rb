@@ -81,3 +81,19 @@ Dir.chdir(root) do
   end
 end
 puts 'Validated public URL allowlist.'
+
+# Slim iOS config: standalone (no include), single Japan fallback group with 08 家宽 first.
+slim = File.read(File.join(root, 'XM-Shadowrocket-Slim.conf'))
+abort 'Slim must not include get.conf' if slim.match?(/^include\s*=/)
+abort 'Slim must not use MESL DNS' if slim.lines.any? { |l| l.start_with?('dns-server') && l.include?('rlose.com') }
+slim_groups = slim.split('[Proxy Group]', 2).last.split('[Rule]', 2).first.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
+abort 'Slim must have exactly one group XM-日本' unless slim_groups.size == 1 && slim_groups.first.start_with?('XM-日本 = fallback,🇯🇵 日本 08 家宽,🇯🇵 日本 02,')
+abort 'Slim fallback members must be Japan nodes' unless slim_groups.first.split(' = ', 2).last.split(',').reject { |f| f.include?('=') || f == 'fallback' }.all? { |n| n.include?('日本') }
+slim_rules = slim.split('[Rule]', 2).last.split(/^\[/, 2).first.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
+slim_rules.each do |line|
+  policy = line.start_with?('FINAL,') ? line.split(',')[1] : line.split(',')[2]
+  abort "Slim rule uses unknown policy: #{line}" unless %w[XM-日本 DIRECT REJECT].include?(policy)
+end
+abort 'Slim must end with FINAL,XM-日本' unless slim_rules.last == 'FINAL,XM-日本'
+%w[grokbot.com x.ai].each { |d| abort "Slim missing #{d}" unless slim_rules.include?("DOMAIN-SUFFIX,#{d},XM-日本") }
+puts "Validated Shadowrocket Slim: 1 fallback group, #{slim_rules.size} rules."
