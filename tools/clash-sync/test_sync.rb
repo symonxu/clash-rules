@@ -100,6 +100,8 @@ class SyncTest < Minitest::Test
       ["🇯🇵 日本 %02d" % n, "🇯🇵 日本 %02d 家宽" % n, "🇺🇸 美国 %02d" % n, "🇺🇸 美国 %02d 家宽" % n].map do |name|
         {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
       end
+    end + ['🇲🇾 马来西亚', '🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 02 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南', '🇻🇳 越南 家宽'].map do |name|
+      {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
     end
     @raw = {'proxies' => nodes, 'dns' => {'enable' => true, 'nameserver' => ['PRIVATE-DNS-CANARY']}, 'proxy-groups' => [{'name' => 'MESL-original', 'type' => 'select', 'proxies' => [nodes.first['name']]}], 'rules' => ['MATCH,MESL-original']}
     @runtime = @raw.merge('secret' => 'PRIVATE-API-CANARY', 'tun' => {'enable' => true}, 'mixed-port' => 7897, 'mode' => 'rule', 'ipv6' => true, 'profile' => {'store-fake-ip' => true})
@@ -405,17 +407,18 @@ class SyncTest < Minitest::Test
       end
     end
   end
-  def test_auto_five_groups_share_twelve_measurements_without_reload_or_config_write
+  def test_auto_five_groups_share_eighteen_measurements_without_reload_or_config_write
     initial
     before, reloads = config_bytes, @system.reloads.size
     @system.measurements.clear
     @system.delays[jp_node] = 70
     @system.delays['🇺🇸 美国 02'] = 70
+    @system.delays['🇵🇭 菲律宾 02 家宽'] = 70
     auto_round
-    assert_equal 12, @system.measurements.size
-    assert_equal 12, @system.measurements.uniq.size
+    assert_equal 18, @system.measurements.size
+    assert_equal 18, @system.measurements.uniq.size
     XMClashSync::GROUPS.each do |group|
-      assert_equal(group == 'XM-Meta' ? '🇺🇸 美国 02' : jp_node, @system.group(nil, group)['now'])
+      assert_equal({'XM-Meta' => '🇺🇸 美国 02', 'XM-Web3' => '🇵🇭 菲律宾 02 家宽'}.fetch(group, jp_node), @system.group(nil, group)['now'])
     end
     assert_equal before, config_bytes
     assert_equal reloads, @system.reloads.size
@@ -559,38 +562,38 @@ class SyncTest < Minitest::Test
   end
   def test_auto_subscription_change_restart_force_and_wake_trigger_measurements
     initial
-    assert_equal 12, @system.measurements.size
+    assert_equal 18, @system.measurements.size
     @system.clock += 60
     @runner.tick
-    assert_equal 12, @system.measurements.size
+    assert_equal 18, @system.measurements.size
     node_change
     @runner.tick
-    assert_equal 24, @system.measurements.size
+    assert_equal 36, @system.measurements.size
     @system.core_identity = 'new-core'
     @runner.tick
-    assert_equal 36, @system.measurements.size
+    assert_equal 54, @system.measurements.size
     @runner.tick(force: true)
-    assert_equal 48, @system.measurements.size
+    assert_equal 72, @system.measurements.size
     @system.clock += 7200
     @runner.tick
-    assert_equal 60, @system.measurements.size
+    assert_equal 90, @system.measurements.size
   end
   def test_auto_inactive_or_other_subscription_never_measures
     initial
     @system.running = false
     auto_round
-    assert_equal 12, @system.measurements.size
+    assert_equal 18, @system.measurements.size
     assert_equal 'inactive', auto_state['status']
     @system.running = true
     @profiles['current'] = 'another-uid'
     write_profiles
     auto_round
-    assert_equal 12, @system.measurements.size
+    assert_equal 18, @system.measurements.size
     @profiles['current'] = 'mesl-uid'
     write_profiles
     @system.clock += 60
     @runner.tick
-    assert_equal 24, @system.measurements.size
+    assert_equal 36, @system.measurements.size
   end
   def test_stopped_clash_and_restart
     initial
