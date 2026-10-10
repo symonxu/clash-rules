@@ -53,7 +53,21 @@ allowed_urls = Set.new([
   'https://github.com/MetaCubeX/mihomo/blob/v1.19.31/adapter/outboundgroup/urltest.go#L110-L131',
   'https://shadowlaunch.com/',
   'https://dash.mesurl.com/#/docs/10',
-  'https://github.com/LOWERTOP/Shadowrocket'
+  'https://github.com/LOWERTOP/Shadowrocket',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Advertising.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Apple_cn.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Direct.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Google.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Hijacking.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Microsoft_cn.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Other.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Privacy.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Spotify.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Telegram.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Twitter.list',
+  'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Youtube.list',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.conf',
+  'https://www.google.com'
 ])
 Dir.chdir(root) do
   tracked_files = IO.popen(['git', 'ls-files', '-z'], &:read).split("\0")
@@ -61,7 +75,7 @@ Dir.chdir(root) do
     next unless File.file?(file)
     content = File.read(file, encoding: 'UTF-8')
     abort "Non-text tracked file: #{file}" unless content.valid_encoding? && !content.include?("\0")
-    content.scan(%r{https?://[^\s<>"'`)\]，。；]+}).each do |url|
+    content.scan(%r{https?://[^\s<>"'`)\],，。；]+}).each do |url|
       abort "Unexpected public URL in #{file}" unless allowed_urls.include?(url)
     end
   end
