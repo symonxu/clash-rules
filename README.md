@@ -13,7 +13,7 @@
 
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml
 
-五个分组（Google、AI、Meta、Web3、日常上网），每组六个节点，由本地程序每五分钟测速择优，比当前节点快超过 20ms 才切换。DNS、TUN、系统代理由你在客户端里自行设置，程序不改动。
+五个分组（Google、AI、Meta、Web3、日常上网），每组六个节点，由本地程序每十五分钟测速择优，比当前节点快超过 20ms 才切换。DNS、TUN、系统代理由你在客户端里自行设置，程序不改动。
 
 详见：[Mac 接入与回退说明](ClashVerge-Mac.md)、[自动同步程序安装说明](tools/clash-sync/README.md)
 
