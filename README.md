@@ -1,43 +1,41 @@
 # Mac / iOS 个人分流配置
 
-Mac 使用 Clash Verge Rev，iOS 使用 Shadowrocket。MESL 提供节点与基础 DNS，GitHub 维护个人分组和域名规则。
+本仓库只保留两套当前在用的配置：
+
+- **Mac**：Clash Verge Rev + `XM-ClashVerge-Routing.yaml` + 本地自动同步程序 `tools/clash-sync`
+- **iOS**：Shadowrocket + `XM-Shadowrocket-Slim.conf`
+
+节点统一来自 MESL 订阅，订阅保留在各自 App 里更新；GitHub 只维护分组和规则，不含节点、私有订阅地址或凭据。
 
 ## Mac：Clash Verge Rev
 
-固定策略链接（由本机自动同步程序接入 MESL 订阅）：
+策略链接（不是节点订阅，由本地同步程序接入 MESL 订阅）：
 
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml
 
-这不是含节点的普通订阅。由你一次安装[本地自动同步程序](tools/clash-sync/README.md)，之后自动检查 GitHub 策略；MESL 节点仍由 Clash 更新，私有订阅与 DNS 留在设备。五组各六个节点，由新版程序每五分钟自动择优，快超过 20ms 才换节点（10ms、20ms 保持，当前节点失败可故障切换）。规则由个人策略完整替换。程序不切换 VPN、TUN、系统代理或 DNS；安装与本机验收由你操作。
+五个分组（Google、AI、Meta、Web3、日常上网），每组六个节点，由本地程序每五分钟测速择优，比当前节点快超过 20ms 才切换。DNS、TUN、系统代理由你在客户端里自行设置，程序不改动。
 
-[Mac 接入与回退说明](ClashVerge-Mac.md)
+详见：[Mac 接入与回退说明](ClashVerge-Mac.md)、[自动同步程序安装说明](tools/clash-sync/README.md)
 
 ## iOS：Shadowrocket
 
-固定配置链接：
+配置链接：
 
-https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Groups.conf
+https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.conf
 
-仓库地址保留原名，以保证已导入的配置链接继续有效。
+- 独立配置，不再 include MESL 的 `get.conf`。
+- 只有一个分组 **XM-日本**（fallback 类型）：**日本 08 家宽优先**，08 不通时按顺序切到日本 02、03……，08 恢复后自动切回。每 600 秒检测一次。
+- 所有代理规则和兜底 `FINAL` 都走 XM-日本；中国大陆、局域网、微信、Apple 国内服务直连；广告、隐私追踪、劫持域名拦截。
+- DNS：`223.5.5.5`、`119.29.29.29`，备用 `system`；IPv6 关闭。
+- 首页保留 MESL 订阅，节点从订阅里来。
+- **注意**：XM-日本 组里写的是节点完整名称（如 `🇯🇵 日本 08 家宽`），这样才能固定顺序。MESL 如果改了节点名，需要同步修改配置文件，否则对应节点会失效。
 
-| 分组 | 节点范围（每组六个，手动选择） |
-| --- | --- |
-| XM-Google | 日本普通 02–04、家宽 08–10 |
-| XM-AI | 日本普通 02–04、家宽 08–10 |
-| XM-Meta | 美国普通 01–03、家宽 10–12 |
-| XM-Web3（含 Bybit） | 日本普通 02–04、家宽 08–10 |
-| XM-日常上网 | 日本普通 02–04、家宽 08–10 |
+详见：[iOS 使用说明](Shadowrocket-iOS.md)
 
-保留设备上的 MESL 官方 `get.conf` 和节点订阅，导入并使用上述 XM 配置。XM 配置通过 `include = get.conf` 继承基础配置的 DNS 与策略，个人规则写在 XM 文件中。中国大陆 IP 直连，未命中此前规则的请求由日常上网组兜底。
-
-更新个人规则时，更新 XM 配置并重新使用配置；节点订阅与 MESL 基础配置分别按客户端和服务商提供的方式更新。旧 XM 模块已停用，仅保留文件供兼容，无需重复启用。
-
-[Mac 与 iOS 使用说明](Shadowrocket-iOS.md)
-
-本地静态校验：
+## 本地校验
 
 ```sh
 ruby scripts/validate_rules.rb
 ```
 
-校验覆盖配置结构、分组与规则引用、固定更新地址、公开链接及自动同步的隔离测试。线路可用性与实际规则命中以客户端运行结果为准。不要提交私有订阅地址或节点凭据。
+校验 iOS 配置结构（单一 XM-日本 组、08 家宽排第一、规则只指向 XM-日本/DIRECT/REJECT）、Mac 策略文件、自动同步程序的离线测试，以及公开链接白名单（防止误提交私有订阅地址）。GitHub Actions 在每个 PR 上自动运行同样的校验。线路是否可用以客户端实际运行为准。

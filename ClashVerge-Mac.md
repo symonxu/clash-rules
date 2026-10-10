@@ -10,7 +10,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 
 Google、AI、Web3（含 Bybit 与 RPC）、日常上网使用日本普通 02–04、家宽 08–10；Meta 使用美国普通 01–03、家宽 10–12。五组各匹配六个节点，由新版本地同步程序自动择优：每五分钟测速，当前节点比最快节点慢超过 20ms 才切换；差 10ms 或恰好 20ms 都保持。当前节点测速失败而其他候选有效时允许故障切换；全组失败则保持原选择。
 
-组类型继续为 `select`，由本地接口控制选择。原生 `url-test` 在当前版本有候选顺序影响容差的边界，因此本程序直接比较整数延迟，保证严格的 20ms 阈值。客户端中显示“手动选择”是组接口类型，自动管理由程序承担；只导入 YAML 而未升级程序时仍是手动选择。iOS 保持手动。
+组类型继续为 `select`，由本地接口控制选择。原生 `url-test` 在当前版本有候选顺序影响容差的边界，因此本程序直接比较整数延迟，保证严格的 20ms 阈值。客户端中显示“手动选择”是组接口类型，自动管理由程序承担；只导入 YAML 而未升级程序时仍是手动选择。
 
 局域网直连 → 120 条个人域名规则（RPC、Bybit、Web3、AI、Google、Meta）→ 中国大陆 IP 直连 → 日常上网兜底。AI 专用 Google 域名优先于一般 Google 域名。MESL 原分组和分流规则被替换，DNS、节点和私有订阅保留。当前全部规则直接写在策略文件中，rule-providers 为空。
 
@@ -30,6 +30,6 @@ Clash 自行更新 MESL 节点；本地任务每分钟检查客户端与订阅�
 
 逐项验证 Google、AI、Meta、Bybit/Web3、国内网站和普通海外网站，查看实际规则命中与最终节点。重启客户端及更新 MESL 后，五组应继续保留。GitHub 隔离测试不能证明本机接口兼容、目标服务登录或线路可用性。
 
-合盖联网与唤醒重连单独验收，本程序不调整 Mac 电源设置。iOS Shadowrocket 配置和入口继续独立维护。
+合盖联网与唤醒重连单独验收，本程序不调整 Mac 电源设置。iOS 使用独立的 `XM-Shadowrocket-Slim.conf`（单一 XM-日本 组），与 Mac 的五组策略互不影响，见 [iOS 使用说明](Shadowrocket-iOS.md)。
 
 实现依据：[Clash Verge 扩展配置](https://www.clashverge.dev/guide/extend.html)、[订阅扩展脚本](https://www.clashverge.dev/guide/script.html)。
