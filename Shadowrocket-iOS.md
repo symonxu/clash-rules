@@ -35,3 +35,5 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.
 - 开发者网站：https://shadowlaunch.com/
 - MESL Shadowrocket 教程：https://dash.mesurl.com/#/docs/10
 - 第三方配置手册：https://github.com/LOWERTOP/Shadowrocket
+
+Apple 直连：App Store（国区和美区）、软件下载和系统更新域名直连，与 Mac 规则顺序一致；Siri 和 iCloud 专用代理仍走 XM-AI。
