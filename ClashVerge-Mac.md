@@ -30,6 +30,6 @@ Clash 自行更新 MESL 节点；本地任务每分钟检查客户端与订阅�
 
 逐项验证 Google、AI、Meta、Bybit/Web3、国内网站和普通海外网站，查看实际规则命中与最终节点。重启客户端及更新 MESL 后，五组应继续保留。GitHub 隔离测试不能证明本机接口兼容、目标服务登录或线路可用性。
 
-合盖联网与唤醒重连单独验收，本程序不调整 Mac 电源设置。iOS 使用独立的 `XM-Shadowrocket-Slim.conf`（单一 XM-日本 组），与 Mac 的五组策略互不影响，见 [iOS 使用说明](Shadowrocket-iOS.md)。
+合盖联网与唤醒重连单独验收，本程序不调整 Mac 电源设置。iOS 使用独立的 `XM-Shadowrocket-Slim.conf`，分组和分流规则与 Mac 的五组策略保持一致（iOS 用 Shadowrocket 自带的 url-test 测速择优，不依赖本程序），见 [iOS 使用说明](Shadowrocket-iOS.md)。
 
 实现依据：[Clash Verge 扩展配置](https://www.clashverge.dev/guide/extend.html)、[订阅扩展脚本](https://www.clashverge.dev/guide/script.html)。

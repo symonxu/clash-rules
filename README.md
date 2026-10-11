@@ -24,11 +24,12 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.conf
 
 - 独立配置，不再 include MESL 的 `get.conf`。
-- 只有一个分组 **XM-日本**（fallback 类型）：**日本 08 家宽优先**，08 不通时按顺序切到日本 02、03……，08 恢复后自动切回。每 600 秒检测一次。
-- 所有代理规则和兜底 `FINAL` 都走 XM-日本；中国大陆、局域网、微信、Apple 国内服务直连；广告、隐私追踪、劫持域名拦截。
+- 五个分组与 Mac 端完全一致：**XM-Google**、**XM-AI**、**XM-日常上网** 用日本 02、03、04 和日本 08、09、10 家宽；**XM-Web3** 用马来西亚 01、02、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽；**XM-Meta** 用美国 01、02、03 和美国 10、11、12 家宽。
+- 每组都是 url-test 类型：每 900 秒（15 分钟）测速一次，新节点快超过 20ms 才切换，和 Mac 同步程序的择优逻辑相同。
+- 分流规则与 Mac 的 `XM-ClashVerge-Routing.yaml` 保持同样的域名、目标组和先后顺序（AI 相关的 Google 域名排在通用 Google 之前）；兜底 `FINAL` 走 XM-日常上网。中国大陆、局域网、微信、Apple 国内服务直连；广告、隐私追踪、劫持域名拦截。
 - DNS：`223.5.5.5`、`119.29.29.29`，备用 `system`；IPv6 关闭。
 - 首页保留 MESL 订阅，节点从订阅里来。
-- **注意**：XM-日本 组里写的是节点完整名称（如 `🇯🇵 日本 08 家宽`），这样才能固定顺序。MESL 如果改了节点名，需要同步修改配置文件，否则对应节点会失效。
+- **注意**：各组里写的是节点完整名称（如 `🇯🇵 日本 08 家宽`）。MESL 如果改了节点名，需要同步修改配置文件，否则对应节点会失效。
 
 详见：[iOS 使用说明](Shadowrocket-iOS.md)
 
@@ -38,4 +39,4 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.
 ruby scripts/validate_rules.rb
 ```
 
-校验 iOS 配置结构（单一 XM-日本 组、08 家宽排第一、规则只指向 XM-日本/DIRECT/REJECT）、Mac 策略文件、自动同步程序的离线测试，以及公开链接白名单（防止误提交私有订阅地址）。GitHub Actions 在每个 PR 上自动运行同样的校验。线路是否可用以客户端实际运行为准。
+校验 iOS 配置结构（五个 url-test 组及成员、规则只指向五个组/DIRECT/REJECT、域名规则与 Mac 一致）、Mac 策略文件、自动同步程序的离线测试，以及公开链接白名单（防止误提交私有订阅地址）。GitHub Actions 在每个 PR 上自动运行同样的校验。线路是否可用以客户端实际运行为准。

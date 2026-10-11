@@ -16,8 +16,8 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.
 
 ## 检查是否生效
 
-- 首页"代理分组"里应只有一个 **XM-日本**，显示为 `FALLBACK`，当前节点为 **🇯🇵 日本 08 家宽**。
-- 08 不可用时会自动显示为日本 02 等后备节点，08 恢复后切回。
+- 首页"代理分组"里应有五个组：**XM-Google**、**XM-AI**、**XM-Meta**、**XM-Web3**、**XM-日常上网**，都显示为 `URL-TEST`，与 Mac 端分组一致。
+- 每组每 15 分钟自动测速，新节点快超过 20ms 才切换；节点断开时会切到组内其他可用节点。
 - 首页的 MESL 订阅保留并照常更新，节点从这里来。
 
 ## 推荐设置
@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.
 
 ## 节点改名
 
-XM-日本 组里写的是节点完整名称。MESL 如果改了日本节点的名字，组里会少节点（08 家宽改名则会直接跳到后备节点）。出现这种情况时修改 `XM-Shadowrocket-Slim.conf` 的 `[Proxy Group]` 一行即可。
+五个组里写的是节点完整名称。MESL 如果改了节点名字，对应组里会少节点。出现这种情况时修改 `XM-Shadowrocket-Slim.conf` 的 `[Proxy Group]` 对应行即可；如果 Mac 端分组或规则有调整，也要同步改这里（校验脚本会检查两端域名规则是否一致）。
 
 ## 参考
 
