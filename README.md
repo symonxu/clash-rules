@@ -40,3 +40,5 @@ ruby scripts/validate_rules.rb
 ```
 
 校验 iOS 配置结构（五个 url-test 组及成员、规则只指向五个组/DIRECT/REJECT、域名规则与 Mac 一致）、Mac 策略文件、自动同步程序的离线测试，以及公开链接白名单（防止误提交私有订阅地址）。GitHub Actions 在每个 PR 上自动运行同样的校验。线路是否可用以客户端实际运行为准。
+
+Apple 直连：App Store（国区和美区）、软件下载和系统更新域名直连，与 Mac 规则顺序一致；Siri 和 iCloud 专用代理仍走 XM-AI。

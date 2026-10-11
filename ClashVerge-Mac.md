@@ -12,7 +12,7 @@ Google、AI、日常上网使用日本普通 02–04、家宽 08–10；Web3（�
 
 组类型继续为 `select`，由本地接口控制选择。原生 `url-test` 在当前版本有候选顺序影响容差的边界，因此本程序直接比较整数延迟，保证严格的 20ms 阈值。客户端中显示“手动选择”是组接口类型，自动管理由程序承担；只导入 YAML 而未升级程序时仍是手动选择。
 
-局域网直连 → 125 条个人域名规则（RPC、Bybit、Web3、AI、Google、Meta）→ 中国大陆 IP 直连 → 日常上网兜底。AI 专用 Google 域名优先于一般 Google 域名。MESL 原分组和分流规则被替换，DNS、节点和私有订阅保留。当前全部规则直接写在策略文件中，rule-providers 为空。
+局域网直连 → 143 条个人域名规则（RPC、Bybit、Web3、AI、Google、Meta、Apple 直连）→ 中国大陆 IP 直连 → 日常上网兜底。AI 专用 Google 域名优先于一般 Google 域名。MESL 原分组和分流规则被替换，DNS、节点和私有订阅保留。当前全部规则直接写在策略文件中，rule-providers 为空。
 
 ## 自动同步
 
@@ -33,3 +33,5 @@ Clash 自行更新 MESL 节点；本地任务每分钟检查客户端与订阅�
 合盖联网与唤醒重连单独验收，本程序不调整 Mac 电源设置。iOS 使用独立的 `XM-Shadowrocket-Slim.conf`，分组和分流规则与 Mac 的五组策略保持一致（iOS 用 Shadowrocket 自带的 url-test 测速择优，不依赖本程序），见 [iOS 使用说明](Shadowrocket-iOS.md)。
 
 实现依据：[Clash Verge 扩展配置](https://www.clashverge.dev/guide/extend.html)、[订阅扩展脚本](https://www.clashverge.dev/guide/script.html)。
+
+Apple 直连：App Store（国区和美区）、软件下载和系统更新域名直连，走苹果国内 CDN；Siri 和 iCloud 专用代理仍走 XM-AI，且排在前面。
