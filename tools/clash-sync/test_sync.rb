@@ -100,7 +100,7 @@ class SyncTest < Minitest::Test
       ["🇯🇵 日本 %02d" % n, "🇯🇵 日本 %02d 家宽" % n, "🇺🇸 美国 %02d" % n, "🇺🇸 美国 %02d 家宽" % n].map do |name|
         {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
       end
-    end + ['🇲🇾 马来西亚', '🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 02 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南', '🇻🇳 越南 家宽'].map do |name|
+    end + ['🇲🇾 马来西亚', '🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 02 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南', '🇻🇳 越南 家宽', '🇯🇵 日本 01 [0.3X]', '🇭🇰 香港 01', '🇭🇰 香港 03 [0.3X]', '🇭🇰 香港 13 家宽', '🇭🇰 香港 14 家宽', '🇭🇰 香港 15 家宽'].map do |name|
       {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
     end
     @raw = {'proxies' => nodes, 'dns' => {'enable' => true, 'nameserver' => ['PRIVATE-DNS-CANARY']}, 'proxy-groups' => [{'name' => 'MESL-original', 'type' => 'select', 'proxies' => [nodes.first['name']]}], 'rules' => ['MATCH,MESL-original']}
@@ -550,7 +550,7 @@ class SyncTest < Minitest::Test
   end
   def test_auto_lost_reply_never_overwrites_a_new_third_choice
     initial
-    third = '🇯🇵 日本 04'
+    third = '🇯🇵 日本 05'
     @system.delays[jp_node] = 50
     @system.select_failure_group = 'XM-Google'
     @system.select_reply_lost = true

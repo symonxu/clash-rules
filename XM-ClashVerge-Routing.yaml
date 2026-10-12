@@ -6,12 +6,12 @@ proxy-groups:
     type: select
     include-all: true
     exclude-type: direct
-    filter: '(^| )日本 (0[2-4]|(08|09|10) 家宽)$'
+    filter: '(^| )日本 (0[235-7]|09 家宽)$'
   - name: XM-AI
     type: select
     include-all: true
     exclude-type: direct
-    filter: '(^| )日本 (0[2-4]|(08|09|10) 家宽)$'
+    filter: '(^| )日本 (0[235-7]|09 家宽)$'
   - name: XM-Meta
     type: select
     include-all: true
@@ -21,12 +21,12 @@ proxy-groups:
     type: select
     include-all: true
     exclude-type: direct
-    filter: '(^| )(马来西亚 0[1-3] 家宽|菲律宾 (01|02 家宽)|越南 家宽)$'
+    filter: '(^| )(马来西亚 0[13] 家宽|菲律宾 (01|02 家宽)|越南 家宽|香港 14 家宽)$'
   - name: XM-日常上网
     type: select
     include-all: true
     exclude-type: direct
-    filter: '(^| )日本 (0[2-4]|(08|09|10) 家宽)$'
+    filter: '(^| )日本 (0[235-7]|09 家宽)$'
 rule-providers: {}
 rules:
   - DOMAIN,localhost,DIRECT
