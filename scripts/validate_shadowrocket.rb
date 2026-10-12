@@ -7,9 +7,9 @@ require 'yaml'
 slim = File.read(File.join(root, 'XM-Shadowrocket-Slim.conf'))
 abort 'Slim must not include get.conf' if slim.match?(/^include\s*=/)
 abort 'Slim must not use MESL DNS' if slim.lines.any? { |l| l.start_with?('dns-server') && l.include?('rlose.com') }
-jp = ['🇯🇵 日本 02', '🇯🇵 日本 03', '🇯🇵 日本 04', '🇯🇵 日本 08 家宽', '🇯🇵 日本 09 家宽', '🇯🇵 日本 10 家宽']
+jp = ['🇯🇵 日本 02', '🇯🇵 日本 03', '🇯🇵 日本 05', '🇯🇵 日本 06', '🇯🇵 日本 07', '🇯🇵 日本 09 家宽']
 us = ['🇺🇸 美国 01', '🇺🇸 美国 02', '🇺🇸 美国 03', '🇺🇸 美国 10 家宽', '🇺🇸 美国 11 家宽', '🇺🇸 美国 12 家宽']
-w3 = ['🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 02 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南 家宽']
+w3 = ['🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南 家宽', '🇭🇰 香港 14 家宽']
 wanted_groups = { 'XM-Google' => jp, 'XM-AI' => jp, 'XM-Meta' => us, 'XM-Web3' => w3, 'XM-日常上网' => jp }
 group_opts = %w[url=https://www.gstatic.com/generate_204 interval=900 tolerance=20 timeout=5]
 slim_groups = slim.split('[Proxy Group]', 2).last.split('[Rule]', 2).first.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }

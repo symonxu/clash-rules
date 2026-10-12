@@ -45,13 +45,13 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 /usr/bin/ruby "$HOME/Library/Application Support/XM-ClashVerge-RoutingSync/sync-routing.rb" --once
 ```
 
-每组必须恰好匹配六个节点。Google、AI、日常上网使用日本普通 02–04、家宽 08–10；Web3 使用马来西亚家宽 01–03、菲律宾 01、菲律宾 02 家宽、越南家宽；Meta 使用美国普通 01–03、家宽 10–12。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
+每组必须恰好匹配六个节点。Google、AI、日常上网使用日本普通 02、03、05、06、07 与日本 09 家宽；Web3 使用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；Meta 使用美国普通 01–03、家宽 10–12。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
 
 ## 五组自动择优
 
 需要升级本地程序：下载新版后重新执行 `--install`；只刷新公开 YAML 不会给旧程序添加测速能力。程序不会下载并执行远程代码。
 
-新程序每十五分钟通过本机 Mihomo 接口测速，使用固定 `https://www.gstatic.com/generate_204`，期望响应 204，单节点超时五秒。最多三路并发；日本三组复用同一轮结果，加上美国组和东南亚 Web3 组共测十八个不同节点。使用内核返回的延迟，不改动现有统一延迟设置。
+新程序每十五分钟通过本机 Mihomo 接口测速，使用固定 `https://www.gstatic.com/generate_204`，期望响应 204，单节点超时五秒。最多三路并发；日本三组复用同一轮结果，加上美国组和 Web3 组（东南亚家宽加香港 14 家宽）共测十八个不同节点。使用内核返回的延迟，不改动现有统一延迟设置。
 
 - 当前节点有效时，只有 `当前节点延迟 - 最快候选延迟 > 20` 才换节点。10ms、恰好 20ms 保持，21ms 切换；延迟相同优先保持当前节点，与列表位置无关。
 - 当前节点测速超时或响应不满足 204，而其他候选有效时，允许故障切换。该失败仅表示测不到此测试端点，不代表所有应用都无法使用该节点。全部候选失败的组保持当前节点。
