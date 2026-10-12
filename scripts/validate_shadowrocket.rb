@@ -10,15 +10,18 @@ abort 'Slim must not use MESL DNS' if slim.lines.any? { |l| l.start_with?('dns-s
 jp = ['🇯🇵 日本 02', '🇯🇵 日本 03', '🇯🇵 日本 05', '🇯🇵 日本 06', '🇯🇵 日本 07', '🇯🇵 日本 09 家宽']
 us = ['🇺🇸 美国 01', '🇺🇸 美国 02', '🇺🇸 美国 03', '🇺🇸 美国 10 家宽', '🇺🇸 美国 11 家宽', '🇺🇸 美国 12 家宽']
 w3 = ['🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南 家宽', '🇭🇰 香港 14 家宽']
-wanted_groups = { 'XM-Google' => jp, 'XM-AI' => jp, 'XM-Meta' => us, 'XM-Web3' => w3, 'XM-日常上网' => jp }
+tw = ['🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽']
+wanted_groups = { 'XM-Google' => jp, 'XM-AI' => jp, 'XM-Meta' => us, 'XM-Web3' => w3, 'XM-Bybit' => tw, 'XM-日常上网' => jp }
+fallback_opts = %w[url=https://www.gstatic.com/generate_204 interval=900 timeout=5]
 group_opts = %w[url=https://www.gstatic.com/generate_204 interval=900 tolerance=20 timeout=5]
 slim_groups = slim.split('[Proxy Group]', 2).last.split('[Rule]', 2).first.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 parsed = slim_groups.to_h { |l| name, spec = l.split(' = ', 2); [name, spec.to_s.split(',')] }
-abort 'Slim must have exactly the five XM groups' unless slim_groups.size == 5 && parsed.keys.sort == wanted_groups.keys.sort
+abort 'Slim must have exactly the six XM groups' unless slim_groups.size == 6 && parsed.keys.sort == wanted_groups.keys.sort
 parsed.each do |name, fields|
-  abort "#{name} must be url-test" unless fields.first == 'url-test'
+  kind, opts = name == 'XM-Bybit' ? ['fallback', fallback_opts] : ['url-test', group_opts]
+  abort "#{name} must be #{kind}" unless fields.first == kind
   abort "#{name} has wrong members" unless fields[1..].reject { |f| f.include?('=') } == wanted_groups[name]
-  abort "#{name} has wrong test options" unless fields.select { |f| f.include?('=') }.sort == group_opts.sort
+  abort "#{name} has wrong test options" unless fields.select { |f| f.include?('=') }.sort == opts.sort
 end
 slim_rules = slim.split('[Rule]', 2).last.split(/^\[/, 2).first.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 slim_rules.each do |line|
@@ -30,8 +33,9 @@ abort 'Slim must end with GEOIP,CN,DIRECT then FINAL,XM-日常上网' unless sli
 mac_domain = YAML.safe_load(File.read(File.join(root, 'XM-ClashVerge-Routing.yaml'))).fetch('rules').grep(/^DOMAIN(-SUFFIX|-KEYWORD)?,/)
 mac_domain.each { |r| abort "Slim missing Mac rule #{r}" unless slim_rules.include?(r) }
 abort 'Slim domain rule order differs from Mac' unless slim_rules.select { |r| mac_domain.include?(r) } == mac_domain
+abort 'Bybit must use XM-Bybit' unless %w[bybit.com bybit.biz byabcde.com bycsi.com].all? { |d| slim_rules.include?("DOMAIN-SUFFIX,#{d},XM-Bybit") } && slim_rules.none? { |r| r.match?(/by(bit|abcde|csi)/) && !r.end_with?(',XM-Bybit') }
 abort 'AI Google domains must precede Google' unless slim_rules.index('DOMAIN-SUFFIX,gemini.google.com,XM-AI') < slim_rules.index('DOMAIN-SUFFIX,google.com,XM-Google')
-puts "Validated Shadowrocket Slim: 5 url-test groups, #{slim_rules.size} rules, consistent with Mac."
+puts "Validated Shadowrocket Slim: 5 url-test groups + XM-Bybit fallback, #{slim_rules.size} rules, consistent with Mac."
 
 # Public configuration must not introduce private subscription endpoints.
 allowed_urls = Set.new([

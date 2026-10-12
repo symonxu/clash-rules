@@ -8,7 +8,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 
 ## 分组与规则
 
-Google、AI、日常上网使用日本普通 02、03、05、06、07 与日本 09 家宽；Web3（含 Bybit 与 RPC）使用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；Meta 使用美国普通 01–03、家宽 10–12。五组各匹配六个节点，由新版本地同步程序自动择优：每十五分钟测速，当前节点比最快节点慢超过 20ms 才切换；差 10ms 或恰好 20ms 都保持。当前节点测速失败而其他候选有效时允许故障切换；全组失败则保持原选择。
+Google、AI、日常上网使用日本普通 02、03、05、06、07 与日本 09 家宽；Web3（含 Bitget 与 RPC）使用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；Meta 使用美国普通 01–03、家宽 10–12；Bybit 使用台湾 08 家宽（主）和台湾 09 家宽（备），只匹配这两个节点，不按速度切换：08 测速超时才切到 09，08 恢复后切回，两个都失败则保持原选择。其余五组各匹配六个节点，由新版本地同步程序自动择优：每十五分钟测速，当前节点比最快节点慢超过 20ms 才切换；差 10ms 或恰好 20ms 都保持。当前节点测速失败而其他候选有效时允许故障切换；全组失败则保持原选择。
 
 组类型继续为 `select`，由本地接口控制选择。原生 `url-test` 在当前版本有候选顺序影响容差的边界，因此本程序直接比较整数延迟，保证严格的 20ms 阈值。客户端中显示“手动选择”是组接口类型，自动管理由程序承担；只导入 YAML 而未升级程序时仍是手动选择。
 
@@ -28,9 +28,9 @@ Clash 自行更新 MESL 节点；本地任务每分钟检查客户端与订阅�
 
 本机状态目录为 `~/Library/Application Support/XM-ClashVerge-RoutingSync`，最近应用前备份位于 `last-backup`。此目录及客户端配置含私有数据，不上传 GitHub。详细的暂停、回退与卸载步骤见安装说明。
 
-逐项验证 Google、AI、Meta、Bybit/Web3、国内网站和普通海外网站，查看实际规则命中与最终节点。重启客户端及更新 MESL 后，五组应继续保留。GitHub 隔离测试不能证明本机接口兼容、目标服务登录或线路可用性。
+逐项验证 Google、AI、Meta、Bybit/Web3、国内网站和普通海外网站，查看实际规则命中与最终节点。重启客户端及更新 MESL 后，六组应继续保留。GitHub 隔离测试不能证明本机接口兼容、目标服务登录或线路可用性。
 
-合盖联网与唤醒重连单独验收，本程序不调整 Mac 电源设置。iOS 使用独立的 `XM-Shadowrocket-Slim.conf`，分组和分流规则与 Mac 的五组策略保持一致（iOS 用 Shadowrocket 自带的 url-test 测速择优，不依赖本程序），见 [iOS 使用说明](Shadowrocket-iOS.md)。
+合盖联网与唤醒重连单独验收，本程序不调整 Mac 电源设置。iOS 使用独立的 `XM-Shadowrocket-Slim.conf`，分组和分流规则与 Mac 的六组策略保持一致（iOS 用 Shadowrocket 自带的 url-test 测速择优，XM-Bybit 用 fallback，不依赖本程序），见 [iOS 使用说明](Shadowrocket-iOS.md)。
 
 实现依据：[Clash Verge 扩展配置](https://www.clashverge.dev/guide/extend.html)、[订阅扩展脚本](https://www.clashverge.dev/guide/script.html)。
 

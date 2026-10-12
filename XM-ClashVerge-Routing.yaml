@@ -1,5 +1,6 @@
 # Clash Verge MESL 个人策略；只替换分组与规则，DNS 和节点继承本机订阅。
 # 五组由新版本地同步程序自动择优：每 900 秒测速，快超过 20ms 才切换。
+# XM-Bybit 固定台湾 08 家宽，只在 08 测速超时时切到 09，08 恢复后切回。
 # select 保留为控制接口；无需在客户端手动选节点。单独导入本 YAML 不会开启自动择优。
 proxy-groups:
   - name: XM-Google
@@ -22,6 +23,11 @@ proxy-groups:
     include-all: true
     exclude-type: direct
     filter: '(^| )(马来西亚 0[13] 家宽|菲律宾 (01|02 家宽)|越南 家宽|香港 14 家宽)$'
+  - name: XM-Bybit
+    type: select
+    include-all: true
+    exclude-type: direct
+    filter: '(^| )台湾 0[89] 家宽$'
   - name: XM-日常上网
     type: select
     include-all: true
@@ -62,10 +68,10 @@ rules:
   - DOMAIN,mainnet.era.zksync.io,XM-Web3
   - DOMAIN,rpc.gnosischain.com,XM-Web3
   - DOMAIN-SUFFIX,trongrid.io,XM-Web3
-  - DOMAIN-SUFFIX,bybit.com,XM-Web3
-  - DOMAIN-SUFFIX,bybit.biz,XM-Web3
-  - DOMAIN-SUFFIX,byabcde.com,XM-Web3
-  - DOMAIN-SUFFIX,bycsi.com,XM-Web3
+  - DOMAIN-SUFFIX,bybit.com,XM-Bybit
+  - DOMAIN-SUFFIX,bybit.biz,XM-Bybit
+  - DOMAIN-SUFFIX,byabcde.com,XM-Bybit
+  - DOMAIN-SUFFIX,bycsi.com,XM-Bybit
   - DOMAIN-SUFFIX,metamask.io,XM-Web3
   - DOMAIN-SUFFIX,phantom.app,XM-Web3
   - DOMAIN-SUFFIX,phantom.com,XM-Web3

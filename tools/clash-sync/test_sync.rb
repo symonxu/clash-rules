@@ -100,7 +100,7 @@ class SyncTest < Minitest::Test
       ["🇯🇵 日本 %02d" % n, "🇯🇵 日本 %02d 家宽" % n, "🇺🇸 美国 %02d" % n, "🇺🇸 美国 %02d 家宽" % n].map do |name|
         {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
       end
-    end + ['🇲🇾 马来西亚', '🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 02 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南', '🇻🇳 越南 家宽', '🇯🇵 日本 01 [0.3X]', '🇭🇰 香港 01', '🇭🇰 香港 03 [0.3X]', '🇭🇰 香港 13 家宽', '🇭🇰 香港 14 家宽', '🇭🇰 香港 15 家宽'].map do |name|
+    end + ['🇲🇾 马来西亚', '🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 02 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南', '🇻🇳 越南 家宽', '🇯🇵 日本 01 [0.3X]', '🇭🇰 香港 01', '🇭🇰 香港 03 [0.3X]', '🇭🇰 香港 13 家宽', '🇭🇰 香港 14 家宽', '🇭🇰 香港 15 家宽', '🇨🇳 台湾 01 [0.3X]', '🇨🇳 台湾 02', '🇨🇳 台湾 06', '🇨🇳 台湾 07 家宽', '🇨🇳 台湾 08', '🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽'].map do |name|
       {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
     end
     @raw = {'proxies' => nodes, 'dns' => {'enable' => true, 'nameserver' => ['PRIVATE-DNS-CANARY']}, 'proxy-groups' => [{'name' => 'MESL-original', 'type' => 'select', 'proxies' => [nodes.first['name']]}], 'rules' => ['MATCH,MESL-original']}
@@ -145,9 +145,10 @@ class SyncTest < Minitest::Test
     (before.keys - XMClashSync::KEYS - ['profile']).each { |k| assert_equal before[k], after[k], k }
     assert_equal true, after['profile']['store-selected']
     assert_equal true, after['profile']['store-fake-ip']
-    assert_equal 5, after['proxy-groups'].size
+    assert_equal 6, after['proxy-groups'].size
     members = XMClashSync.validate(@routing, after)
-    assert members.values.all? { |list| list.size == 6 }
+    assert members.all? { |name, list| list.size == (name == 'XM-Bybit' ? 2 : 6) }
+    assert_equal ['🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽'], members['XM-Bybit'].sort
     refute members['XM-Google'].include?('🇯🇵 日本 01')
     assert_equal YAML.dump(@routing), XMClashSync.read(@paths.cache)
     refute File.exist?(@paths.journal)
@@ -407,7 +408,7 @@ class SyncTest < Minitest::Test
       end
     end
   end
-  def test_auto_five_groups_share_eighteen_measurements_without_reload_or_config_write
+  def test_auto_six_groups_share_twenty_measurements_without_reload_or_config_write
     initial
     before, reloads = config_bytes, @system.reloads.size
     @system.measurements.clear
@@ -415,14 +416,60 @@ class SyncTest < Minitest::Test
     @system.delays['🇺🇸 美国 02'] = 70
     @system.delays['🇵🇭 菲律宾 02 家宽'] = 70
     auto_round
-    assert_equal 18, @system.measurements.size
-    assert_equal 18, @system.measurements.uniq.size
+    assert_equal 20, @system.measurements.size
+    assert_equal 20, @system.measurements.uniq.size
     XMClashSync::GROUPS.each do |group|
-      assert_equal({'XM-Meta' => '🇺🇸 美国 02', 'XM-Web3' => '🇵🇭 菲律宾 02 家宽'}.fetch(group, jp_node), @system.group(nil, group)['now'])
+      assert_equal({'XM-Meta' => '🇺🇸 美国 02', 'XM-Web3' => '🇵🇭 菲律宾 02 家宽', 'XM-Bybit' => '🇨🇳 台湾 08 家宽'}.fetch(group, jp_node), @system.group(nil, group)['now'])
     end
     assert_equal before, config_bytes
     assert_equal reloads, @system.reloads.size
     assert_equal 900, auto_state['next_test_at'] - auto_state['last_tested_at']
+  end
+  TW08, TW09 = '🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽'
+  def bybit_now; @system.group(nil, 'XM-Bybit')['now']; end
+  def test_bybit_never_switches_for_speed_while_primary_healthy
+    initial
+    @system.choose('XM-Bybit', TW08)
+    @system.delays[TW08], @system.delays[TW09] = 400, 20
+    auto_round
+    assert_equal TW08, bybit_now
+    assert_equal 'keep_current', auto_state['groups']['XM-Bybit']['decision']
+  end
+  def test_bybit_fails_over_only_on_timeout_and_returns_to_primary
+    initial
+    @system.choose('XM-Bybit', TW08)
+    @system.delays[TW08] = nil
+    auto_round
+    assert_equal TW09, bybit_now
+    assert_equal 'current_timeout', auto_state['groups']['XM-Bybit']['decision']
+    @system.delays[TW08] = 300
+    @system.delays[TW09] = 20
+    @system.clock += 900
+    @runner.tick
+    assert_equal TW08, bybit_now
+    assert_equal 'primary_restored', auto_state['groups']['XM-Bybit']['decision']
+  end
+  def test_bybit_stays_on_backup_while_primary_down_and_holds_when_both_fail
+    initial
+    @system.choose('XM-Bybit', TW09)
+    @system.delays[TW08] = nil
+    auto_round
+    assert_equal TW09, bybit_now
+    assert_equal 'keep_current', auto_state['groups']['XM-Bybit']['decision']
+    @system.delays[TW09] = nil
+    @system.clock += 900
+    @runner.tick
+    assert_equal TW09, bybit_now
+    assert_equal 'no_valid_candidate', auto_state['groups']['XM-Bybit']['decision']
+  end
+  def test_bybit_group_rejects_wrong_member_count
+    routing = Marshal.load(Marshal.dump(@routing))
+    routing['proxy-groups'].find { |g| g['name'] == 'XM-Bybit' }['filter'] = '(^| )台湾 0[7-9] 家宽$'
+    error = assert_raises(XMClashSync::Fault) { XMClashSync.validate(routing, XMClashSync.parse(XMClashSync.read(runtime_path))) }
+    assert_equal 'invalid', error.code
+    routing['proxy-groups'].find { |g| g['name'] == 'XM-Google' }['filter'] = '(^| )日本 0[2-3]$'
+    routing['proxy-groups'].find { |g| g['name'] == 'XM-Bybit' }['filter'] = '(^| )台湾 0[89] 家宽$'
+    assert_raises(XMClashSync::Fault) { XMClashSync.validate(routing, XMClashSync.parse(XMClashSync.read(runtime_path))) }
   end
   def test_auto_limits_concurrent_probes_to_three
     initial
@@ -562,38 +609,38 @@ class SyncTest < Minitest::Test
   end
   def test_auto_subscription_change_restart_force_and_wake_trigger_measurements
     initial
-    assert_equal 18, @system.measurements.size
+    assert_equal 20, @system.measurements.size
     @system.clock += 60
     @runner.tick
-    assert_equal 18, @system.measurements.size
+    assert_equal 20, @system.measurements.size
     node_change
     @runner.tick
-    assert_equal 36, @system.measurements.size
+    assert_equal 40, @system.measurements.size
     @system.core_identity = 'new-core'
     @runner.tick
-    assert_equal 54, @system.measurements.size
+    assert_equal 60, @system.measurements.size
     @runner.tick(force: true)
-    assert_equal 72, @system.measurements.size
+    assert_equal 80, @system.measurements.size
     @system.clock += 7200
     @runner.tick
-    assert_equal 90, @system.measurements.size
+    assert_equal 100, @system.measurements.size
   end
   def test_auto_inactive_or_other_subscription_never_measures
     initial
     @system.running = false
     auto_round
-    assert_equal 18, @system.measurements.size
+    assert_equal 20, @system.measurements.size
     assert_equal 'inactive', auto_state['status']
     @system.running = true
     @profiles['current'] = 'another-uid'
     write_profiles
     auto_round
-    assert_equal 18, @system.measurements.size
+    assert_equal 20, @system.measurements.size
     @profiles['current'] = 'mesl-uid'
     write_profiles
     @system.clock += 60
     @runner.tick
-    assert_equal 36, @system.measurements.size
+    assert_equal 40, @system.measurements.size
   end
   def test_stopped_clash_and_restart
     initial

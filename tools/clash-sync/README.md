@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 /usr/bin/ruby "$HOME/Library/Application Support/XM-ClashVerge-RoutingSync/sync-routing.rb" --status
 ```
 
-`enabled` 和 `agent_loaded` 应为 `true`。首轮处理完成后，`status` 应为 `current`；`last_checked_at` 是最近成功取得 GitHub 策略的 Unix 时间，`last_applied_at` 是最近实际加载的时间。`auto_select.status` 应为 `current`，其中包含最近测速时间、900 秒间隔、20ms 阈值及五组选择结果。安装后可删除下载包及桌面的旧手动更新入口，已安装任务仍独立运行；不要删除 Application Support 内的程序和状态目录。
+`enabled` 和 `agent_loaded` 应为 `true`。首轮处理完成后，`status` 应为 `current`；`last_checked_at` 是最近成功取得 GitHub 策略的 Unix 时间，`last_applied_at` 是最近实际加载的时间。`auto_select.status` 应为 `current`，其中包含最近测速时间、900 秒间隔、20ms 阈值及六组选择结果。安装后可删除下载包及桌面的旧手动更新入口，已安装任务仍独立运行；不要删除 Application Support 内的程序和状态目录。
 
 ## 更新方式
 
@@ -45,13 +45,13 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 /usr/bin/ruby "$HOME/Library/Application Support/XM-ClashVerge-RoutingSync/sync-routing.rb" --once
 ```
 
-每组必须恰好匹配六个节点。Google、AI、日常上网使用日本普通 02、03、05、06、07 与日本 09 家宽；Web3 使用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；Meta 使用美国普通 01–03、家宽 10–12。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
+XM-Bybit 必须恰好匹配两个节点（台湾 08、09 家宽），其余五组必须恰好匹配六个节点。Google、AI、日常上网使用日本普通 02、03、05、06、07 与日本 09 家宽；Web3 使用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；Meta 使用美国普通 01–03、家宽 10–12；Bybit 使用台湾 08 家宽（主）、09 家宽（备），只做故障切换：08 正常就一直用 08，08 测速超时才切到 09，08 恢复后切回，两个都失败保持原选择。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
 
 ## 五组自动择优
 
 需要升级本地程序：下载新版后重新执行 `--install`；只刷新公开 YAML 不会给旧程序添加测速能力。程序不会下载并执行远程代码。
 
-新程序每十五分钟通过本机 Mihomo 接口测速，使用固定 `https://www.gstatic.com/generate_204`，期望响应 204，单节点超时五秒。最多三路并发；日本三组复用同一轮结果，加上美国组和 Web3 组（东南亚家宽加香港 14 家宽）共测十八个不同节点。使用内核返回的延迟，不改动现有统一延迟设置。
+新程序每十五分钟通过本机 Mihomo 接口测速，使用固定 `https://www.gstatic.com/generate_204`，期望响应 204，单节点超时五秒。最多三路并发；日本三组复用同一轮结果，加上美国组、Web3 组（东南亚家宽加香港 14 家宽）和 Bybit 组（台湾 08、09 家宽）共测二十个不同节点。使用内核返回的延迟，不改动现有统一延迟设置。
 
 - 当前节点有效时，只有 `当前节点延迟 - 最快候选延迟 > 20` 才换节点。10ms、恰好 20ms 保持，21ms 切换；延迟相同优先保持当前节点，与列表位置无关。
 - 当前节点测速超时或响应不满足 204，而其他候选有效时，允许故障切换。该失败仅表示测不到此测试端点，不代表所有应用都无法使用该节点。全部候选失败的组保持当前节点。
@@ -123,12 +123,12 @@ ruby tools/clash-sync/test_sync.rb
 
 发布完成不代表本机验收通过。由你验证：
 
-1. 安装后自动同步启用，五个 XM 组出现，每组六个节点。
-2. 在 Clash 更新 MESL 后，五组保留，节点和 DNS 使用更新后的 MESL，自动选择只使用各组六个候选。
+1. 安装后自动同步启用，六个 XM 组出现，XM-Bybit 两个节点，其余每组六个节点。
+2. 在 Clash 更新 MESL 后，六组保留，节点和 DNS 使用更新后的 MESL，自动选择只使用各组六个候选。
 3. 修改 GitHub 的一条个人规则后，正常联网时通常五分钟内应用，无需刷新节点或点击桌面文件；失败重试时可能更久。
 4. 实测 Google、AI、Meta、Bybit/Web3、国内及普通海外网站，检查规则命中和最终节点。
 5. 重启 Clash、重新登录、唤醒后继续同步，下载失败保持现有连接。
-6. 查看 `auto_select` 的五组结果；下一次自动检查推进测速时间，不因测速重载内核。实际线路的延迟不能人为精确控制，10/20/21ms 边界由隔离测试保证。
+6. 查看 `auto_select` 的六组结果；下一次自动检查推进测速时间，不因测速重载内核。实际线路的延迟不能人为精确控制，10/20/21ms 边界由隔离测试保证。
 
 本程序不调整电源设置；合盖期间持续联网与唤醒后重连须另外验收。
 
