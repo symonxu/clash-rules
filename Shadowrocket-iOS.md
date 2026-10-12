@@ -16,7 +16,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.
 
 ## 检查是否生效
 
-- 首页"代理分组"里应有五个组：**XM-Google**、**XM-AI**、**XM-Meta**、**XM-Web3**、**XM-日常上网**，都显示为 `URL-TEST`，与 Mac 端分组一致。
+- 首页"代理分组"里应有六个组：**XM-Google**、**XM-AI**、**XM-Meta**、**XM-Web3**、**XM-日常上网** 显示为 `URL-TEST`；**XM-Bybit** 显示为 `FALLBACK`，成员是台湾 08 家宽（主）和台湾 09 家宽（备），08 可用时一直用 08，只有 08 测速失败才用 09。与 Mac 端分组一致。
 - 每组每 15 分钟自动测速，新节点快超过 20ms 才切换；节点断开时会切到组内其他可用节点。
 - 首页的 MESL 订阅保留并照常更新，节点从这里来。
 
@@ -28,7 +28,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.
 
 ## 节点改名
 
-五个组里写的是节点完整名称。MESL 如果改了节点名字，对应组里会少节点。出现这种情况时修改 `XM-Shadowrocket-Slim.conf` 的 `[Proxy Group]` 对应行即可；如果 Mac 端分组或规则有调整，也要同步改这里（校验脚本会检查两端域名规则是否一致）。
+六个组里写的是节点完整名称。MESL 如果改了节点名字，对应组里会少节点。出现这种情况时修改 `XM-Shadowrocket-Slim.conf` 的 `[Proxy Group]` 对应行即可；如果 Mac 端分组或规则有调整，也要同步改这里（校验脚本会检查两端域名规则是否一致）。
 
 ## 参考
 

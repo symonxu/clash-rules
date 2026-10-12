@@ -18,7 +18,11 @@ module XMClashSync
   LABEL = 'com.xumeng.clash-personal-sync'.freeze
   LEGACY_LABEL = 'com.xumeng.clash-verge-routing-sync'.freeze
   KEYS = %w[proxy-groups rule-providers rules].freeze
-  GROUPS = %w[XM-Google XM-AI XM-Meta XM-Web3 XM-日常上网].freeze
+  GROUPS = %w[XM-Google XM-AI XM-Meta XM-Web3 XM-Bybit XM-日常上网].freeze
+  # Fixed-IP groups: exact member count; the first member is primary and is
+  # only left when its delay test fails (failover), never for speed.
+  FAILOVER_GROUPS = {'XM-Bybit' => 2}.freeze
+  GROUP_SIZE = 6
   CLIENT_DNS_ADDITIONS = %w[ipv6 fake-ip-range6].freeze
   AUTO_INTERVAL = 900
   AUTO_TOLERANCE = 20
@@ -88,7 +92,7 @@ module XMClashSync
   def self.validate(routing, runtime)
     raise Fault.new('invalid') unless routing.is_a?(Hash) && routing.keys.sort == KEYS.sort && routing['rule-providers'] == {}
     groups, rules = routing.values_at('proxy-groups', 'rules')
-    raise Fault.new('invalid') unless groups.is_a?(Array) && groups.size == 5 && groups.all? { |g| g.is_a?(Hash) && g['name'].is_a?(String) } && groups.map { |g| g['name'] }.sort == GROUPS.sort
+    raise Fault.new('invalid') unless groups.is_a?(Array) && groups.size == GROUPS.size && groups.all? { |g| g.is_a?(Hash) && g['name'].is_a?(String) } && groups.map { |g| g['name'] }.sort == GROUPS.sort
     nodes = runtime['proxies']
     raise Fault.new('local') unless nodes.is_a?(Array) && nodes.all? { |n| n.is_a?(Hash) && n['name'].is_a?(String) }
     raise Fault.new('invalid') unless nodes.map { |n| n['name'] }.uniq.size == nodes.size
@@ -97,7 +101,7 @@ module XMClashSync
       raise Fault.new('invalid') unless (g.keys - %w[name type include-all exclude-type filter]).empty? && g['type'] == 'select' && g['include-all'] == true && g['exclude-type'] == 'direct' && g['filter'].is_a?(String)
       filter = Regexp.new(g['filter'])
       members[g['name']] = nodes.select { |n| n['type'] != 'direct' && filter.match?(n['name']) }.map { |n| n['name'] }
-      raise Fault.new('invalid') unless members[g['name']].size == 6
+      raise Fault.new('invalid') unless members[g['name']].size == FAILOVER_GROUPS.fetch(g['name'], GROUP_SIZE)
     end
     raise Fault.new('invalid') unless rules.is_a?(Array) && rules.last == 'MATCH,XM-日常上网' && rules.count { |r| r.is_a?(String) && r.start_with?('MATCH,') } == 1
     rules.each do |rule|
@@ -540,12 +544,18 @@ module XMClashSync
           # Keep the current node on a tie, independent of list ordering.
           fastest = valid.min_by { |node| [delays[node], node == current ? 0 : 1, nodes.index(node)] }
           current_delay = delays[current]
+          if FAILOVER_GROUPS.key?(name)
+            primary = nodes.min # e.g. 台湾 08 家宽 before 09
+            fastest = delays[primary] ? primary : (delays[current] && nodes.include?(current) ? current : valid.first)
+          end
           decision = if !fastest
                        'no_valid_candidate'
                      elsif !nodes.include?(current)
                        'missing_current'
                      elsif !current_delay
                        'current_timeout'
+                     elsif FAILOVER_GROUPS.key?(name)
+                       current == fastest ? 'keep_current' : 'primary_restored'
                      elsif current != fastest && current_delay - delays[fastest] > AUTO_TOLERANCE
                        'improvement_over_20ms'
                      else
