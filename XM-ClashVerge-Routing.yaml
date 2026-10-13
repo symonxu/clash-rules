@@ -94,6 +94,7 @@ rules:
   - DOMAIN-SUFFIX,bitgetapps.com,XM-Web3
   - DOMAIN-SUFFIX,pancakeswap.finance,XM-Web3
   - DOMAIN-SUFFIX,hyperliquid.xyz,XM-Web3
+  - DOMAIN-SUFFIX,hyperunit.xyz,XM-Web3
   - DOMAIN-SUFFIX,apple-relay.apple.com,XM-AI
   - DOMAIN-SUFFIX,apple-relay.cloudflare.com,XM-AI
   - DOMAIN-SUFFIX,apple-relay.fastly-edge.com,XM-AI
@@ -123,6 +124,7 @@ rules:
   - DOMAIN-SUFFIX,cursorvm.com,XM-AI
   - DOMAIN-SUFFIX,openrouter.ai,XM-AI
   - DOMAIN-SUFFIX,x.ai,XM-AI
+  - DOMAIN-SUFFIX,grokbot.com,XM-AI
   - DOMAIN-SUFFIX,grok.com,XM-AI
   - DOMAIN-SUFFIX,grokusercontent.com,XM-AI
   - DOMAIN-SUFFIX,grokipedia.com,XM-AI
@@ -173,6 +175,9 @@ rules:
   - DOMAIN-SUFFIX,cdninstagram.com,XM-Meta
   - DOMAIN-SUFFIX,threads.com,XM-Meta
   - DOMAIN-SUFFIX,threads.net,XM-Meta
+  - DOMAIN-SUFFIX,whatsapp.com,XM-Meta
+  - DOMAIN-SUFFIX,whatsapp.net,XM-Meta
+  - DOMAIN-SUFFIX,wa.me,XM-Meta
   - DOMAIN-SUFFIX,muse.ai,XM-Meta
   - DOMAIN-SUFFIX,apps.apple.com,DIRECT
   - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
@@ -192,5 +197,15 @@ rules:
   - DOMAIN,xp.apple.com,DIRECT
   - DOMAIN,configuration.apple.com,DIRECT
   - DOMAIN,gs-loc-cn.apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com,DIRECT
+  - DOMAIN-SUFFIX,icloud-content.com,DIRECT
+  - DOMAIN-SUFFIX,ls.apple.com,DIRECT
+  - DOMAIN-SUFFIX,gc.apple.com,DIRECT
+  - DOMAIN,gsa.apple.com,DIRECT
+  - DOMAIN,gsas.apple.com,DIRECT
+  - DOMAIN,time.apple.com,DIRECT
+  - DOMAIN-SUFFIX,qq.com,DIRECT
+  - DOMAIN-SUFFIX,weixin.com,DIRECT
+  - DOMAIN-SUFFIX,wechat.com,DIRECT
   - GEOIP,CN,DIRECT
   - MATCH,XM-日常上网
