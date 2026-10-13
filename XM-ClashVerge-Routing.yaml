@@ -95,6 +95,9 @@ rules:
   - DOMAIN-SUFFIX,pancakeswap.finance,XM-Web3
   - DOMAIN-SUFFIX,hyperliquid.xyz,XM-Web3
   - DOMAIN-SUFFIX,hyperunit.xyz,XM-Web3
+  - DOMAIN-SUFFIX,polymarket.com,XM-Web3
+  - DOMAIN-SUFFIX,across.to,XM-Web3
+  - DOMAIN-SUFFIX,coingecko.com,XM-Web3
   - DOMAIN-SUFFIX,apple-relay.apple.com,XM-AI
   - DOMAIN-SUFFIX,apple-relay.cloudflare.com,XM-AI
   - DOMAIN-SUFFIX,apple-relay.fastly-edge.com,XM-AI
