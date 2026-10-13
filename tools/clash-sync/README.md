@@ -45,7 +45,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 /usr/bin/ruby "$HOME/Library/Application Support/XM-ClashVerge-RoutingSync/sync-routing.rb" --once
 ```
 
-XM-Bybit 必须恰好匹配两个节点（台湾 08、09 家宽），其余五组必须恰好匹配六个节点。Google、AI、日常上网使用日本普通 02、03、05、06、07 与日本 09 家宽；Web3 使用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；Meta 使用美国普通 01–03、家宽 10–12；Bybit 使用台湾 08 家宽（主）、09 家宽（备），只做故障切换：08 正常就一直用 08，08 测速超时才切到 09，08 恢复后切回，两个都失败保持原选择。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
+XM-Bybit 必须恰好匹配两个节点（台湾 08、09 家宽），其余五组必须恰好匹配六个节点。Google、AI、日常上网使用日本普通 02、03、04、05、06、07；Web3 使用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；Meta 使用美国普通 01–03、家宽 10–12；Bybit 使用台湾 08 家宽（主）、09 家宽（备），只做故障切换：08 正常就一直用 08，08 测速超时才切到 09，08 恢复后切回，两个都失败保持原选择。筛选结果不足或超过六个都拒绝应用。当前版本只支持已有三字段结构、空 `rule-providers` 和内联 DOMAIN、DOMAIN-SUFFIX、DOMAIN-KEYWORD、IP-CIDR、IP-CIDR6、GEOIP、MATCH 规则；若以后改为远程规则集，需要先升级程序的校验逻辑。
 
 ## 五组自动择优
 

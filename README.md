@@ -24,7 +24,7 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.conf
 
 - 独立配置，不再 include MESL 的 `get.conf`。
-- 六个分组与 Mac 端完全一致：**XM-Google**、**XM-AI**、**XM-日常上网** 用日本 02、03、05、06、07 和日本 09 家宽；**XM-Web3** 用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；**XM-Meta** 用美国 01、02、03 和美国 10、11、12 家宽；**XM-Bybit**（Bybit 专用，固定 IP）只用台湾 08 家宽（主）和台湾 09 家宽（备），iOS 上是 fallback 组，08 可用就一直用 08。
+- 六个分组与 Mac 端完全一致：**XM-Google**、**XM-AI**、**XM-日常上网** 用日本 02、03、04、05、06、07；**XM-Web3** 用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；**XM-Meta** 用美国 01、02、03 和美国 10、11、12 家宽；**XM-Bybit**（Bybit 专用，固定 IP）只用台湾 08 家宽（主）和台湾 09 家宽（备），iOS 上是 fallback 组，08 可用就一直用 08。
 - 每组都是 url-test 类型：每 900 秒（15 分钟）测速一次，新节点快超过 20ms 才切换，和 Mac 同步程序的择优逻辑相同。
 - 分流规则与 Mac 的 `XM-ClashVerge-Routing.yaml` 保持同样的域名、目标组和先后顺序（AI 相关的 Google 域名排在通用 Google 之前）；兜底 `FINAL` 走 XM-日常上网。中国大陆、局域网、微信、Apple 国内服务直连；广告、隐私追踪、劫持域名拦截。
 - DNS：`223.5.5.5`、`119.29.29.29`，备用 `system`；IPv6 关闭。
