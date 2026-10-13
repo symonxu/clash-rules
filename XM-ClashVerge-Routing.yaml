@@ -7,12 +7,12 @@ proxy-groups:
     type: select
     include-all: true
     exclude-type: direct
-    filter: '(^| )日本 (0[235-7]|09 家宽)$'
+    filter: '(^| )日本 0[2-7]$'
   - name: XM-AI
     type: select
     include-all: true
     exclude-type: direct
-    filter: '(^| )日本 (0[235-7]|09 家宽)$'
+    filter: '(^| )日本 0[2-7]$'
   - name: XM-Meta
     type: select
     include-all: true
@@ -32,7 +32,7 @@ proxy-groups:
     type: select
     include-all: true
     exclude-type: direct
-    filter: '(^| )日本 (0[235-7]|09 家宽)$'
+    filter: '(^| )日本 0[2-7]$'
 rule-providers: {}
 rules:
   - DOMAIN,localhost,DIRECT

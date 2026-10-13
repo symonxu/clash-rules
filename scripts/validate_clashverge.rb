@@ -11,7 +11,7 @@ nodes = (1..15).flat_map { |n| ["🇯🇵 日本 %02d" % n, "🇯🇵 日本 %02
 web3 = ['🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南 家宽', '🇭🇰 香港 14 家宽']
 groups.each do |group|
   selected = nodes.select { |n| Regexp.new(group.fetch('filter')).match?(n) }
-  country, ordinary, residential = group['name'] == 'XM-Meta' ? ['🇺🇸 美国', (1..3), (10..12)] : ['🇯🇵 日本', [2, 3, 5, 6, 7], [9]]
+  country, ordinary, residential = group['name'] == 'XM-Meta' ? ['🇺🇸 美国', (1..3), (10..12)] : ['🇯🇵 日本', (2..7), []]
   wanted = ordinary.map { |n| "#{country} %02d" % n } + residential.map { |n| "#{country} %02d 家宽" % n }
   wanted = web3 if group['name'] == 'XM-Web3'
   wanted = ['🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽'] if group['name'] == 'XM-Bybit'

@@ -100,7 +100,7 @@ class SyncTest < Minitest::Test
       ["🇯🇵 日本 %02d" % n, "🇯🇵 日本 %02d 家宽" % n, "🇺🇸 美国 %02d" % n, "🇺🇸 美国 %02d 家宽" % n].map do |name|
         {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
       end
-    end + ['🇲🇾 马来西亚', '🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 02 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南', '🇻🇳 越南 家宽', '🇯🇵 日本 01 [0.3X]', '🇭🇰 香港 01', '🇭🇰 香港 03 [0.3X]', '🇭🇰 香港 13 家宽', '🇭🇰 香港 14 家宽', '🇭🇰 香港 15 家宽', '🇨🇳 台湾 01 [0.3X]', '🇨🇳 台湾 02', '🇨🇳 台湾 06', '🇨🇳 台湾 07 家宽', '🇨🇳 台湾 08', '🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽'].map do |name|
+    end + ['🇲🇾 马来西亚', '🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 02 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南', '🇻🇳 越南 家宽', '🇯🇵 日本 01 [0.3X]', '🇯🇵 日本 05 [0.3X]', '🇭🇰 香港 01', '🇭🇰 香港 03 [0.3X]', '🇭🇰 香港 13 家宽', '🇭🇰 香港 14 家宽', '🇭🇰 香港 15 家宽', '🇨🇳 台湾 01 [0.3X]', '🇨🇳 台湾 02', '🇨🇳 台湾 06', '🇨🇳 台湾 07 家宽', '🇨🇳 台湾 08', '🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽'].map do |name|
       {'name' => name, 'type' => 'anytls', 'server' => 'node.invalid', 'port' => 443, 'password' => 'PRIVATE-NODE-CANARY'}
     end
     @raw = {'proxies' => nodes, 'dns' => {'enable' => true, 'nameserver' => ['PRIVATE-DNS-CANARY']}, 'proxy-groups' => [{'name' => 'MESL-original', 'type' => 'select', 'proxies' => [nodes.first['name']]}], 'rules' => ['MATCH,MESL-original']}
@@ -149,7 +149,11 @@ class SyncTest < Minitest::Test
     members = XMClashSync.validate(@routing, after)
     assert members.all? { |name, list| list.size == (name == 'XM-Bybit' ? 2 : 6) }
     assert_equal ['🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽'], members['XM-Bybit'].sort
-    refute members['XM-Google'].include?('🇯🇵 日本 01')
+    jp = (2..7).map { |n| "🇯🇵 日本 %02d" % n }
+    %w[XM-Google XM-AI XM-日常上网].each { |name| assert_equal jp, members[name], name }
+    ['🇯🇵 日本 01', '🇯🇵 日本 01 [0.3X]', '🇯🇵 日本 05 [0.3X]', '🇯🇵 日本 04 家宽', '🇯🇵 日本 09 家宽'].each do |excluded|
+      refute_includes members['XM-Google'], excluded
+    end
     assert_equal YAML.dump(@routing), XMClashSync.read(@paths.cache)
     refute File.exist?(@paths.journal)
   end
