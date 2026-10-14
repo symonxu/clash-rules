@@ -207,6 +207,8 @@ rules:
   - DOMAIN,gsa.apple.com,DIRECT
   - DOMAIN,gsas.apple.com,DIRECT
   - DOMAIN,time.apple.com,DIRECT
+  - DOMAIN-SUFFIX,tv.apple.com,DIRECT
+  - DOMAIN,sps-media.apple.com,DIRECT
   - DOMAIN-SUFFIX,qq.com,DIRECT
   - DOMAIN-SUFFIX,weixin.com,DIRECT
   - DOMAIN-SUFFIX,wechat.com,DIRECT
