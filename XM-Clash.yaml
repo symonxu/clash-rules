@@ -1,8 +1,8 @@
-# XM iOS Clash 配置（App：Clash - 基于规则的网络代理工具；说明见 Clash-iOS.md）
-# 独立文件，不与 Mac 共用：分组与规则跟 Mac 的 XM-ClashVerge-Routing.yaml 保持一致，
+# XM Clash 规则配置（App：Clash - 基于规则的网络代理工具，iOS 与 Mac 通用；说明见 Clash.md）
+# 独立文件，不与 Clash Verge 共用：分组与规则跟 Mac Clash Verge 的 XM-ClashVerge-Routing.yaml 保持一致，
 # 本文件只有分组、规则和 DNS，没有节点、没有订阅地址，也不需要手动编辑：用 App 的「配置链接」导入，自动跟随仓库更新。
 # 节点来自在 App 里另外导入的 MESL 订阅（节点来源）；各组用 include-all + 节点名正则（与 Mac 相同）从中筛选。
-# 分组改为 url-test / fallback 自动测速，不依赖 Mac 同步程序。说明见 Clash-iOS.md。
+# 分组改为 url-test / fallback 自动测速，不依赖 Clash Verge 同步程序。说明见 Clash.md。
 mode: rule
 log-level: warning
 ipv6: false
@@ -79,7 +79,7 @@ proxy-groups:
     interval: 900
     tolerance: 20
     timeout: 5000
-# 规则与 Mac 完全相同（同域名、同目标、同顺序），由 scripts/validate_clash_ios.rb 校验。
+# 规则与 Clash Verge 完全相同（同域名、同目标、同顺序），由 scripts/validate_clash.rb 校验。
 rules:
   - DOMAIN,localhost,DIRECT
   - DOMAIN-SUFFIX,local,DIRECT
