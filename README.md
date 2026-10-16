@@ -1,9 +1,10 @@
 # Mac / iOS 个人分流配置
 
-本仓库只保留两套当前在用的配置：
+本仓库保留以下配置：
 
 - **Mac**：Clash Verge Rev + `XM-ClashVerge-Routing.yaml` + 本地自动同步程序 `tools/clash-sync`
 - **iOS**：Shadowrocket + `XM-Shadowrocket-Slim.conf`
+- **iOS（备选）**：Clash（clash.md）+ `XM-Clash-iOS.yaml`，独立规则文件，规则与 Mac 相同，节点来自 App 里另外添加的 MESL 订阅
 
 节点统一来自 MESL 订阅，订阅保留在各自 App 里更新；GitHub 只维护分组和规则，不含节点、私有订阅地址或凭据。
 
@@ -33,12 +34,24 @@ https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.
 
 详见：[iOS 使用说明](Shadowrocket-iOS.md)
 
+## iOS：Clash（clash.md App，备选）
+
+配置链接：
+
+https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-iOS.yaml
+
+- 独立文件，规则与 Mac 一字不差；分组改为 url-test（900 秒、20ms 容差），XM-Bybit 为台湾 08→09 家宽 fallback。
+- 文件不含节点、订阅地址或占位，按配置链接导入、自动更新。MESL 订阅在 App 里单独添加为节点来源，再与本文件的规则方案组合成一份配置；各组用 `include-all` + 节点名正则筛选。
+- DNS：`223.5.5.5`、`119.29.29.29`；IPv6 关闭。
+
+详见：[iOS Clash 使用说明](Clash-iOS.md)
+
 ## 本地校验
 
 ```sh
 ruby scripts/validate_rules.rb
 ```
 
-校验 iOS 配置结构（五个 url-test 组和 XM-Bybit fallback 组及成员、规则只指向六个组/DIRECT/REJECT、域名规则与 Mac 一致）、Mac 策略文件、自动同步程序的离线测试，以及公开链接白名单（防止误提交私有订阅地址）。GitHub Actions 在每个 PR 上自动运行同样的校验。线路是否可用以客户端实际运行为准。
+校验 iOS 配置结构（Shadowrocket：五个 url-test 组和 XM-Bybit fallback 组及成员、规则只指向六个组/DIRECT/REJECT、域名规则与 Mac 一致）；Clash iOS：六组、不含节点与订阅、规则与 Mac 完全相同）、Mac 策略文件、自动同步程序的离线测试，以及公开链接白名单（防止误提交私有订阅地址）。GitHub Actions 在每个 PR 上自动运行同样的校验。线路是否可用以客户端实际运行为准。
 
 Apple 直连：App Store（国区和美区）、软件下载和系统更新域名直连，与 Mac 规则顺序一致；Siri 和 iCloud 专用代理仍走 XM-AI。

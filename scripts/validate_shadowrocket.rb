@@ -61,6 +61,10 @@ allowed_urls = Set.new([
   'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Twitter.list',
   'https://raw.githubusercontent.com/meslcloud/Rule/refs/heads/main/Surge/Youtube.list',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.conf',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-iOS.yaml',
+  'https://clash.md/zh/guide/ios',
+  'https://github.com/ProjectClash/Clash-Client',
+  'https://clash.md/zh/guide/config/apple-platforms',
   'https://www.google.com'
 ])
 Dir.chdir(root) do
