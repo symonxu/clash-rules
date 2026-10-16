@@ -1,59 +1,77 @@
-# Mac / iOS 个人分流配置
+# XM 个人分流规则（Clash App）
 
-本仓库保留以下配置：
-
-- **Mac**：Clash Verge Rev + `XM-ClashVerge-Routing.yaml` + 本地自动同步程序 `tools/clash-sync`
-- **iOS**：Shadowrocket + `XM-Shadowrocket-Slim.conf`
-- **iOS / Mac（Clash App）**：Clash（clash.md）+ `XM-Clash.yaml`，两端共用的独立规则文件，规则与 Clash Verge 相同，节点来自 App 里另外添加的 MESL 订阅
-
-节点统一来自 MESL 订阅，订阅保留在各自 App 里更新；GitHub 只维护分组和规则，不含节点、私有订阅地址或凭据。
-
-## Mac：Clash Verge Rev
-
-策略链接（不是节点订阅，由本地同步程序接入 MESL 订阅）：
-
-https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-ClashVerge-Routing.yaml
-
-六个分组（Google、AI、Meta、Web3、Bybit、日常上网）。Bybit 组只有台湾 08、09 家宽两个节点，固定用 08，只有 08 测速超时才切到 09，08 恢复后切回；其余五组每组六个节点，由本地程序每十五分钟测速择优，比当前节点快超过 20ms 才切换。DNS、TUN、系统代理由你在客户端里自行设置，程序不改动。
-
-详见：[Mac 接入与回退说明](ClashVerge-Mac.md)、[自动同步程序安装说明](tools/clash-sync/README.md)
-
-## iOS：Shadowrocket
-
-配置链接：
-
-https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.conf
-
-- 独立配置，不再 include MESL 的 `get.conf`。
-- 六个分组与 Mac 端完全一致：**XM-Google**、**XM-AI**、**XM-日常上网** 用日本 02、03、04、05、06、07；**XM-Web3** 用马来西亚 01、03 家宽、菲律宾 01、菲律宾 02 家宽、越南家宽、香港 14 家宽；**XM-Meta** 用美国 01、02、03 和美国 10、11、12 家宽；**XM-Bybit**（Bybit 专用，固定 IP）只用台湾 08 家宽（主）和台湾 09 家宽（备），iOS 上是 fallback 组，08 可用就一直用 08。
-- 每组都是 url-test 类型：每 900 秒（15 分钟）测速一次，新节点快超过 20ms 才切换，和 Mac 同步程序的择优逻辑相同。
-- 分流规则与 Mac 的 `XM-ClashVerge-Routing.yaml` 保持同样的域名、目标组和先后顺序（AI 相关的 Google 域名排在通用 Google 之前）；兜底 `FINAL` 走 XM-日常上网。中国大陆、局域网、微信、Apple 国内服务直连；广告、隐私追踪、劫持域名拦截。
-- DNS：`223.5.5.5`、`119.29.29.29`，备用 `system`；IPv6 关闭。
-- 首页保留 MESL 订阅，节点从订阅里来。
-- **注意**：各组里写的是节点完整名称（如 `🇯🇵 日本 08 家宽`）。MESL 如果改了节点名，需要同步修改配置文件，否则对应节点会失效。
-
-详见：[iOS 使用说明](Shadowrocket-iOS.md)
-
-## iOS / Mac：Clash App（clash.md）
+本仓库只维护一份规则配置 `XM-Clash.yaml`，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。
 
 配置链接：
 
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash.yaml
 
-- 独立文件，规则与 Clash Verge 一字不差；分组改为 url-test（900 秒、20ms 容差），XM-Bybit 为台湾 08→09 家宽 fallback。
-- 文件不含节点、订阅地址或占位，按配置链接导入、自动更新。MESL 订阅在 App 里单独添加为节点来源，再与本文件的规则方案组合成一份配置；各组用 `include-all` + 节点名正则筛选。
-- DNS：`223.5.5.5`、`119.29.29.29`；IPv6 关闭。
+**仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；节点来自在 App 里单独添加的 MESL 订阅。CI 会拦截白名单以外的链接。
 
-iPhone、iPad 和 Mac 上的 Clash App 都用这一个链接。
+## 在 App 里怎么用
 
-详见：[Clash App 使用说明](Clash.md)
+节点和规则分开导入，再组合成一份配置：
 
-## 本地校验
+1. **添加 MESL 订阅**：配置（Profiles）→ 添加配置（Add Profile）→ 配置链接，粘贴 MESL 的 Clash 订阅地址。先选中它、出站模式选"规则"并连接，下一步才能打开 GitHub（raw.githubusercontent.com 在大陆直连通常打不开）。
+2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴上面的配置链接。若有"同时登记它的规则"开关，保持打开；它会作为规则方案出现在规则库里。这份配置自己没有节点，不要单独选中使用。
+3. **组合**：把 MESL 配置的规则方案换成 `XM-Clash`（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选 MESL，规则方案选 `XM-Clash`。
+4. 选中组合后的配置，出站模式选"规则（Rule）"，连接；在"代理（Proxies）"里确认六个组都有节点。
+5. 检查分流：iPhone 在 工具（Utilities）→ Current Session → 连接（Connections），Mac 在侧边栏 Session → Connections，看新连接命中的规则和出站组。
 
-```sh
-ruby scripts/validate_rules.rb
-```
+仓库更新后，App 按配置链接自动更新规则；想立刻生效，可在规则库对该方案点"刷新规则"，或在配置列表对它点更新。MESL 节点照常在 MESL 配置里更新。
 
-校验 iOS 配置结构（Shadowrocket：五个 url-test 组和 XM-Bybit fallback 组及成员、规则只指向六个组/DIRECT/REJECT、域名规则与 Mac 一致）；Clash App：六组、不含节点与订阅、规则与 Clash Verge 完全相同）、Mac 策略文件、自动同步程序的离线测试，以及公开链接白名单（防止误提交私有订阅地址）。GitHub Actions 在每个 PR 上自动运行同样的校验。线路是否可用以客户端实际运行为准。
+入口和模式的说明见 clash.md 文档：iPhone https://clash.md/zh/guide/ios ，Mac https://clash.md/zh/guide/macos 。节点来源与规则方案的组合方式以 App 开源代码为准：https://github.com/ProjectClash/Clash-Client 。
 
-Apple 直连：App Store（国区和美区）、软件下载和系统更新域名直连，与 Mac 规则顺序一致；Siri 和 iCloud 专用代理仍走 XM-AI。
+Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash Verge），两个都会接管系统流量。
+
+## 分组
+
+各组用 `include-all: true` 引入节点来源里的全部节点，再按节点名正则 `filter` 筛选：
+
+| 分组 | 节点 | 类型 |
+| --- | --- | --- |
+| XM-Google | 日本 02–07 | url-test |
+| XM-AI | 日本 02–07 | url-test |
+| XM-Meta | 美国 01–03、美国 10–12 家宽 | url-test |
+| XM-Web3 | 马来西亚 01、03 家宽，菲律宾 01、菲律宾 02 家宽，越南家宽，香港 14 家宽 | url-test |
+| XM-Bybit | 台湾 08 家宽（主）→ 台湾 09 家宽（备） | fallback |
+| XM-日常上网 | 日本 02–07 | url-test |
+
+- url-test：用 `https://www.gstatic.com/generate_204` 每 900 秒测速，超时 5 秒，新节点快超过 20ms 才切换。
+- XM-Bybit：fallback，同样 900 秒 / 5 秒；08 可用就一直用 08，失败才用 09，固定出口 IP 更稳。
+- MESL 如果改了节点名，对应分组会筛不到节点，需要改 `filter`。
+
+## DNS
+
+`223.5.5.5`、`119.29.29.29`，fake-ip（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。不写 TUN、端口和控制器，由 App 自己管理。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
+
+## 主要分流
+
+规则从上到下匹配，第一条命中即生效：
+
+1. 局域网域名和私有地址直连。
+2. **XM-Web3**：常用链上 RPC（Infura、Alchemy、Ankr、各公链 RPC 等）、钱包（MetaMask、Phantom、WalletConnect 等）、DEX 与交易站（Uniswap、Jupiter、pump.fun、Bitget、PancakeSwap、Hyperliquid、Polymarket、Across、CoinGecko 等）。
+3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
+4. **XM-AI**：ChatGPT / OpenAI、Claude、Perplexity、Cursor、OpenRouter、Grok / x.ai、grokbot.com、Gemini / AI Studio（排在 Google 之前）、Slack，以及 Apple 隐私中继和 Siri 相关域名。
+5. **XM-Google**：Google、Gmail、YouTube 等。
+6. **XM-Meta**：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai。
+7. **直连**：App Store（国区、美区）、软件下载与系统更新、iCloud、Apple 地图、Game Center、Apple 推送、Apple TV 视频（tv.apple.com、sps-media.apple.com）、微信、QQ。
+8. 中国大陆 IP（`GEOIP,CN`）直连。
+9. 其余流量走 **XM-日常上网**。
+
+## 修改规则
+
+1. 新建分支，修改 `XM-Clash.yaml`。
+2. 本地校验：
+
+   ```sh
+   ruby scripts/validate_rules.rb
+   ```
+
+   校验内容：
+   - 文件不含 `proxies`、`proxy-providers`、`rule-providers`。
+   - 六个分组的名称、顺序、类型、测速参数，以及各组 `filter` 选中的节点。
+   - DNS。
+   - 规则语法、目标只能是六个组或 DIRECT / REJECT、无重复、不被前面的后缀规则遮住、最后两条为 `GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网`。
+   - 公开链接白名单。
+3. 开 PR。GitHub Actions 自动跑同样的校验，通过后合并到 main，App 按链接更新即可生效。

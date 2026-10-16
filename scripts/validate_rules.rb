@@ -1,7 +1,3 @@
 #!/usr/bin/env ruby
-load File.expand_path('validate_shadowrocket.rb', __dir__)
-load File.expand_path('validate_clashverge.rb', __dir__)
 load File.expand_path('validate_clash.rb', __dir__)
-require 'rbconfig'
-abort 'Clash sync offline tests failed' unless system(RbConfig.ruby, File.expand_path('../tools/clash-sync/test_sync.rb', __dir__))
-abort 'Clash sync C-locale tests failed' unless system({'LANG' => 'C', 'LC_ALL' => 'C'}, RbConfig.ruby, '-EUS-ASCII', File.expand_path('../tools/clash-sync/test_sync.rb', __dir__))
+load File.expand_path('validate_urls.rb', __dir__)
