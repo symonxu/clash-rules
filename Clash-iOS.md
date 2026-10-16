@@ -1,39 +1,43 @@
 # iOS Clash 使用说明（Clash - 基于规则的网络代理工具）
 
-配置文件（独立于 Mac，不共用）：
+规则配置链接（独立于 Mac，不共用）：
 
 https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-iOS.yaml
+
+## 思路：节点和规则分开导入
+
+- **MESL 订阅**在 App 里单独添加，作为"节点来源"，订阅地址只存在手机上。
+- **本文件**用配置链接导入，作为"规则方案"。文件里只有分组、规则和 DNS，没有节点、订阅地址或要手动改的占位，App 按链接更新，仓库改了会自动同步。
+- 两者在 App 里组合成一份配置：节点来源选 MESL，规则方案选本文件。
+
+App 的组合方式（以 App 开源代码 https://github.com/ProjectClash/Clash-Client 为准，clash.md 文档页还没写这部分）：规则方案里 `include-all: true` 的分组会引入所选节点来源的全部节点，再按 `filter` 筛选。
 
 ## 和 Mac / Shadowrocket 的关系
 
 - 六个分组、规则（域名、目标组、先后顺序）与 Mac 的 `XM-ClashVerge-Routing.yaml` 完全一致，Apple TV 视频、App Store、iCloud、微信 QQ 等照样直连；CI 会校验两边规则一字不差。
-- 区别：Mac 的分组是 select，由本地同步程序选节点；这个 App 跑不了同步程序，所以这里改成自动测速：
+- 分组的节点筛选正则与 Mac 相同。Mac 的分组是 select，由本地同步程序选节点；这个 App 跑不了同步程序，所以这里改成自动测速：
   - XM-Google、XM-AI、XM-Meta、XM-Web3、XM-日常上网：`url-test`，每 900 秒测速，快超过 20ms 才切换，超时 5 秒。
   - XM-Bybit：`fallback`，台湾 08 家宽优先，08 失败才用 09。
-- 节点不写在文件里：用 `proxy-providers` 里名为 `MESL` 的节点集加载 MESL 订阅，各组按节点名正则（与 Mac 相同）从中筛选。节点集不加前缀，节点名保持 MESL 原样。
 - DNS：`223.5.5.5`、`119.29.29.29`，fake-ip；IPv6 关闭。不写 TUN、端口、控制器（App 用 Apple Packet Tunnel 自己管理）。
 
-## 首次导入（按 clash.md 文档的步骤）
+## 首次设置
 
-订阅地址等同密码，只填在手机里，不要提交到仓库。仓库里 `url` 是占位文字，不填会没有节点。
+1. **添加 MESL 订阅**：首页顶部点当前配置名称 → 添加配置（Add Profile）→ 配置链接，粘贴 MESL 的 Clash 订阅地址。选中它、出站模式选"规则"并连接（让下一步能打开 GitHub）。
+2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴上面的规则配置链接。若出现"同时登记它的规则"开关，保持打开。App 会把它登记为一个规则方案（规则库里可见）。这份配置单独用时没有节点，不要单独选中它。
+3. **组合**：打开 MESL 这份配置的详情，把规则方案换成 `XM-Clash-iOS`（"更换规则方案"）；或新建配置时"选择节点来源和规则方案"：节点来源选 MESL，规则方案选 `XM-Clash-iOS`。
+4. 选中组合后的配置，出站模式选"规则（Rule）"，连接。到"代理（Proxies）"确认六个组都有节点。
+5. 查看是否生效：工具（Utilities）→ Current Session → 连接（Connections），看新连接命中的规则和出站组。
 
-1. 用代理（例如先用小火箭或蜂窝网络）打开上面的配置链接，把 `XM-Clash-iOS.yaml` 存到"文件"App。raw.githubusercontent.com 在大陆直连通常打不开。
-2. 在 Clash 的配置页导入这个本地文件：首页顶部点当前配置名称 → 添加配置（Add Profile）→ 配置文件。
-3. 点这个配置后面的感叹号，选"编辑源码"，搜索 `proxy-providers`，把 `MESL` 下 `url` 双引号里的占位文字换成你的 MESL Clash 订阅地址（保留双引号），保存。
-4. 回到配置列表选中这个配置，出站模式选"规则（Rule）"，从首页连接。首次会下载节点，稍慢。
-5. 到"代理（Proxies）"确认六个组都有节点。
+第 1、4、5 步出自 clash.md 文档：https://clash.md/zh/guide/ios 。第 2、3 步的按钮名称来自 App 开源代码中的中文界面文字，实际位置以手机上的 App 为准。
 
-文档出处：
-- 导入本地文件、编辑源码、把订阅填进 proxy-providers：https://clash.md/zh/guide/config/best-practice
-- 配置列表、添加配置、Rule 模式、代理页、连接页：https://clash.md/zh/guide/ios
-- 节点集字段：https://clash.md/zh/guide/config/proxy-providers
-- iOS 平台差异（不能按进程分流）：https://clash.md/zh/guide/config/apple-platforms
+## 以后更新
 
-## 以后更新规则
-
-本地导入的配置不会自动跟随仓库。规则有变化时，重新下载导入新文件，再按第 3 步填一次订阅地址。不建议用"配置地址"导入后再编辑源码：文档没有说明更新远程配置时是否保留手动修改，订阅地址可能被仓库版本覆盖。
+- 仓库规则更新后，App 按配置链接更新这份规则配置；需要立即生效时，在规则库对该方案点"刷新规则"，或在配置列表对它点更新。
+- MESL 节点照常在 MESL 那份配置里更新。
 
 ## 注意
 
+- 订阅地址等同密码，不要提交到仓库，也不要截图外发。
+- raw.githubusercontent.com 在大陆直连通常打不开，导入或更新规则配置时要先连着 MESL。
 - 如果 MESL 改了节点名，分组可能筛不到节点，需要改正则（与 Mac 一起改）。
-- 检查是否生效：工具（Utilities）→ Current Session → 连接（Connections），看新连接命中的规则和出站组。
+- iOS 不能按进程分流：https://clash.md/zh/guide/config/apple-platforms

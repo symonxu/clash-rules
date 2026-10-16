@@ -1,8 +1,8 @@
 # XM iOS Clash 配置（App：Clash - 基于规则的网络代理工具；说明见 Clash-iOS.md）
 # 独立文件，不与 Mac 共用：分组与规则跟 Mac 的 XM-ClashVerge-Routing.yaml 保持一致，
-# 但节点通过 proxy-providers 从 MESL 订阅加载，分组用 url-test / fallback 自动测速，不依赖 Mac 同步程序。
-# 使用前：在 App 里对本配置「编辑源码」，把下面 MESL 的 url 换成你自己的 MESL Clash 订阅地址（保留双引号）。
-# 订阅地址等同密码，只填在手机上，绝不要提交回仓库。
+# 本文件只有分组、规则和 DNS，没有节点、没有订阅地址，也不需要手动编辑：用 App 的「配置链接」导入，自动跟随仓库更新。
+# 节点来自在 App 里另外导入的 MESL 订阅（节点来源）；各组用 include-all + 节点名正则（与 Mac 相同）从中筛选。
+# 分组改为 url-test / fallback 自动测速，不依赖 Mac 同步程序。说明见 Clash-iOS.md。
 mode: rule
 log-level: warning
 ipv6: false
@@ -30,22 +30,10 @@ dns:
   nameserver:
     - 223.5.5.5
     - 119.29.29.29
-proxy-providers:
-  MESL:
-    type: http
-    url: "在这里粘贴MESL的Clash订阅地址"
-    path: ./providers/mesl.yaml
-    interval: 21600
-    health-check:
-      enable: true
-      url: https://www.gstatic.com/generate_204
-      interval: 900
-      timeout: 5000
-      lazy: true
 proxy-groups:
   - name: XM-Google
     type: url-test
-    use: [MESL]
+    include-all: true
     filter: '(^| )日本 0[2-7]$'
     url: https://www.gstatic.com/generate_204
     interval: 900
@@ -53,7 +41,7 @@ proxy-groups:
     timeout: 5000
   - name: XM-AI
     type: url-test
-    use: [MESL]
+    include-all: true
     filter: '(^| )日本 0[2-7]$'
     url: https://www.gstatic.com/generate_204
     interval: 900
@@ -61,7 +49,7 @@ proxy-groups:
     timeout: 5000
   - name: XM-Meta
     type: url-test
-    use: [MESL]
+    include-all: true
     filter: '(^| )美国 (0[1-3]|1[0-2] 家宽)$'
     url: https://www.gstatic.com/generate_204
     interval: 900
@@ -69,7 +57,7 @@ proxy-groups:
     timeout: 5000
   - name: XM-Web3
     type: url-test
-    use: [MESL]
+    include-all: true
     filter: '(^| )(马来西亚 0[13] 家宽|菲律宾 (01|02 家宽)|越南 家宽|香港 14 家宽)$'
     url: https://www.gstatic.com/generate_204
     interval: 900
@@ -78,14 +66,14 @@ proxy-groups:
   # 台湾 08 家宽优先；08 测速失败才用 09，08 恢复后切回（filter 用 ` 分隔，按顺序排列）。
   - name: XM-Bybit
     type: fallback
-    use: [MESL]
+    include-all: true
     filter: '(^| )台湾 08 家宽$`(^| )台湾 09 家宽$'
     url: https://www.gstatic.com/generate_204
     interval: 900
     timeout: 5000
   - name: XM-日常上网
     type: url-test
-    use: [MESL]
+    include-all: true
     filter: '(^| )日本 0[2-7]$'
     url: https://www.gstatic.com/generate_204
     interval: 900

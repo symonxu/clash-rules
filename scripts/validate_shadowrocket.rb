@@ -63,8 +63,7 @@ allowed_urls = Set.new([
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-Slim.conf',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-iOS.yaml',
   'https://clash.md/zh/guide/ios',
-  'https://clash.md/zh/guide/config/best-practice',
-  'https://clash.md/zh/guide/config/proxy-providers',
+  'https://github.com/ProjectClash/Clash-Client',
   'https://clash.md/zh/guide/config/apple-platforms',
   'https://www.google.com'
 ])
