@@ -212,6 +212,8 @@ rules:
   - DOMAIN-SUFFIX,youtu.be,XM-Google
   - DOMAIN-SUFFIX,ytimg.com,XM-Google
   - DOMAIN-SUFFIX,googlevideo.com,XM-Google
+  - DOMAIN-SUFFIX,goog,XM-Google
+  - DOMAIN,antigravity-hub-auto-updater-974169037036.us-central1.run.app,XM-Google
   - DOMAIN-SUFFIX,meta.com,XM-Meta
   - DOMAIN-SUFFIX,meta.ai,XM-Meta
   - DOMAIN-SUFFIX,facebook.com,XM-Meta
