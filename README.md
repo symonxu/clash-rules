@@ -1,24 +1,27 @@
 # XM 个人分流规则（Clash App）
 
-本仓库只维护一份规则配置 `XM-Clash.yaml`，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。
+本仓库维护两份规则配置，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。两份的 DNS、分组名称和**规则完全相同**，只有各组筛选节点的正则不同，分别对应两个订阅：
 
-配置链接：
+| 组合 | 节点来源 | 规则方案 | 配置链接 |
+| --- | --- | --- | --- |
+| MESL | MESL 订阅 | `XM-Clash` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash.yaml |
+| 极速云 | 极速云订阅 | `XM-Clash-JSY` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml |
 
-https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash.yaml
-
-**仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；节点来自在 App 里单独添加的 MESL 订阅。CI 会拦截白名单以外的链接。
+**仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；节点来自在 App 里单独添加的订阅。CI 会拦截白名单以外的链接。
 
 ## 在 App 里怎么用
 
 节点和规则分开导入，再组合成一份配置：
 
-1. **添加 MESL 订阅**：配置（Profiles）→ 添加配置（Add Profile）→ 配置链接，粘贴 MESL 的 Clash 订阅地址。先选中它、出站模式选"规则"并连接，下一步才能打开 GitHub（raw.githubusercontent.com 在大陆直连通常打不开）。
-2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴上面的配置链接。若有"同时登记它的规则"开关，保持打开；它会作为规则方案出现在规则库里。这份配置自己没有节点，不要单独选中使用。
-3. **组合**：把 MESL 配置的规则方案换成 `XM-Clash`（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选 MESL，规则方案选 `XM-Clash`。
+下面以 MESL 为例；极速云组合步骤相同，把订阅换成极速云、配置链接换成 `XM-Clash-JSY.yaml`、规则方案选 `XM-Clash-JSY`。两个组合可以同时存在，哪个订阅出问题就切到另一个组合。
+
+1. **添加订阅**：配置（Profiles）→ 添加配置（Add Profile）→ 配置链接，粘贴 MESL（或极速云）的 Clash 订阅地址。先选中它、出站模式选"规则"并连接，下一步才能打开 GitHub（raw.githubusercontent.com 在大陆直连通常打不开）。
+2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴对应的配置链接。若有"同时登记它的规则"开关，保持打开；它会作为规则方案出现在规则库里。这份配置自己没有节点，不要单独选中使用。
+3. **组合**：把订阅配置的规则方案换成对应方案（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选 MESL，规则方案选 `XM-Clash`（极速云：节点来源选极速云，规则方案选 `XM-Clash-JSY`）。不要用极速云自带的分组和规则。
 4. 选中组合后的配置，出站模式选"规则（Rule）"，连接；在"代理（Proxies）"里确认六个组都有节点。
 5. 检查分流：iPhone 在 工具（Utilities）→ Current Session → 连接（Connections），Mac 在侧边栏 Session → Connections，看新连接命中的规则和出站组。
 
-仓库更新后，App 按配置链接自动更新规则；想立刻生效，可在规则库对该方案点"刷新规则"，或在配置列表对它点更新。MESL 节点照常在 MESL 配置里更新。
+仓库更新后，App 按配置链接自动更新规则；想立刻生效，可在规则库对该方案点"刷新规则"，或在配置列表对它点更新。订阅节点照常在各自的订阅配置里更新。
 
 入口和模式的说明见 clash.md 文档：iPhone https://clash.md/zh/guide/ios ，Mac https://clash.md/zh/guide/macos 。节点来源与规则方案的组合方式以 App 开源代码为准：https://github.com/ProjectClash/Clash-Client 。
 
@@ -26,20 +29,21 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## 分组
 
-各组用 `include-all: true` 引入节点来源里的全部节点，再按节点名正则 `filter` 筛选：
+各组用 `include-all: true` 引入节点来源里的全部节点，再按节点名正则 `filter` 筛选（极速云版另用 `exclude-filter` 排除「剩余流量」「套餐到期」「官网」等信息条目）：
 
-| 分组 | 节点 | 类型 |
-| --- | --- | --- |
-| XM-Google | 日本 02–07 | url-test |
-| XM-AI | 日本 02–07 | url-test |
-| XM-Meta | 美国 01–03、美国 10–12 家宽 | url-test |
-| XM-Web3 | 马来西亚 01、03 家宽，菲律宾 01、菲律宾 02 家宽，越南家宽，香港 14 家宽 | url-test |
-| XM-Bybit | 台湾 08 家宽（主）→ 台湾 09 家宽（备） | fallback |
-| XM-日常上网 | 日本 02–07 | url-test |
+| 分组 | MESL（`XM-Clash.yaml`） | 极速云（`XM-Clash-JSY.yaml`） | 类型 |
+| --- | --- | --- | --- |
+| XM-Google | 日本 02–07 | 日本_* | url-test |
+| XM-AI | 日本 02–07 | 日本_* | url-test |
+| XM-Meta | 美国 01–03、美国 10–12 家宽 | 美国_* | url-test |
+| XM-Web3 | 马来西亚 01、03 家宽，菲律宾 01、菲律宾 02 家宽，越南家宽，香港 14 家宽 | 香港HKT家宽* | url-test |
+| XM-Bybit | 台湾 08 家宽（主）→ 台湾 09 家宽（备） | 台湾_01 → 台湾_02 → 其余台湾_* | fallback |
+| XM-日常上网 | 日本 02–07 | 日本_* | url-test |
 
 - url-test：用 `https://www.gstatic.com/generate_204` 每 900 秒测速，超时 5 秒，新节点快超过 20ms 才切换。
-- XM-Bybit：fallback，同样 900 秒 / 5 秒；08 可用就一直用 08，失败才用 09，固定出口 IP 更稳。
-- MESL 如果改了节点名，对应分组会筛不到节点，需要改 `filter`。
+- XM-Bybit：fallback，同样 900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。
+- 香港节点只给 XM-Web3，不进 Google / AI（Google 对香港 IP 不提供 Gemini 等服务）。
+- 订阅如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。
 
 ## DNS
 
@@ -61,7 +65,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## 修改规则
 
-1. 新建分支，修改 `XM-Clash.yaml`。
+1. 新建分支，修改 `XM-Clash.yaml`。**改规则（`rules`）时，`XM-Clash-JSY.yaml` 必须做完全相同的修改**：两份文件从「# 规则从上到下匹配」到末尾必须逐字节一致，CI 会检查。只改某个订阅的节点筛选时，只改对应文件的 `proxy-groups`。
 2. 本地校验：
 
    ```sh
@@ -69,8 +73,9 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
    ```
 
    校验内容：
-   - 文件不含 `proxies`、`proxy-providers`、`rule-providers`。
-   - 六个分组的名称、顺序、类型、测速参数，以及各组 `filter` 选中的节点。
+   - 两份文件都不含 `proxies`、`proxy-providers`、`rule-providers`。
+   - 两份文件的规则部分逐字节一致。
+   - 六个分组的名称、顺序、类型、测速参数，以及各组 `filter` / `exclude-filter` 对样例节点名（不含真实节点）选中的结果。
    - DNS。
    - 规则语法、目标只能是六个组或 DIRECT / REJECT、无重复、不被前面的后缀规则遮住、最后两条为 `GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网`。
    - 公开链接白名单。

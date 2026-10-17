@@ -1,44 +1,89 @@
 #!/usr/bin/env ruby
 require 'yaml'
 root = File.expand_path('..', __dir__)
-# XM-Clash.yaml：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置。
-# 不含节点、订阅或占位；节点来自 App 里另外导入的 MESL 节点来源，各组用 include-all + filter 筛选并自动测速。
-clash = YAML.safe_load(File.read(File.join(root, 'XM-Clash.yaml')))
-abort 'Clash: unexpected top-level fields' unless clash.keys.sort == %w[mode log-level ipv6 unified-delay tcp-concurrent profile dns proxy-groups rules].sort
-abort 'Clash: must not contain nodes or subscriptions' if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
-abort 'Clash: mode must be rule and IPv6 off' unless clash['mode'] == 'rule' && clash['ipv6'] == false
-dns = clash.fetch('dns')
-abort 'Clash: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off' unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+# XM-Clash.yaml（MESL）与 XM-Clash-JSY.yaml（极速云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置。
+# 不含节点、订阅或占位；节点来自 App 里另外导入的节点来源，各组用 include-all + filter（+ exclude-filter）筛选并自动测速。
+# 两个文件只有分组的节点筛选不同，rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致。
 
-# 分组：名称、顺序、筛选结果固定。用 MESL 风格的节点名样本检查每个 filter 选中的节点。
-jp = (2..7).map { |n| '🇯🇵 日本 %02d' % n }
-us = (1..3).map { |n| '🇺🇸 美国 %02d' % n } + (10..12).map { |n| '🇺🇸 美国 %02d 家宽' % n }
-w3 = ['🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南 家宽', '🇭🇰 香港 14 家宽']
-tw = ['🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽']
-expected = { 'XM-Google' => jp, 'XM-AI' => jp, 'XM-Meta' => us, 'XM-Web3' => w3, 'XM-Bybit' => tw, 'XM-日常上网' => jp }
-samples = (1..15).flat_map { |n| ['🇯🇵 日本 %02d', '🇯🇵 日本 %02d 家宽', '🇺🇸 美国 %02d', '🇺🇸 美国 %02d 家宽', '🇲🇾 马来西亚 %02d', '🇲🇾 马来西亚 %02d 家宽',
-  '🇵🇭 菲律宾 %02d', '🇵🇭 菲律宾 %02d 家宽', '🇭🇰 香港 %02d', '🇭🇰 香港 %02d 家宽', '🇨🇳 台湾 %02d', '🇨🇳 台湾 %02d 家宽'].map { |f| f % n } } +
-  ['🇨🇳 台湾 01 [0.3X]', '🇯🇵 日本 01 [0.3X]', '🇭🇰 香港 03 [0.3X]', '🇯🇵 日本 05 [0.3X]', '🇻🇳 越南', '🇻🇳 越南 家宽', '🇲🇾 马来西亚', '🇵🇭 菲律宾']
-groups = clash.fetch('proxy-groups')
-abort 'Clash: groups must be exactly the six XM groups in order' unless groups.map { |g| g['name'] } == expected.keys
-url = 'https://www.gstatic.com/generate_204'
-groups.each do |g|
-  name = g['name']
-  abort "Clash: #{name} must take nodes via include-all + filter only" unless g['include-all'] == true && !g.key?('proxies') && !g.key?('use')
-  abort "Clash: #{name} wrong test options" unless g['url'] == url && g['interval'] == 900 && g['timeout'] == 5000
-  if name == 'XM-Bybit'
-    abort 'Clash: XM-Bybit must be fallback' unless g['type'] == 'fallback' && !g.key?('tolerance')
-  else
-    abort "Clash: #{name} must be url-test with 20ms tolerance" unless g['type'] == 'url-test' && g['tolerance'] == 20
+GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Meta', 'XM-Web3', 'XM-Bybit', 'XM-日常上网'].freeze
+TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
+
+# MESL：节点名形如「🇯🇵 日本 05」「🇺🇸 美国 10 家宽」。
+mesl_jp = (2..7).map { |n| '🇯🇵 日本 %02d' % n }
+mesl = {
+  file: 'XM-Clash.yaml',
+  exclude: false,
+  expected: {
+    'XM-Google' => mesl_jp, 'XM-AI' => mesl_jp, 'XM-日常上网' => mesl_jp,
+    'XM-Meta' => (1..3).map { |n| '🇺🇸 美国 %02d' % n } + (10..12).map { |n| '🇺🇸 美国 %02d 家宽' % n },
+    'XM-Web3' => ['🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南 家宽', '🇭🇰 香港 14 家宽'],
+    'XM-Bybit' => ['🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽']
+  },
+  samples: (1..15).flat_map { |n| ['🇯🇵 日本 %02d', '🇯🇵 日本 %02d 家宽', '🇺🇸 美国 %02d', '🇺🇸 美国 %02d 家宽', '🇲🇾 马来西亚 %02d', '🇲🇾 马来西亚 %02d 家宽',
+    '🇵🇭 菲律宾 %02d', '🇵🇭 菲律宾 %02d 家宽', '🇭🇰 香港 %02d', '🇭🇰 香港 %02d 家宽', '🇨🇳 台湾 %02d', '🇨🇳 台湾 %02d 家宽'].map { |f| f % n } } +
+    ['🇨🇳 台湾 01 [0.3X]', '🇯🇵 日本 01 [0.3X]', '🇭🇰 香港 03 [0.3X]', '🇯🇵 日本 05 [0.3X]', '🇻🇳 越南', '🇻🇳 越南 家宽', '🇲🇾 马来西亚', '🇵🇭 菲律宾']
+}
+# 极速云：节点名形如「🇯🇵 日本_05」「🇭🇰 香港HKT家宽5」；另有「剩余流量」「套餐到期」等信息条目，必须被排除。
+# 香港只给 XM-Web3，不能进 Google / AI。
+jsy_jp = (1..12).map { |n| '🇯🇵 日本_%02d' % n }
+jsy = {
+  file: 'XM-Clash-JSY.yaml',
+  exclude: true,
+  expected: {
+    'XM-Google' => jsy_jp, 'XM-AI' => jsy_jp, 'XM-日常上网' => jsy_jp,
+    'XM-Meta' => (1..12).map { |n| '🇺🇸 美国_%02d' % n },
+    'XM-Web3' => (1..6).map { |n| '🇭🇰 香港HKT家宽%d' % n },
+    'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n }
+  },
+  samples: (1..12).flat_map { |n| ['🇯🇵 日本_%02d', '🇺🇸 美国_%02d', '🇭🇰 香港_%02d', '🇹🇼 台湾_%02d', '🇸🇬 新加坡_%02d', '🇰🇷 韩国%02d'].map { |f| f % n } } +
+    (1..6).map { |n| '🇭🇰 香港HKT家宽%d' % n } +
+    ['🇯🇵 日本', '🇺🇸 美国', '🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南', '🇹🇼 台湾', '🇯🇵 日本_01 [0.5X]',
+     '剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example', '距离下次重置剩余：30 天', '订阅更新时间', '剩余流量 日本_01', '套餐到期 台湾_01', '官网 香港HKT家宽1', '过期时间 美国_01']
+}
+
+def check_profile(root, prof)
+  file = prof[:file]
+  clash = YAML.safe_load(File.read(File.join(root, file)))
+  abort "#{file}: unexpected top-level fields" unless clash.keys.sort == %w[mode log-level ipv6 unified-delay tcp-concurrent profile dns proxy-groups rules].sort
+  abort "#{file}: must not contain nodes or subscriptions" if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
+  abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
+  dns = clash.fetch('dns')
+  abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+  groups = clash.fetch('proxy-groups')
+  abort "#{file}: groups must be exactly the six XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
+  allowed_keys = %w[name type include-all filter url interval tolerance timeout] + (prof[:exclude] ? %w[exclude-filter] : [])
+  groups.each do |g|
+    name = g['name']
+    abort "#{file}: #{name} has unexpected keys #{(g.keys - allowed_keys).inspect}" unless (g.keys - allowed_keys).empty?
+    abort "#{file}: #{name} must take nodes via include-all + filter only" unless g['include-all'] == true && g['filter'].is_a?(String)
+    abort "#{file}: #{name} must have exclude-filter for info nodes" if prof[:exclude] && !g['exclude-filter'].is_a?(String)
+    abort "#{file}: #{name} wrong test options" unless g['url'] == TEST_URL && g['interval'] == 900 && g['timeout'] == 5000
+    if name == 'XM-Bybit'
+      abort "#{file}: XM-Bybit must be fallback" unless g['type'] == 'fallback' && !g.key?('tolerance')
+    else
+      abort "#{file}: #{name} must be url-test with 20ms tolerance" unless g['type'] == 'url-test' && g['tolerance'] == 20
+    end
+    # mihomo 的 filter 用反引号分隔多个正则，按顺序拼接结果（XM-Bybit 靠它保证优先级）；exclude-filter 再剔除。
+    excl = g['exclude-filter'] ? Regexp.new(g['exclude-filter']) : nil
+    selected = g.fetch('filter').split('`').flat_map { |re| prof[:samples].select { |n| Regexp.new(re).match?(n) } }.uniq
+    selected.reject! { |n| excl.match?(n) } if excl
+    want = prof[:expected][name]
+    ok = name == 'XM-Bybit' ? selected == want : selected.sort == want.sort
+    abort "#{file}: #{name} filter selects #{selected.inspect}" unless ok
   end
-  # mihomo 的 filter 用反引号分隔多个正则，按顺序拼接结果（XM-Bybit 靠它保证 08 在前）。
-  selected = g.fetch('filter').split('`').flat_map { |re| samples.select { |n| Regexp.new(re).match?(n) } }.uniq
-  abort "Clash: #{name} filter selects #{selected.inspect}" unless name == 'XM-Bybit' ? selected == tw : selected.sort == expected[name].sort
+  clash
 end
+
+clash = check_profile(root, mesl)
+check_profile(root, jsy)
+marker = "\n# 规则从上到下匹配"
+texts = [mesl, jsy].map { |p| File.read(File.join(root, p[:file])) }
+abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
+abort 'Clash: XM-Clash-JSY.yaml rules section must be byte-identical to XM-Clash.yaml' unless texts[0].split(marker, 2)[1] == texts[1].split(marker, 2)[1]
 
 # 规则：语法、目标、顺序与重复检查。
 rules = clash.fetch('rules')
-policies = expected.keys + %w[DIRECT REJECT]
+policies = GROUP_NAMES + %w[DIRECT REJECT]
 domain_types = %w[DOMAIN DOMAIN-SUFFIX DOMAIN-KEYWORD]
 ip_types = %w[IP-CIDR IP-CIDR6]
 seen = {}
@@ -87,4 +132,4 @@ rules.each do |r|
   abort "Clash: #{r} is shadowed by DOMAIN-SUFFIX,#{shadow}" if shadow
   suffixes << value if type == 'DOMAIN-SUFFIX'
 end
-puts "Validated XM-Clash.yaml: 5 url-test groups + XM-Bybit fallback (include-all + filter, no nodes or subscriptions), #{rules.size} rules."
+puts "Validated XM-Clash.yaml + XM-Clash-JSY.yaml (identical rules, own node filters): 5 url-test groups + XM-Bybit fallback each (include-all + filter, no nodes or subscriptions), #{rules.size} rules."
