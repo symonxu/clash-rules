@@ -2,6 +2,7 @@
 # 本文件只有分组、规则和 DNS，没有节点、没有订阅地址，也不需要手动编辑：用 App 的「配置链接」导入，自动跟随仓库更新。
 # 节点来自在 App 里另外导入的极速云订阅（节点来源）；各组用 include-all + 节点名正则从中筛选，url-test / fallback 自动测速。
 # 规则部分必须与 XM-Clash.yaml 完全一致（CI 校验），只有各组的节点筛选不同。
+# 任何分组都不得包含香港节点：每组都用 exclude-filter 排除（CI 校验）。
 mode: rule
 log-level: warning
 ipv6: false
@@ -34,7 +35,7 @@ proxy-groups:
     type: url-test
     include-all: true
     filter: '(^| )日本_[0-9]+$'
-    exclude-filter: '剩余|流量|套餐|到期|过期|官网|重置|订阅'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -43,7 +44,7 @@ proxy-groups:
     type: url-test
     include-all: true
     filter: '(^| )日本_[0-9]+$'
-    exclude-filter: '剩余|流量|套餐|到期|过期|官网|重置|订阅'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -52,7 +53,7 @@ proxy-groups:
     type: url-test
     include-all: true
     filter: '(^| )美国_[0-9]+$'
-    exclude-filter: '剩余|流量|套餐|到期|过期|官网|重置|订阅'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -60,8 +61,8 @@ proxy-groups:
   - name: XM-Web3
     type: url-test
     include-all: true
-    filter: '(^| )香港HKT家宽[0-9]+$'
-    exclude-filter: '剩余|流量|套餐|到期|过期|官网|重置|订阅'
+    filter: '(^| )(马来西亚|菲律宾|越南|新加坡)(_[0-9]+)?$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -71,7 +72,7 @@ proxy-groups:
     type: fallback
     include-all: true
     filter: '(^| )台湾_01$`(^| )台湾_02$`(^| )台湾_(0[3-9]|[1-9][0-9])$'
-    exclude-filter: '剩余|流量|套餐|到期|过期|官网|重置|订阅'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     timeout: 5000
@@ -79,7 +80,7 @@ proxy-groups:
     type: url-test
     include-all: true
     filter: '(^| )日本_[0-9]+$'
-    exclude-filter: '剩余|流量|套餐|到期|过期|官网|重置|订阅'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
