@@ -25,7 +25,7 @@
    - `scripts/validate_urls.rb` 会扫描仓库内所有文件的网址链接，**严禁在任何文件中写入白名单以外的 URL**。
 2. **规则结构与顺序红线**：
    - 仅维护单一规则文件 `XM-Clash.yaml`，不含 `proxies`、`proxy-providers`、`rule-providers`。
-   - 六个分组（`XM-Google`, `XM-AI`, `XM-Meta`, `XM-Web3`, `XM-Bybit`, `XM-日常上网`）名称与顺序固定。
+   - 五个分组（`XM-Google`, `XM-AI`, `XM-Web3`, `XM-Bybit`, `XM-日常上网`）名称与顺序固定。
    - 规则不得重复，不得被排在前面的更宽泛 `DOMAIN-SUFFIX` 规则遮蔽；`gemini.google.com` 等 AI 域名必须排在 `google.com` 之前；最后两条必须固定为 `GEOIP,CN,DIRECT` 与 `MATCH,XM-日常上网`。
 3. **每次修改必跑校验**：
    - 修改任何文件后必须自动运行 `ruby scripts/validate_rules.rb`。

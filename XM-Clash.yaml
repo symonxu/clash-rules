@@ -48,15 +48,6 @@ proxy-groups:
     interval: 900
     tolerance: 20
     timeout: 5000
-  - name: XM-Meta
-    type: url-test
-    include-all: true
-    filter: '(^| )美国 (0[1-3]|1[0-2] 家宽)$'
-    exclude-filter: '(?i)香港|HK|Hong ?Kong|🇭🇰'
-    url: https://www.gstatic.com/generate_204
-    interval: 900
-    tolerance: 20
-    timeout: 5000
   - name: XM-Web3
     type: url-test
     include-all: true
@@ -221,24 +212,24 @@ rules:
   - DOMAIN-SUFFIX,googlevideo.com,XM-Google
   - DOMAIN-SUFFIX,goog,XM-Google
   - DOMAIN,antigravity-hub-auto-updater-974169037036.us-central1.run.app,XM-Google
-  - DOMAIN-SUFFIX,meta.com,XM-Meta
-  - DOMAIN-SUFFIX,meta.ai,XM-Meta
-  - DOMAIN-SUFFIX,facebook.com,XM-Meta
-  - DOMAIN-SUFFIX,facebook.net,XM-Meta
-  - DOMAIN-SUFFIX,fb.com,XM-Meta
-  - DOMAIN-SUFFIX,fb.me,XM-Meta
-  - DOMAIN-SUFFIX,fbcdn.net,XM-Meta
-  - DOMAIN-SUFFIX,fbsbx.com,XM-Meta
-  - DOMAIN-SUFFIX,messenger.com,XM-Meta
-  - DOMAIN-SUFFIX,m.me,XM-Meta
-  - DOMAIN-SUFFIX,instagram.com,XM-Meta
-  - DOMAIN-SUFFIX,cdninstagram.com,XM-Meta
-  - DOMAIN-SUFFIX,threads.com,XM-Meta
-  - DOMAIN-SUFFIX,threads.net,XM-Meta
-  - DOMAIN-SUFFIX,whatsapp.com,XM-Meta
-  - DOMAIN-SUFFIX,whatsapp.net,XM-Meta
-  - DOMAIN-SUFFIX,wa.me,XM-Meta
-  - DOMAIN-SUFFIX,muse.ai,XM-Meta
+  - DOMAIN-SUFFIX,meta.com,XM-日常上网
+  - DOMAIN-SUFFIX,meta.ai,XM-日常上网
+  - DOMAIN-SUFFIX,facebook.com,XM-日常上网
+  - DOMAIN-SUFFIX,facebook.net,XM-日常上网
+  - DOMAIN-SUFFIX,fb.com,XM-日常上网
+  - DOMAIN-SUFFIX,fb.me,XM-日常上网
+  - DOMAIN-SUFFIX,fbcdn.net,XM-日常上网
+  - DOMAIN-SUFFIX,fbsbx.com,XM-日常上网
+  - DOMAIN-SUFFIX,messenger.com,XM-日常上网
+  - DOMAIN-SUFFIX,m.me,XM-日常上网
+  - DOMAIN-SUFFIX,instagram.com,XM-日常上网
+  - DOMAIN-SUFFIX,cdninstagram.com,XM-日常上网
+  - DOMAIN-SUFFIX,threads.com,XM-日常上网
+  - DOMAIN-SUFFIX,threads.net,XM-日常上网
+  - DOMAIN-SUFFIX,whatsapp.com,XM-日常上网
+  - DOMAIN-SUFFIX,whatsapp.net,XM-日常上网
+  - DOMAIN-SUFFIX,wa.me,XM-日常上网
+  - DOMAIN-SUFFIX,muse.ai,XM-日常上网
   - DOMAIN-SUFFIX,apps.apple.com,DIRECT
   - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
   - DOMAIN-SUFFIX,mzstatic.com,DIRECT

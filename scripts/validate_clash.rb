@@ -13,7 +13,7 @@ def hk_variants(name)
   ["🇭🇰 香港 #{name}", "HK #{name}", "Hong Kong #{name}", "#{name.sub(/\A\S+ /, '🇭🇰 ')}", "香港中转 #{name}"]
 end
 
-GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Meta', 'XM-Web3', 'XM-Bybit', 'XM-日常上网'].freeze
+GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网'].freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
 
 # MESL：节点名形如「🇯🇵 日本 05」「🇺🇸 美国 10 家宽」。
@@ -22,7 +22,6 @@ mesl = {
   file: 'XM-Clash.yaml',
   expected: {
     'XM-Google' => mesl_jp, 'XM-AI' => mesl_jp, 'XM-日常上网' => mesl_jp,
-    'XM-Meta' => (1..3).map { |n| '🇺🇸 美国 %02d' % n } + (10..12).map { |n| '🇺🇸 美国 %02d 家宽' % n },
     'XM-Web3' => ['🇲🇾 马来西亚 01 家宽', '🇲🇾 马来西亚 03 家宽', '🇵🇭 菲律宾 01', '🇵🇭 菲律宾 02 家宽', '🇻🇳 越南 家宽'],
     'XM-Bybit' => ['🇨🇳 台湾 08 家宽', '🇨🇳 台湾 09 家宽']
   },
@@ -37,7 +36,6 @@ jsy = {
   info_nodes: true,
   expected: {
     'XM-Google' => jsy_jp, 'XM-AI' => jsy_jp, 'XM-日常上网' => jsy_jp,
-    'XM-Meta' => (1..12).map { |n| '🇺🇸 美国_%02d' % n },
     'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'] + (1..12).map { |n| '🇸🇬 新加坡_%02d' % n },
     'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n }
   },
@@ -56,7 +54,7 @@ def check_profile(root, prof)
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
   groups = clash.fetch('proxy-groups')
-  abort "#{file}: groups must be exactly the six XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
+  abort "#{file}: groups must be exactly the five XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
   hk_adversarial = prof[:expected].values.flatten.uniq.flat_map { |n| hk_variants(n) }
   samples = prof[:samples] + HK_SAMPLES + hk_adversarial
@@ -146,4 +144,4 @@ rules.each do |r|
   abort "Clash: #{r} is shadowed by DOMAIN-SUFFIX,#{shadow}" if shadow
   suffixes << value if type == 'DOMAIN-SUFFIX'
 end
-puts "Validated XM-Clash.yaml + XM-Clash-JSY.yaml (identical rules, own node filters): 5 url-test groups + XM-Bybit fallback each (include-all + filter, no nodes or subscriptions), #{rules.size} rules."
+puts "Validated XM-Clash.yaml + XM-Clash-JSY.yaml (identical rules, own node filters): 4 url-test groups + XM-Bybit fallback each (include-all + filter, no nodes or subscriptions), #{rules.size} rules."
