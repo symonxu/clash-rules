@@ -104,7 +104,7 @@ rules:
   - DOMAIN-SUFFIX,helius-rpc.com,XM-Web3
   - DOMAIN,api.mainnet-beta.solana.com,XM-Web3
   - DOMAIN,api.devnet.solana.com,XM-Web3
-  - DOMAIN,arb1.arbitrum.io,XM-Web3
+  - DOMAIN-SUFFIX,arbitrum.io,XM-Web3
   - DOMAIN,mainnet.optimism.io,XM-Web3
   - DOMAIN,mainnet.base.org,XM-Web3
   - DOMAIN,bsc-dataseed.binance.org,XM-Web3
@@ -112,6 +112,10 @@ rules:
   - DOMAIN,mainnet.era.zksync.io,XM-Web3
   - DOMAIN,rpc.gnosischain.com,XM-Web3
   - DOMAIN-SUFFIX,trongrid.io,XM-Web3
+  - DOMAIN-SUFFIX,blockpi.network,XM-Web3
+  - DOMAIN-SUFFIX,blastapi.io,XM-Web3
+  - DOMAIN-SUFFIX,omniatech.io,XM-Web3
+  - DOMAIN-SUFFIX,stackup.sh,XM-Web3
   - DOMAIN-SUFFIX,bybit.com,XM-Bybit
   - DOMAIN-SUFFIX,bybit.biz,XM-Bybit
   - DOMAIN-SUFFIX,byabcde.com,XM-Bybit
