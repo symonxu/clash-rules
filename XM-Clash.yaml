@@ -1,6 +1,7 @@
 # XM Clash 规则配置（App：Clash - 基于规则的网络代理工具，iPhone / iPad / Mac 通用；说明见 README.md）
 # 本文件只有分组、规则和 DNS，没有节点、没有订阅地址，也不需要手动编辑：用 App 的「配置链接」导入，自动跟随仓库更新。
 # 节点来自在 App 里另外导入的 MESL 订阅（节点来源）；各组用 include-all + 节点名正则从中筛选，url-test / fallback 自动测速。
+# 任何分组都不得包含香港节点：每组都用 exclude-filter 排除（CI 校验）。
 mode: rule
 log-level: warning
 ipv6: false
@@ -33,6 +34,7 @@ proxy-groups:
     type: url-test
     include-all: true
     filter: '(^| )日本 0[2-7]$'
+    exclude-filter: '(?i)香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -41,6 +43,7 @@ proxy-groups:
     type: url-test
     include-all: true
     filter: '(^| )日本 0[2-7]$'
+    exclude-filter: '(?i)香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -49,6 +52,7 @@ proxy-groups:
     type: url-test
     include-all: true
     filter: '(^| )美国 (0[1-3]|1[0-2] 家宽)$'
+    exclude-filter: '(?i)香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -56,7 +60,8 @@ proxy-groups:
   - name: XM-Web3
     type: url-test
     include-all: true
-    filter: '(^| )(马来西亚 0[13] 家宽|菲律宾 (01|02 家宽)|越南 家宽|香港 14 家宽)$'
+    filter: '(^| )(马来西亚 0[13] 家宽|菲律宾 (01|02 家宽)|越南 家宽)$'
+    exclude-filter: '(?i)香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -66,6 +71,7 @@ proxy-groups:
     type: fallback
     include-all: true
     filter: '(^| )台湾 08 家宽$`(^| )台湾 09 家宽$'
+    exclude-filter: '(?i)香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     timeout: 5000
@@ -73,6 +79,7 @@ proxy-groups:
     type: url-test
     include-all: true
     filter: '(^| )日本 0[2-7]$'
+    exclude-filter: '(?i)香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
