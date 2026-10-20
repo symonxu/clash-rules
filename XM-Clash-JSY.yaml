@@ -1,7 +1,6 @@
 # XM Clash 规则配置 · 极速云版（App：Clash - 基于规则的网络代理工具，iPhone / iPad / Mac 通用；说明见 README.md）
 # 本文件只有分组、规则和 DNS，没有节点、没有订阅地址，也不需要手动编辑：用 App 的「配置链接」导入，自动跟随仓库更新。
 # 节点来自在 App 里另外导入的极速云订阅（节点来源）；各组用 include-all + 节点名正则从中筛选，url-test / fallback 自动测速。
-# 规则部分必须与 XM-Clash.yaml 完全一致（CI 校验），只有各组的节点筛选不同。
 # 任何分组都不得包含香港节点：每组都用 exclude-filter 排除（CI 校验）。
 mode: rule
 log-level: warning
