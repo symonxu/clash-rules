@@ -231,9 +231,9 @@ rules:
   - DOMAIN-SUFFIX,wa.me,XM-日常上网
   - DOMAIN-SUFFIX,muse.ai,XM-日常上网
   - DOMAIN-SUFFIX,apps.apple.com,DIRECT
-  - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
-  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
-  - DOMAIN-SUFFIX,cdn-apple.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
+  - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
+  - DOMAIN-SUFFIX,cdn-apple.com,XM-日常上网
   - DOMAIN-SUFFIX,aaplimg.com,DIRECT
   - DOMAIN-SUFFIX,apple.com.cn,DIRECT
   - DOMAIN-SUFFIX,cn.apple.com,DIRECT
