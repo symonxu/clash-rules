@@ -98,6 +98,8 @@ rules:
   - IP-CIDR6,::1/128,DIRECT,no-resolve
   - IP-CIDR6,fc00::/7,DIRECT,no-resolve
   - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+  # 屏蔽 QUIC（UDP 443），迫使 App 回落到 TCP，让域名规则生效（无嗅探时 UDP 只能按 IP 匹配）。放在局域网直连之后、域名规则之前。
+  - AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
   - DOMAIN-SUFFIX,infura.io,XM-Web3
   - DOMAIN-SUFFIX,alchemy.com,XM-Web3
   - DOMAIN-SUFFIX,alchemyapi.io,XM-Web3
