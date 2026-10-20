@@ -34,8 +34,8 @@ proxy-groups:
   - name: XM-Google
     type: url-test
     include-all: true
-    filter: '(^| )日本_[0-9]+$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    filter: '(^| )日本(_[0-9]+|((高级|实验性|标准) ?IEPL 专线 [0-9]+))$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -43,8 +43,8 @@ proxy-groups:
   - name: XM-AI
     type: url-test
     include-all: true
-    filter: '(^| )日本_[0-9]+$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    filter: '(^| )日本(_[0-9]+|((高级|实验性|标准) ?IEPL 专线 [0-9]+))$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
@@ -52,26 +52,26 @@ proxy-groups:
   - name: XM-Web3
     type: url-test
     include-all: true
-    filter: '(^| )(马来西亚|菲律宾|越南|新加坡)(_[0-9]+)?$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    filter: '(^| )(马来西亚|菲律宾|越南|新加坡)(_[0-9]+|((高级|实验性|标准) ?IEPL 专线 [0-9]+))?$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
     timeout: 5000
-  # 台湾_01 优先，其次台湾_02，再其次其余台湾节点（filter 用 ` 分隔，按顺序排列）。
+  # 只用台湾高级 IEPL 专线（兼容「台湾_NN」写法）；mihomo 按节点名排序，1 号可用就一直用 1 号，失败才往后切。
   - name: XM-Bybit
     type: fallback
     include-all: true
-    filter: '(^| )台湾_01$`(^| )台湾_02$`(^| )台湾_(0[3-9]|[1-9][0-9])$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    filter: '(^| )台湾(_[0-9]+|高级 IEPL 专线 [0-9]+)$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     timeout: 5000
   - name: XM-日常上网
     type: url-test
     include-all: true
-    filter: '(^| )日本_[0-9]+$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    filter: '(^| )日本(_[0-9]+|((高级|实验性|标准) ?IEPL 专线 [0-9]+))$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20

@@ -1,6 +1,6 @@
 # XM 个人分流规则（Clash App）
 
-本仓库维护两份并行的规则配置，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。两家机场节点命名相同，所以两份文件的 DNS、分组、节点筛选和**规则完全相同**，只是分别配给不同的订阅：
+本仓库维护两份并行的规则配置，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。两份文件的 DNS、分组和**规则完全相同**，只有各组筛选节点的正则不同（两家节点命名不一样）：
 
 | 组合 | 节点来源 | 规则方案 | 配置链接 |
 | --- | --- | --- | --- |
@@ -31,13 +31,15 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 各组用 `include-all: true` 引入订阅里的全部节点，按节点名正则 `filter` 筛选，再用 `exclude-filter` 剔除香港节点（`香港|HK|Hong Kong|🇭🇰`，不区分大小写）和「剩余流量」「套餐到期」「官网」等信息条目：
 
-| 分组 | 节点 | 类型 |
-| --- | --- | --- |
-| XM-Google | 日本_* | url-test |
-| XM-AI | 日本_* | url-test |
-| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | url-test |
-| XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | fallback |
-| XM-日常上网 | 日本_* | url-test |
+| 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | 类型 |
+| --- | --- | --- | --- |
+| XM-Google | 日本_* | 日本高级 / 实验性 / 标准 IEPL 专线 * | url-test |
+| XM-AI | 日本_* | 同上 | url-test |
+| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 新加坡、马来西亚、菲律宾、越南的 IEPL 专线 | url-test |
+| XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1 → 2 → 3 | fallback |
+| XM-日常上网 | 日本_* | 同 XM-Google | url-test |
+
+花云版的筛选同时兼容「日本_01」这类写法；信息条目另外排除英文的 `Traffic` / `Expire`。
 
 - url-test：用 `https://www.gstatic.com/generate_204` 每 900 秒测速，超时 5 秒，新节点快超过 20ms 才切换。
 - XM-Bybit：fallback，同样 900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。
