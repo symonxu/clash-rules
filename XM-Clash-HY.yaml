@@ -243,6 +243,10 @@ rules:
   - DOMAIN-SUFFIX,wa.me,XM-日常上网
   - DOMAIN-SUFFIX,muse.ai,XM-日常上网
   # Apple TV 走 XM-Apple（美国节点）；流媒体子域名必须排在 itunes.apple.com 之前。
+  # Apple TV 视频 CDN（vod-*）走 XM-日常上网（日本节点），必须排在 tv.apple.com 之前。
+  - DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,XM-日常上网
+  - DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,XM-日常上网
+  - DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,XM-日常上网
   - DOMAIN-SUFFIX,tv.apple.com,XM-Apple
   - DOMAIN,play-edge.itunes.apple.com,XM-Apple
   - DOMAIN,hls.itunes.apple.com,XM-Apple
