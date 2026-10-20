@@ -38,10 +38,10 @@ hy_jp = hy.call('🇯🇵', '日本', 1..9)
 hy_sea = hy.call('🇸🇬', '新加坡', 1..9) + hy.call('🇲🇾', '马来西亚', 1..2) + hy.call('🇵🇭', '菲律宾', 1..2) + hy.call('🇻🇳', '越南', 1..2)
 hy_tw = (1..5).map { |n| "🇨🇳 台湾高级 IEPL 专线 #{n}" }
 hy_tw_other = (1..5).flat_map { |n| ["🇨🇳 台湾标准 IEPL 专线 #{n}", "🇨🇳 台湾实验性 IEPL 专线 #{n}"] }
-hy_jp_pick = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" } + ['🇯🇵 日本实验性 IEPL 专线 1']
+hy_jp_pick = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
 hy_sea_pick = (1..3).map { |n| "🇸🇬 新加坡高级 IEPL 专线 #{n}" } + ['🇲🇾 马来西亚标准 IEPL 专线 1', '🇵🇭 菲律宾标准 IEPL 专线 1', '🇻🇳 越南标准 IEPL 专线 1']
 HY_EXPECTED = {
-  # 花云每组只留 4–6 个：日本高级 1–3 + 日本实验性 1；新加坡高级 1–3 + 马来西亚/菲律宾/越南标准 1。
+  # 花云每组只留 3–6 个：日本高级 1–3；新加坡高级 1–3 + 马来西亚/菲律宾/越南标准 1。
   'XM-Google' => hy_jp_pick, 'XM-AI' => hy_jp_pick, 'XM-日常上网' => hy_jp_pick,
   'XM-Web3' => hy_sea_pick,
   'XM-Bybit' => JSY_EXPECTED['XM-Bybit'] + hy_tw,
