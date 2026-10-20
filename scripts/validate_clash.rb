@@ -5,7 +5,7 @@ root = File.expand_path('..', __dir__)
 # 两份文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；两家节点命名不同，分组筛选各用一套虚构样例检查。
 # 不含节点、订阅或占位；各组用 include-all + filter + exclude-filter 筛选并自动测速。
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml'].freeze
-GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网'].freeze
+GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple'].freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
 
 # 任何分组都不得包含香港节点。每组必须有 exclude-filter，且它要能剔除下面这些（虚构的）香港节点名；
@@ -21,7 +21,8 @@ jp = (1..12).map { |n| '🇯🇵 日本_%02d' % n }
 JSY_EXPECTED = {
   'XM-Google' => jp, 'XM-AI' => jp, 'XM-日常上网' => jp,
   'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'] + (1..12).map { |n| '🇸🇬 新加坡_%02d' % n },
-  'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n }
+  'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n },
+  'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n }
 }.freeze
 JSY_SAMPLES = (1..12).flat_map { |n| ['🇯🇵 日本_%02d', '🇺🇸 美国_%02d', '🇭🇰 香港_%02d', '🇹🇼 台湾_%02d', '🇸🇬 新加坡_%02d', '🇰🇷 韩国%02d'].map { |f| f % n } } +
   (1..6).map { |n| '🇭🇰 香港HKT家宽%d' % n } +
@@ -42,7 +43,8 @@ HY_EXPECTED = {
   # 花云每组只留 4–6 个：日本高级 1–3 + 日本实验性 1；新加坡高级 1–3 + 马来西亚/菲律宾/越南标准 1。
   'XM-Google' => hy_jp_pick, 'XM-AI' => hy_jp_pick, 'XM-日常上网' => hy_jp_pick,
   'XM-Web3' => hy_sea_pick,
-  'XM-Bybit' => JSY_EXPECTED['XM-Bybit'] + hy_tw
+  'XM-Bybit' => JSY_EXPECTED['XM-Bybit'] + hy_tw,
+  'XM-Apple' => (1..3).map { |n| "🇺🇸 美国高级 IEPL 专线 #{n}" }
 }.freeze
 HY_SAMPLES = JSY_SAMPLES + hy_jp + hy_sea + hy_tw + hy_tw_other + hy.call('🇺🇸', '美国', 1..9) + hy.call('🇭🇰', '香港', 1..9) + hy.call('🇰🇷', '韩国', 1..3) +
   hy.call('🇹🇭', '泰国', 1..2) + hy.call('🇮🇩', '印尼', 1..2) +
@@ -64,7 +66,7 @@ def check_file(root, file)
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
   groups = clash.fetch('proxy-groups')
-  abort "#{file}: groups must be exactly the five XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
+  abort "#{file}: groups must be exactly the six XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
   samples = prof[:samples] + HK_SAMPLES + prof[:expected].values.flatten.uniq.flat_map { |n| hk_variants(n) }
   hk_direct = HK_SAMPLES + (1..15).flat_map { |n| ['🇭🇰 香港 %02d' % n, '🇭🇰 香港_%02d' % n, '🇭🇰 香港HKT家宽%d' % n] + TIERS.map { |t| "🇭🇰 香港#{t} IEPL 专线 #{n}" } }
@@ -144,6 +146,11 @@ def check_file(root, file)
   abort 'Clash: LAN ranges must be direct first' unless rules.first(11).all? { |r| r.match?(/\A(DOMAIN(-SUFFIX)?,(localhost|local|lan)|IP-CIDR6?,.*),DIRECT(,no-resolve)?\z/) }
   abort 'Clash: Bybit must use XM-Bybit' unless %w[bybit.com bybit.biz byabcde.com bycsi.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-Bybit") } && rules.none? { |r| r.match?(/by(bit|abcde|csi)/) && !r.end_with?(',XM-Bybit') }
   abort 'Clash: AI Google domains must precede Google' unless rules.index('DOMAIN-SUFFIX,gemini.google.com,XM-AI') < rules.index('DOMAIN-SUFFIX,google.com,XM-Google')
+  # 美区 App Store / Apple TV 走 XM-Apple；iCloud、推送、系统更新必须保持直连。
+  apple = %w[apps.apple.com itunes.apple.com mzstatic.com cdn-apple.com tv.apple.com]
+  abort 'Clash: App Store / Apple TV must use XM-Apple' unless apple.all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-Apple") }
+  direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN,swcdn.apple.com DOMAIN,swdist.apple.com DOMAIN,swscan.apple.com DOMAIN,mesu.apple.com DOMAIN,appldnld.apple.com DOMAIN-SUFFIX,aaplimg.com]
+  abort 'Clash: iCloud / push / system updates must stay DIRECT' unless direct.all? { |d| rules.include?("#{d},DIRECT") }
   # 后面的后缀规则不能被前面更宽的后缀规则遮住（否则永远匹配不到）。
   suffixes = []
   rules.each do |r|
@@ -161,4 +168,4 @@ marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
 abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
-puts "Validated #{FILES.join(' + ')} (identical rules): 4 url-test groups + XM-Bybit fallback each (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
+puts "Validated #{FILES.join(' + ')} (identical rules): 5 url-test groups + XM-Bybit fallback each (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
