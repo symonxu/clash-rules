@@ -13,7 +13,7 @@
 | 用户在聊天框说的话 | AI Agent 必须在后台全自动执行的动作 |
 | :--- | :--- |
 | **“读取最新进展” / “看看当前任务” / “继续工作”** | 1. 自动在后台执行 `git pull --ff-only` 同步 GitHub 最新代码；<br>2. 自动读取 [`TASKS.md`](TASKS.md) 与 [`README.md`](README.md)；<br>3. 用大白话向用户汇报上次完成的内容与当前待办事项，并直接推进工作。 |
-| **“添加/修改某条分流规则”** | 1. 修改 [`XM-Clash.yaml`](XM-Clash.yaml) 并严格遵守下述规则红线；<br>2. **强制校验**：自动在后台运行 `ruby scripts/validate_rules.rb`，若报错则自动修正直到 100% 通过；<br>3. 自动将进展写入 [`TASKS.md`](TASKS.md)。 |
+| **“添加/修改某条分流规则”** | 1. 修改 [`XM-Clash-JSY.yaml`](XM-Clash-JSY.yaml) 并严格遵守下述规则红线；<br>2. **强制校验**：自动在后台运行 `ruby scripts/validate_rules.rb`，若报错则自动修正直到 100% 通过；<br>3. 自动将进展写入 [`TASKS.md`](TASKS.md)。 |
 | **“保存进度” / “同步到 GitHub” / “完工交接”** | 1. 自动运行 `ruby scripts/validate_rules.rb` 确保 100% 校验通过；<br>2. 自动更新 [`TASKS.md`](TASKS.md) 中的进度与交接记录；<br>3. 由于 `main` 分支受保护，AI 自动新建分支推送并通过 `gh pr create` + `gh pr merge` 完成合并上传至 GitHub (`https://github.com/symonxu/clash-rules`)。 |
 
 ---
@@ -24,7 +24,7 @@
    - 本仓库为 Public 公开仓库，**绝不能出现任何机场订阅地址、节点 IP/密码或私有凭据**。
    - `scripts/validate_urls.rb` 会扫描仓库内所有文件的网址链接，**严禁在任何文件中写入白名单以外的 URL**。
 2. **规则结构与顺序红线**：
-   - 仅维护单一规则文件 `XM-Clash.yaml`，不含 `proxies`、`proxy-providers`、`rule-providers`。
+   - 仅维护单一规则文件 `XM-Clash-JSY.yaml`（极速云节点来源），不含 `proxies`、`proxy-providers`、`rule-providers`。
    - 五个分组（`XM-Google`, `XM-AI`, `XM-Web3`, `XM-Bybit`, `XM-日常上网`）名称与顺序固定。
    - 规则不得重复，不得被排在前面的更宽泛 `DOMAIN-SUFFIX` 规则遮蔽；`gemini.google.com` 等 AI 域名必须排在 `google.com` 之前；最后两条必须固定为 `GEOIP,CN,DIRECT` 与 `MATCH,XM-日常上网`。
 3. **每次修改必跑校验**：

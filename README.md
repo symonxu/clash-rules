@@ -1,27 +1,24 @@
-# XM 个人分流规则（Clash App）
+# XM 个人分流规则（Clash App · 极速云）
 
-本仓库维护两份规则配置，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。两份的 DNS、分组名称和**规则完全相同**，只有各组筛选节点的正则不同，分别对应两个订阅：
+本仓库只维护一份规则配置 `XM-Clash-JSY.yaml`，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。节点来自在 App 里单独导入的极速云订阅。
 
-| 组合 | 节点来源 | 规则方案 | 配置链接 |
-| --- | --- | --- | --- |
-| MESL | MESL 订阅 | `XM-Clash` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash.yaml |
-| 极速云 | 极速云订阅 | `XM-Clash-JSY` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml |
+配置链接：
 
-**仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；节点来自在 App 里单独添加的订阅。CI 会拦截白名单以外的链接。
+https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml
+
+**仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；CI 会拦截白名单以外的链接。
 
 ## 在 App 里怎么用
 
 节点和规则分开导入，再组合成一份配置：
 
-下面以 MESL 为例；极速云组合步骤相同，把订阅换成极速云、配置链接换成 `XM-Clash-JSY.yaml`、规则方案选 `XM-Clash-JSY`。两个组合可以同时存在，哪个订阅出问题就切到另一个组合。
-
-1. **添加订阅**：配置（Profiles）→ 添加配置（Add Profile）→ 配置链接，粘贴 MESL（或极速云）的 Clash 订阅地址。先选中它、出站模式选"规则"并连接，下一步才能打开 GitHub（raw.githubusercontent.com 在大陆直连通常打不开）。
-2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴对应的配置链接。若有"同时登记它的规则"开关，保持打开；它会作为规则方案出现在规则库里。这份配置自己没有节点，不要单独选中使用。
-3. **组合**：把订阅配置的规则方案换成对应方案（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选 MESL，规则方案选 `XM-Clash`（极速云：节点来源选极速云，规则方案选 `XM-Clash-JSY`）。不要用极速云自带的分组和规则。
+1. **添加极速云订阅**：配置（Profiles）→ 添加配置（Add Profile）→ 配置链接，粘贴极速云的 Clash 订阅地址。先选中它、出站模式选"规则"并连接，下一步才能打开 GitHub（raw.githubusercontent.com 在大陆直连通常打不开）。
+2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴上面的配置链接。若有"同时登记它的规则"开关，保持打开；它会作为规则方案出现在规则库里。这份配置自己没有节点，不要单独选中使用。
+3. **组合**：把极速云配置的规则方案换成 `XM-Clash-JSY`（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选极速云，规则方案选 `XM-Clash-JSY`。不要用极速云自带的分组和规则。
 4. 选中组合后的配置，出站模式选"规则（Rule）"，连接；在"代理（Proxies）"里确认五个组都有节点。
 5. 检查分流：iPhone 在 工具（Utilities）→ Current Session → 连接（Connections），Mac 在侧边栏 Session → Connections，看新连接命中的规则和出站组。
 
-仓库更新后，App 按配置链接自动更新规则；想立刻生效，可在规则库对该方案点"刷新规则"，或在配置列表对它点更新。订阅节点照常在各自的订阅配置里更新。
+仓库更新后，App 按配置链接自动更新规则；想立刻生效，可在规则库对该方案点"刷新规则"，或在配置列表对它点更新。节点照常在极速云订阅配置里更新。
 
 入口和模式的说明见 clash.md 文档：iPhone https://clash.md/zh/guide/ios ，Mac https://clash.md/zh/guide/macos 。节点来源与规则方案的组合方式以 App 开源代码为准：https://github.com/ProjectClash/Clash-Client 。
 
@@ -29,20 +26,20 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## 分组
 
-各组用 `include-all: true` 引入节点来源里的全部节点，再按节点名正则 `filter` 筛选，再用 `exclude-filter` 剔除：两份文件的**每个组都排除香港节点**（`香港|HK|Hong Kong|🇭🇰`，不区分大小写），极速云版还排除「剩余流量」「套餐到期」「官网」等信息条目：
+各组用 `include-all: true` 引入订阅里的全部节点，按节点名正则 `filter` 筛选，再用 `exclude-filter` 剔除香港节点（`香港|HK|Hong Kong|🇭🇰`，不区分大小写）和「剩余流量」「套餐到期」「官网」等信息条目：
 
-| 分组 | MESL（`XM-Clash.yaml`） | 极速云（`XM-Clash-JSY.yaml`） | 类型 |
-| --- | --- | --- | --- |
-| XM-Google | 日本 02–07 | 日本_* | url-test |
-| XM-AI | 日本 02–07 | 日本_* | url-test |
-| XM-Web3 | 马来西亚 01、03 家宽，菲律宾 01、菲律宾 02 家宽，越南家宽 | 马来西亚、菲律宾、越南、新加坡_* | url-test |
-| XM-Bybit | 台湾 08 家宽（主）→ 台湾 09 家宽（备） | 台湾_01 → 台湾_02 → 其余台湾_* | fallback |
-| XM-日常上网 | 日本 02–07 | 日本_* | url-test |
+| 分组 | 节点 | 类型 |
+| --- | --- | --- |
+| XM-Google | 日本_* | url-test |
+| XM-AI | 日本_* | url-test |
+| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | url-test |
+| XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | fallback |
+| XM-日常上网 | 日本_* | url-test |
 
 - url-test：用 `https://www.gstatic.com/generate_204` 每 900 秒测速，超时 5 秒，新节点快超过 20ms 才切换。
 - XM-Bybit：fallback，同样 900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
-- 订阅如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。
+- 极速云如果改了节点名，对应分组会筛不到节点，需要改 `filter`。
 
 ## DNS
 
@@ -59,13 +56,13 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 5. **XM-Google**：Google、Gmail、YouTube 等，以及 `.goog` 域名和 Antigravity 自动更新服务。
 6. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai。
 7. **直连**：App Store 商店页（apps.apple.com）、iCloud、Apple 地图、Game Center、Apple 推送、Apple TV 视频（tv.apple.com、sps-media.apple.com）、微信、QQ。
-8. **临时（大陆 DNS 解析 App Store CDN 失败时）**：`mzstatic.com`、`itunes.apple.com`、`cdn-apple.com` 走 **XM-日常上网**（日本节点），等国内 DNS 恢复后再改回直连。
+8. **临时（#53，大陆 DNS 解析 App Store CDN 失败）**：`mzstatic.com`、`itunes.apple.com`、`cdn-apple.com` 走 **XM-日常上网**（日本节点，较慢、耗流量），国内 DNS 恢复后改回直连。
 9. 中国大陆 IP（`GEOIP,CN`）直连。
 10. 其余流量走 **XM-日常上网**。
 
 ## 修改规则
 
-1. 新建分支，修改 `XM-Clash.yaml`。**改规则（`rules`）时，`XM-Clash-JSY.yaml` 必须做完全相同的修改**：两份文件从「# 规则从上到下匹配」到末尾必须逐字节一致，CI 会检查。只改某个订阅的节点筛选时，只改对应文件的 `proxy-groups`。
+1. 新建分支，修改 `XM-Clash-JSY.yaml`。
 2. 本地校验：
 
    ```sh
@@ -73,9 +70,8 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
    ```
 
    校验内容：
-   - 两份文件都不含 `proxies`、`proxy-providers`、`rule-providers`。
-   - 两份文件的规则部分逐字节一致。
-   - 五个分组的名称、顺序、类型、测速参数，以及各组 `filter` / `exclude-filter` 对样例节点名（不含真实节点）选中的结果；每组都必须排除香港节点。
+   - 不含 `proxies`、`proxy-providers`、`rule-providers`。
+   - 五个分组的名称、顺序、类型、测速参数；各组 `filter` / `exclude-filter` 对虚构样例节点名（不含真实节点）选中的结果，每组非空、排除香港节点和信息条目。
    - DNS。
    - 规则语法、目标只能是五个组或 DIRECT / REJECT、无重复、不被前面的后缀规则遮住、最后两条为 `GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网`。
    - 公开链接白名单。

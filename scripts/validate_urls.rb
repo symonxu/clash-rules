@@ -5,7 +5,6 @@ root = File.expand_path('..', __dir__)
 allowed_urls = Set.new([
   'https://github.com/symonxu/clash-rules',
   'https://www.gstatic.com/generate_204',
-  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml',
   'https://clash.md/zh/guide/ios',
   'https://clash.md/zh/guide/macos',
