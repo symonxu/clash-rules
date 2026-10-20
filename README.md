@@ -18,7 +18,7 @@
 1. **添加订阅**：配置（Profiles）→ 添加配置（Add Profile）→ 配置链接，粘贴极速云的 Clash 订阅地址。先选中它、出站模式选"规则"并连接，下一步才能打开 GitHub（raw.githubusercontent.com 在大陆直连通常打不开）。
 2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴对应的配置链接。若有"同时登记它的规则"开关，保持打开；它会作为规则方案出现在规则库里。这份配置自己没有节点，不要单独选中使用。
 3. **组合**：把极速云配置的规则方案换成 `XM-Clash-JSY`（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选极速云，规则方案选 `XM-Clash-JSY`。花云则是节点来源选花云、规则方案选 `XM-Clash-HY`。不要用机场自带的分组和规则。
-4. 选中组合后的配置，出站模式选"规则（Rule）"，连接；在"代理（Proxies）"里确认五个组都有节点。
+4. 选中组合后的配置，出站模式选"规则（Rule）"，连接；在"代理（Proxies）"里确认六个组都有节点。
 5. 检查分流：iPhone 在 工具（Utilities）→ Current Session → 连接（Connections），Mac 在侧边栏 Session → Connections，看新连接命中的规则和出站组。
 
 仓库更新后，App 按配置链接自动更新规则；想立刻生效，可在规则库对该方案点"刷新规则"，或在配置列表对它点更新。节点照常在各自的订阅配置里更新。
@@ -38,6 +38,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 | XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 新加坡高级 IEPL 专线 1–3，马来西亚 / 菲律宾 / 越南标准 IEPL 专线 1（6 个） | url-test |
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1 → 2 → 3 | fallback |
 | XM-日常上网 | 日本_* | 同 XM-Google | url-test |
+| XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3（3 个） | url-test |
 
 花云版每组只留 4–6 个节点，XM-Bybit 的筛选兼容「台湾_01」写法；信息条目另外排除英文的 `Traffic` / `Expire`。
 
@@ -61,7 +62,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 5. **XM-Google**：Google、Gmail、YouTube 等，以及 `.goog` 域名和 Antigravity 自动更新服务。
 6. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai。
 7. **直连**：App Store 商店页（apps.apple.com）、iCloud、Apple 地图、Game Center、Apple 推送、Apple TV 视频（tv.apple.com、sps-media.apple.com）、微信、QQ。
-8. **临时（#53，大陆 DNS 解析 App Store CDN 失败）**：`mzstatic.com`、`itunes.apple.com`、`cdn-apple.com` 走 **XM-日常上网**（日本节点，较慢、耗流量），国内 DNS 恢复后改回直连。
+8. **XM-Apple**（美区 App Store 与 Apple TV）：`apps.apple.com`、`itunes.apple.com`、`itunes.com`、`mzstatic.com`、`cdn-apple.com`、`tv.apple.com`。iCloud、推送、系统更新、`aaplimg.com` 等仍直连（CI 校验）。
 9. 中国大陆 IP（`GEOIP,CN`）直连。
 10. 其余流量走 **XM-日常上网**。
 
@@ -77,8 +78,8 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
    校验内容：
    - 两份文件的规则部分逐字节一致。
    - 两份文件都不含 `proxies`、`proxy-providers`、`rule-providers`。
-   - 五个分组的名称、顺序、类型、测速参数；各组 `filter` / `exclude-filter` 对虚构样例节点名（不含真实节点）选中的结果，每组非空、排除香港节点和信息条目。
+   - 六个分组的名称、顺序、类型、测速参数；各组 `filter` / `exclude-filter` 对虚构样例节点名（不含真实节点）选中的结果，每组非空、排除香港节点和信息条目。
    - DNS。
-   - 规则语法、目标只能是五个组或 DIRECT / REJECT、无重复、不被前面的后缀规则遮住、最后两条为 `GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网`。
+   - 规则语法、目标只能是六个组或 DIRECT / REJECT、无重复、不被前面的后缀规则遮住、最后两条为 `GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网`。
    - 公开链接白名单。
 3. 开 PR。GitHub Actions 自动跑同样的校验，通过后合并到 main，App 按链接更新即可生效。
