@@ -6,6 +6,7 @@ root = File.expand_path('..', __dir__)
 # 不含节点、订阅或占位；各组用 include-all + filter + exclude-filter 筛选并自动测速。
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml'].freeze
 GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple'].freeze
+QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
 
 # 任何分组都不得包含香港节点。每组必须有 exclude-filter，且它要能剔除下面这些（虚构的）香港节点名；
@@ -115,7 +116,11 @@ def check_file(root, file)
     fields = rule.split(',', -1)
     abort "Clash: empty field in #{rule}" if fields.any?(&:empty?)
     type = fields.first
-    if type == 'MATCH'
+    if type == 'AND'
+      # 只允许这一条组合规则：屏蔽 QUIC。
+      abort "Clash: unsupported AND rule #{rule}" unless rule == QUIC_RULE
+      condition, target = 'quic', 'REJECT'
+    elsif type == 'MATCH'
       abort 'Clash: MATCH must be the last rule' unless i == rules.size - 1 && fields.size == 2
       condition, target = nil, fields[1]
     elsif domain_types.include?(type)
@@ -143,6 +148,7 @@ def check_file(root, file)
     seen[key] = rule
   end
   abort 'Clash: must end with GEOIP,CN,DIRECT then MATCH,XM-日常上网' unless rules.last(2) == ['GEOIP,CN,DIRECT', 'MATCH,XM-日常上网']
+  abort 'Clash: QUIC (UDP 443) must be rejected right after the LAN rules, before any domain rule' unless rules[11] == QUIC_RULE && rules.count(QUIC_RULE) == 1
   abort 'Clash: LAN ranges must be direct first' unless rules.first(11).all? { |r| r.match?(/\A(DOMAIN(-SUFFIX)?,(localhost|local|lan)|IP-CIDR6?,.*),DIRECT(,no-resolve)?\z/) }
   abort 'Clash: Bybit must use XM-Bybit' unless %w[bybit.com bybit.biz byabcde.com bycsi.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-Bybit") } && rules.none? { |r| r.match?(/by(bit|abcde|csi)/) && !r.end_with?(',XM-Bybit') }
   abort 'Clash: AI Google domains must precede Google' unless rules.index('DOMAIN-SUFFIX,gemini.google.com,XM-AI') < rules.index('DOMAIN-SUFFIX,google.com,XM-Google')
