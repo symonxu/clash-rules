@@ -33,13 +33,13 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 | 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | 类型 |
 | --- | --- | --- | --- |
-| XM-Google | 日本_* | 日本高级 / 实验性 / 标准 IEPL 专线 * | url-test |
+| XM-Google | 日本_* | 日本高级 IEPL 专线 1–3、日本实验性 IEPL 专线 1（4 个） | url-test |
 | XM-AI | 日本_* | 同上 | url-test |
-| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 新加坡、马来西亚、菲律宾、越南的 IEPL 专线 | url-test |
+| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 新加坡高级 IEPL 专线 1–3，马来西亚 / 菲律宾 / 越南标准 IEPL 专线 1（6 个） | url-test |
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1 → 2 → 3 | fallback |
 | XM-日常上网 | 日本_* | 同 XM-Google | url-test |
 
-花云版的筛选同时兼容「日本_01」这类写法；信息条目另外排除英文的 `Traffic` / `Expire`。
+花云版每组只留 4–6 个节点，XM-Bybit 的筛选兼容「台湾_01」写法；信息条目另外排除英文的 `Traffic` / `Expire`。
 
 - url-test：用 `https://www.gstatic.com/generate_204` 每 900 秒测速，超时 5 秒，新节点快超过 20ms 才切换。
 - XM-Bybit：fallback，同样 900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。
