@@ -62,7 +62,8 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 5. **XM-Google**：Google、Gmail、YouTube 等，以及 `.goog` 域名和 Antigravity 自动更新服务。
 6. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai。
 7. **直连**：App Store 商店页（apps.apple.com）、iCloud、Apple 地图、Game Center、Apple 推送、Apple TV 视频（tv.apple.com、sps-media.apple.com）、微信、QQ。
-8. **XM-Apple**（美区 App Store 与 Apple TV）：`apps.apple.com`、`itunes.apple.com`、`itunes.com`、`mzstatic.com`、`cdn-apple.com`、`tv.apple.com`。iCloud、推送、系统更新、`aaplimg.com` 等仍直连（CI 校验）。
+8. **XM-Apple**（仅 Apple TV，美国节点）：`tv.apple.com`，以及 `play-edge` / `hls` / `np-edge` / `uts-api.itunes.apple.com`（排在 `itunes.apple.com` 之前）。App Store 不走美国节点；iCloud、推送、系统更新、`aaplimg.com` 等仍直连（CI 校验）。
+   - **临时（#53，大陆 DNS 解析 App Store CDN 失败）**：`mzstatic.com`、`itunes.apple.com`、`cdn-apple.com` 走 **XM-日常上网**（日本节点，较慢、耗流量），国内 DNS 恢复后改回直连；`apps.apple.com` 直连。
 9. 中国大陆 IP（`GEOIP,CN`）直连。
 10. 其余流量走 **XM-日常上网**。
 
