@@ -248,6 +248,7 @@ rules:
   - DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,XM-日常上网
   - DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,XM-日常上网
   - DOMAIN-SUFFIX,tv.apple.com,XM-Apple
+  - DOMAIN-SUFFIX,pancake.apple.com,XM-Apple
   - DOMAIN,play-edge.itunes.apple.com,XM-Apple
   - DOMAIN,hls.itunes.apple.com,XM-Apple
   - DOMAIN,np-edge.itunes.apple.com,XM-Apple
