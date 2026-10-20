@@ -240,13 +240,17 @@ rules:
   - DOMAIN-SUFFIX,whatsapp.net,XM-日常上网
   - DOMAIN-SUFFIX,wa.me,XM-日常上网
   - DOMAIN-SUFFIX,muse.ai,XM-日常上网
-  # 美区 App Store 与 Apple TV 走 XM-Apple（美国节点）；iCloud、推送、系统更新等仍直连（见下方）。
-  - DOMAIN-SUFFIX,apps.apple.com,XM-Apple
-  - DOMAIN-SUFFIX,itunes.apple.com,XM-Apple
-  - DOMAIN-SUFFIX,itunes.com,XM-Apple
-  - DOMAIN-SUFFIX,mzstatic.com,XM-Apple
-  - DOMAIN-SUFFIX,cdn-apple.com,XM-Apple
+  # Apple TV 走 XM-Apple（美国节点）；流媒体子域名必须排在 itunes.apple.com 之前。
   - DOMAIN-SUFFIX,tv.apple.com,XM-Apple
+  - DOMAIN,play-edge.itunes.apple.com,XM-Apple
+  - DOMAIN,hls.itunes.apple.com,XM-Apple
+  - DOMAIN,np-edge.itunes.apple.com,XM-Apple
+  - DOMAIN,uts-api.itunes.apple.com,XM-Apple
+  # App Store 不走美国节点。itunes / mzstatic / cdn-apple 为临时（#53，大陆 DNS 解析失败），恢复后改回 DIRECT。
+  - DOMAIN-SUFFIX,apps.apple.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
+  - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
+  - DOMAIN-SUFFIX,cdn-apple.com,XM-日常上网
   - DOMAIN-SUFFIX,aaplimg.com,DIRECT
   - DOMAIN-SUFFIX,apple.com.cn,DIRECT
   - DOMAIN-SUFFIX,cn.apple.com,DIRECT
