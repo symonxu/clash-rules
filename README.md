@@ -35,7 +35,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 | --- | --- | --- | --- |
 | XM-Google | 日本_* | 日本高级 IEPL 专线 1–3（3 个；实验性节点带宽不稳，已去掉） | url-test |
 | XM-AI | 日本_* | 同上 | url-test |
-| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 新加坡高级 IEPL 专线 1–3，马来西亚 / 菲律宾 / 越南标准 IEPL 专线 1（6 个） | url-test |
+| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 新加坡高级 IEPL 专线 1 → 2 → 3 → 马来西亚标准 1 → 越南标准 1 → 菲律宾标准 1（6 个） | 极速云 url-test；花云 fallback |
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1 → 2 → 3 | fallback |
 | XM-日常上网 | 日本_* | 同 XM-Google | url-test |
 | XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3（3 个） | url-test |
@@ -43,6 +43,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 花云版每组只留 3–6 个节点，XM-Bybit 的筛选兼容「台湾_01」写法；信息条目另外排除英文的 `Traffic` / `Expire`。
 
 - url-test：用 `https://www.gstatic.com/generate_204` 每 900 秒测速，超时 5 秒，新节点快超过 20ms 才切换。
+- 花云 XM-Web3：fallback，新加坡高级优先，菲律宾标准排最后（蜂窝下多次超时）；filter 用反引号分段固定顺序。
 - XM-Bybit：fallback，同样 900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。

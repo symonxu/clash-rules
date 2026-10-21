@@ -39,7 +39,8 @@ hy_sea = hy.call('🇸🇬', '新加坡', 1..9) + hy.call('🇲🇾', '马来西
 hy_tw = (1..5).map { |n| "🇨🇳 台湾高级 IEPL 专线 #{n}" }
 hy_tw_other = (1..5).flat_map { |n| ["🇨🇳 台湾标准 IEPL 专线 #{n}", "🇨🇳 台湾实验性 IEPL 专线 #{n}"] }
 hy_jp_pick = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
-hy_sea_pick = (1..3).map { |n| "🇸🇬 新加坡高级 IEPL 专线 #{n}" } + ['🇲🇾 马来西亚标准 IEPL 专线 1', '🇵🇭 菲律宾标准 IEPL 专线 1', '🇻🇳 越南标准 IEPL 专线 1']
+# 花云 XM-Web3 是 fallback，顺序固定（菲律宾最后）。
+hy_sea_pick = (1..3).map { |n| "🇸🇬 新加坡高级 IEPL 专线 #{n}" } + ['🇲🇾 马来西亚标准 IEPL 专线 1', '🇻🇳 越南标准 IEPL 专线 1', '🇵🇭 菲律宾标准 IEPL 专线 1']
 HY_EXPECTED = {
   # 花云每组只留 3–6 个：日本高级 1–3；新加坡高级 1–3 + 马来西亚/菲律宾/越南标准 1。
   'XM-Google' => hy_jp_pick, 'XM-AI' => hy_jp_pick, 'XM-日常上网' => hy_jp_pick,
@@ -55,7 +56,7 @@ PROFILES = {
   'XM-Clash-JSY.yaml' => { expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
   'XM-Clash-HY.yaml' => { expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                          bybit_order: nil }
+                          bybit_order: nil, fallback_exact: ['XM-Web3'] }
 }.freeze
 
 def check_file(root, file)
@@ -80,8 +81,8 @@ def check_file(root, file)
     abort "#{file}: #{name} exclude-filter must remove every Hong Kong node" unless HK_SAMPLES.all? { |n| excl.match?(n) }
     abort "#{file}: #{name} exclude-filter must remove info nodes" unless prof[:info].all? { |n| excl.match?(n) }
     abort "#{file}: #{name} wrong test options" unless g['url'] == TEST_URL && g['interval'] == 900 && g['timeout'] == 5000
-    if name == 'XM-Bybit'
-      abort "#{file}: XM-Bybit must be fallback" unless g['type'] == 'fallback' && !g.key?('tolerance')
+    if name == 'XM-Bybit' || prof.fetch(:fallback_exact, []).include?(name)
+      abort "#{file}: #{name} must be fallback" unless g['type'] == 'fallback' && !g.key?('tolerance')
     else
       abort "#{file}: #{name} must be url-test with 20ms tolerance" unless g['type'] == 'url-test' && g['tolerance'] == 20
     end
@@ -102,6 +103,7 @@ def check_file(root, file)
       n2 = second.size
       ok = selected.first(n1).sort == first.sort && selected[n1, n2].sort == second.sort
     end
+    ok &&= selected == want if prof.fetch(:fallback_exact, []).include?(name)
     abort "#{file}: #{name} filter selects #{selected.inspect}" unless ok
   end
 
@@ -179,4 +181,4 @@ marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
 abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
-puts "Validated #{FILES.join(' + ')} (identical rules): 5 url-test groups + XM-Bybit fallback each (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
+puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 4 url-test + XM-Web3/XM-Bybit fallback (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
