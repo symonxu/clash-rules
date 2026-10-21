@@ -31,32 +31,31 @@ JSY_SAMPLES = (1..12).flat_map { |n| ['🇯🇵 日本_%02d', '🇺🇸 美国_%
    '剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example', '距离下次重置剩余：30 天', '订阅更新时间', '剩余流量 日本_01', '套餐到期 台湾_01', '官网 新加坡_01', '过期时间 日本_02']
 
 # 花云：节点名形如「🇯🇵 日本高级 IEPL 专线 1」「🇨🇳 台湾标准 IEPL 专线 2」，信息条目为英文「Traffic: … | …」「Expire: …」（以下全是虚构样例）。
-# 花云版 filter 同时兼容「日本_01」写法，所以样例也包含极速云风格。
+# 样例也包含极速云风格（「日本_01」等），花云 filter 不应选中。
 TIERS = ['高级', '实验性', '标准'].freeze
 hy = ->(flag, place, ns) { TIERS.flat_map { |t| ns.map { |n| "#{flag} #{place}#{t} IEPL 专线 #{n}" } } }
-hy_jp = hy.call('🇯🇵', '日本', 1..9)
-hy_sea = hy.call('🇸🇬', '新加坡', 1..9) + hy.call('🇲🇾', '马来西亚', 1..2) + hy.call('🇵🇭', '菲律宾', 1..2) + hy.call('🇻🇳', '越南', 1..2)
 hy_tw = (1..5).map { |n| "🇨🇳 台湾高级 IEPL 专线 #{n}" }
 hy_tw_other = (1..5).flat_map { |n| ["🇨🇳 台湾标准 IEPL 专线 #{n}", "🇨🇳 台湾实验性 IEPL 专线 #{n}"] }
-hy_jp_pick = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
-# 花云 XM-Web3 是 fallback，顺序固定（菲律宾最后）。
-hy_sea_pick = (1..3).map { |n| "🇸🇬 新加坡高级 IEPL 专线 #{n}" } + ['🇲🇾 马来西亚标准 IEPL 专线 1', '🇻🇳 越南标准 IEPL 专线 1', '🇵🇭 菲律宾标准 IEPL 专线 1']
+# 花云：每组同地区高级 1–3 + 标准 1–4（台湾标准只有 1–3），全部 url-test，300 秒 / 10ms。
+hy_pick = ->(flag, place, std) { (1..3).map { |n| "#{flag} #{place}高级 IEPL 专线 #{n}" } + (1..std).map { |n| "#{flag} #{place}标准 IEPL 专线 #{n}" } }
+hy_jp_pick = hy_pick.call('🇯🇵', '日本', 4)
 HY_EXPECTED = {
-  # 花云每组只留 3–6 个：日本高级 1–3；新加坡高级 1–3 + 马来西亚/菲律宾/越南标准 1。
   'XM-Google' => hy_jp_pick, 'XM-AI' => hy_jp_pick, 'XM-日常上网' => hy_jp_pick,
-  'XM-Web3' => hy_sea_pick,
-  'XM-Bybit' => JSY_EXPECTED['XM-Bybit'] + hy_tw,
-  'XM-Apple' => (1..3).map { |n| "🇺🇸 美国高级 IEPL 专线 #{n}" }
+  'XM-Web3' => hy_pick.call('🇸🇬', '新加坡', 4),
+  'XM-Bybit' => hy_pick.call('🇨🇳', '台湾', 3),
+  'XM-Apple' => hy_pick.call('🇺🇸', '美国', 4)
 }.freeze
-HY_SAMPLES = JSY_SAMPLES + hy_jp + hy_sea + hy_tw + hy_tw_other + hy.call('🇺🇸', '美国', 1..9) + hy.call('🇭🇰', '香港', 1..9) + hy.call('🇰🇷', '韩国', 1..3) +
+# 负样本：标准 1–12（含 10+）、实验性、台湾标准 4–5、香港、马来西亚/菲律宾/越南等。
+HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸🇬', '新加坡', 1..12) + hy.call('🇲🇾', '马来西亚', 1..2) + hy.call('🇵🇭', '菲律宾', 1..2) + hy.call('🇻🇳', '越南', 1..2) +
+  hy_tw + hy_tw_other + hy.call('🇺🇸', '美国', 1..12) + hy.call('🇭🇰', '香港', 1..9) + hy.call('🇰🇷', '韩国', 1..3) +
   hy.call('🇹🇭', '泰国', 1..2) + hy.call('🇮🇩', '印尼', 1..2) +
   ['Traffic: 0.08 GB | 150 GB', 'Expire: 2030-01-01', 'traffic 日本高级 IEPL 专线 1', 'EXPIRE 台湾高级 IEPL 专线 1', 'Traffic 新加坡标准 IEPL 专线 1']
 INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example'].freeze
 PROFILES = {
-  'XM-Clash-JSY.yaml' => { expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
+  'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
-  'XM-Clash-HY.yaml' => { expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                          bybit_order: nil, fallback_exact: ['XM-Web3'] }
+  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
+                          bybit_order: nil }
 }.freeze
 
 def check_file(root, file)
@@ -80,11 +79,11 @@ def check_file(root, file)
     excl = Regexp.new(g['exclude-filter'])
     abort "#{file}: #{name} exclude-filter must remove every Hong Kong node" unless HK_SAMPLES.all? { |n| excl.match?(n) }
     abort "#{file}: #{name} exclude-filter must remove info nodes" unless prof[:info].all? { |n| excl.match?(n) }
-    abort "#{file}: #{name} wrong test options" unless g['url'] == TEST_URL && g['interval'] == 900 && g['timeout'] == 5000
-    if name == 'XM-Bybit' || prof.fetch(:fallback_exact, []).include?(name)
+    abort "#{file}: #{name} wrong test options" unless g['url'] == TEST_URL && g['interval'] == prof[:interval] && g['timeout'] == 5000
+    if prof[:fallback].include?(name)
       abort "#{file}: #{name} must be fallback" unless g['type'] == 'fallback' && !g.key?('tolerance')
     else
-      abort "#{file}: #{name} must be url-test with 20ms tolerance" unless g['type'] == 'url-test' && g['tolerance'] == 20
+      abort "#{file}: #{name} must be url-test with #{prof[:tolerance]}ms tolerance" unless g['type'] == 'url-test' && g['tolerance'] == prof[:tolerance]
     end
     regs = g.fetch('filter').split('`').map { |re| Regexp.new(re) }
     hk_hit = regs.flat_map { |re| hk_direct.grep(re) }
@@ -103,7 +102,6 @@ def check_file(root, file)
       n2 = second.size
       ok = selected.first(n1).sort == first.sort && selected[n1, n2].sort == second.sort
     end
-    ok &&= selected == want if prof.fetch(:fallback_exact, []).include?(name)
     abort "#{file}: #{name} filter selects #{selected.inspect}" unless ok
   end
 
@@ -181,4 +179,4 @@ marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
 abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
-puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 4 url-test + XM-Web3/XM-Bybit fallback (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
+puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 6 url-test 300s/10ms (6–7 nodes each) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
