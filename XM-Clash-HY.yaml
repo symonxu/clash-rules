@@ -49,14 +49,14 @@ proxy-groups:
     interval: 900
     tolerance: 20
     timeout: 5000
+  # fallback 固定顺序：新加坡高级 1 → 2 → 3 → 马来西亚标准 1 → 越南标准 1 → 菲律宾标准 1（filter 用反引号分段，mihomo 按段顺序拼接）。
   - name: XM-Web3
-    type: url-test
+    type: fallback
     include-all: true
-    filter: '(^| )(新加坡高级 IEPL 专线 [1-3]|(马来西亚|菲律宾|越南)标准 IEPL 专线 1)$'
+    filter: '(^| )新加坡高级 IEPL 专线 1$`(^| )新加坡高级 IEPL 专线 2$`(^| )新加坡高级 IEPL 专线 3$`(^| )马来西亚标准 IEPL 专线 1$`(^| )越南标准 IEPL 专线 1$`(^| )菲律宾标准 IEPL 专线 1$'
     exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
-    tolerance: 20
     timeout: 5000
   # 只用台湾高级 IEPL 专线（兼容「台湾_NN」写法）；mihomo 按节点名排序，1 号可用就一直用 1 号，失败才往后切。
   - name: XM-Bybit

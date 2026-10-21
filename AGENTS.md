@@ -25,7 +25,7 @@
    - `scripts/validate_urls.rb` 会扫描仓库内所有文件的网址链接，**严禁在任何文件中写入白名单以外的 URL**。
 2. **规则结构与顺序红线**：
    - 维护两份并行规则文件：`XM-Clash-JSY.yaml`（极速云）与 `XM-Clash-HY.yaml`（花云），rules 部分逐字节一致；都不含 `proxies`、`proxy-providers`、`rule-providers`。
-   - 六个分组（`XM-Google`, `XM-AI`, `XM-Web3`, `XM-Bybit`, `XM-日常上网`, `XM-Apple`）名称与顺序固定。
+   - 六个分组（`XM-Google`, `XM-AI`, `XM-Web3`, `XM-Bybit`, `XM-日常上网`, `XM-Apple`）名称与顺序固定。花云的 `XM-Web3` 是 fallback，顺序固定为新加坡高级 1→2→3→马来西亚标准 1→越南标准 1→菲律宾标准 1（filter 反引号分段），validator 精确校验顺序。
    - `XM-Apple` 只用于 Apple TV（`tv.apple.com`、`pancake.apple.com` 及其 `itunes.apple.com` 流媒体子域名）；App Store 不得走 `XM-Apple`（CI 校验）。Apple TV 视频 CDN（`vod-*-aoc.tv.apple.com`）走 `XM-日常上网`，须排在 `tv.apple.com` 之前（CI 校验）。
    - 局域网直连规则之后的第一条必须是 `AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`（屏蔽 QUIC，让流量回落 TCP 走域名规则），不得删除或后移（CI 校验）。
    - 规则不得重复，不得被排在前面的更宽泛 `DOMAIN-SUFFIX` 规则遮蔽；`gemini.google.com` 等 AI 域名必须排在 `google.com` 之前；最后两条必须固定为 `GEOIP,CN,DIRECT` 与 `MATCH,XM-日常上网`。
