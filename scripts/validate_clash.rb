@@ -41,14 +41,15 @@ hy_pick = ->(flag, place, std) { (1..3).map { |n| "#{flag} #{place}高级 IEPL �
 hy_jp_pick = hy_pick.call('🇯🇵', '日本', 4)
 HY_EXPECTED = {
   'XM-Google' => hy_jp_pick, 'XM-AI' => hy_jp_pick, 'XM-日常上网' => hy_jp_pick,
-  'XM-Web3' => hy_pick.call('🇸🇬', '新加坡', 4),
+  # Web3：Hyperliquid HIP-4 限制新加坡/台湾、日本隐藏预测市场，只用韩国标准 1–2、越南标准 1、印尼标准 1（花云这三地没有高级线路）。
+  'XM-Web3' => ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1'],
   'XM-Bybit' => hy_pick.call('🇨🇳', '台湾', 3),
   'XM-Apple' => hy_pick.call('🇺🇸', '美国', 4)
 }.freeze
 # 负样本：标准 1–12（含 10+）、实验性、台湾标准 4–5、香港、马来西亚/菲律宾/越南等。
-HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸🇬', '新加坡', 1..12) + hy.call('🇲🇾', '马来西亚', 1..2) + hy.call('🇵🇭', '菲律宾', 1..2) + hy.call('🇻🇳', '越南', 1..2) +
-  hy_tw + hy_tw_other + hy.call('🇺🇸', '美国', 1..12) + hy.call('🇭🇰', '香港', 1..9) + hy.call('🇰🇷', '韩国', 1..3) +
-  hy.call('🇹🇭', '泰国', 1..2) + hy.call('🇮🇩', '印尼', 1..2) +
+HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸🇬', '新加坡', 1..12) + hy.call('🇲🇾', '马来西亚', 1..2) + hy.call('🇵🇭', '菲律宾', 1..2) + hy.call('🇻🇳', '越南', 1..12) +
+  hy_tw + hy_tw_other + hy.call('🇺🇸', '美国', 1..12) + hy.call('🇭🇰', '香港', 1..9) + hy.call('🇰🇷', '韩国', 1..12) +
+  hy.call('🇹🇭', '泰国', 1..2) + hy.call('🇮🇩', '印尼', 1..12) + ['🇮🇩 印度尼西亚', '🇰🇷 韩国01', '🇻🇳 越南', '🇭🇰 韩国标准 IEPL 专线 1 香港'] +
   ['Traffic: 0.08 GB | 150 GB', 'Expire: 2030-01-01', 'traffic 日本高级 IEPL 专线 1', 'EXPIRE 台湾高级 IEPL 专线 1', 'Traffic 新加坡标准 IEPL 专线 1']
 INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example'].freeze
 PROFILES = {

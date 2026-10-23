@@ -35,7 +35,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 | --- | --- | --- | --- |
 | XM-Google | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | url-test |
 | XM-AI | 日本_* | 同上 | url-test |
-| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 新加坡高级 IEPL 专线 1–3 + 新加坡标准 1–4（7 个） | url-test |
+| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | url-test |
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 极速云 fallback；花云 url-test |
 | XM-日常上网 | 日本_* | 同 XM-Google | url-test |
 | XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | url-test |
