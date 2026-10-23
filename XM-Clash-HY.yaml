@@ -53,7 +53,7 @@ proxy-groups:
   - name: XM-Web3
     type: url-test
     include-all: true
-    filter: '(^| )新加坡(高级 IEPL 专线 [1-3]|标准 IEPL 专线 [1-4])$'
+    filter: '(^| )(韩国标准 IEPL 专线 [1-2]|越南标准 IEPL 专线 1|印尼标准 IEPL 专线 1)$'
     exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 300
