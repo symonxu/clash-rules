@@ -31,3 +31,5 @@
    - 规则不得重复，不得被排在前面的更宽泛 `DOMAIN-SUFFIX` 规则遮蔽；`gemini.google.com` 等 AI 域名必须排在 `google.com` 之前；最后两条必须固定为 `GEOIP,CN,DIRECT` 与 `MATCH,XM-日常上网`。
 3. **每次修改必跑校验**：
    - 修改任何文件后必须自动运行 `ruby scripts/validate_rules.rb`。
+
+- Notion 全家（notion.so/.com/.site/.new、notion-static.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。

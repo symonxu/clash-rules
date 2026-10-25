@@ -200,6 +200,16 @@ rules:
   - DOMAIN-SUFFIX,generativelanguage.googleapis.com,XM-AI
   - DOMAIN-SUFFIX,ai.google.dev,XM-AI
   - DOMAIN,proactivebackend-pa.googleapis.com,XM-AI
+  # Notion（含 Notion Calendar / Mail）走 XM-AI。
+  - DOMAIN-SUFFIX,notion.so,XM-AI
+  - DOMAIN-SUFFIX,notion.com,XM-AI
+  - DOMAIN-SUFFIX,notion.site,XM-AI
+  - DOMAIN-SUFFIX,notion.new,XM-AI
+  - DOMAIN-SUFFIX,notion-static.com,XM-AI
+  - DOMAIN-SUFFIX,notionusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,makenotion.com,XM-AI
+  - DOMAIN-SUFFIX,cron.com,XM-AI
+  - DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI
   - DOMAIN,geller-pa.googleapis.com,XM-AI
   - DOMAIN-SUFFIX,slack.com,XM-AI
   - DOMAIN-SUFFIX,slack-core.com,XM-AI
