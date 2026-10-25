@@ -5,7 +5,7 @@ root = File.expand_path('..', __dir__)
 # 两份文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；两家节点命名不同，分组筛选各用一套虚构样例检查。
 # 不含节点、订阅或占位；各组用 include-all + filter + exclude-filter 筛选并自动测速。
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml'].freeze
-GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple'].freeze
+GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
 
@@ -23,7 +23,9 @@ JSY_EXPECTED = {
   'XM-Google' => jp, 'XM-AI' => jp, 'XM-日常上网' => jp,
   'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'] + (1..12).map { |n| '🇸🇬 新加坡_%02d' % n },
   'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n },
-  'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n }
+  'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n },
+  # Anki：fallback 固定顺序 日本_01 → 02 → 03（04+ 为负样本）。
+  'XM-Anki' => (1..3).map { |n| '🇯🇵 日本_%02d' % n }
 }.freeze
 JSY_SAMPLES = (1..12).flat_map { |n| ['🇯🇵 日本_%02d', '🇺🇸 美国_%02d', '🇭🇰 香港_%02d', '🇹🇼 台湾_%02d', '🇸🇬 新加坡_%02d', '🇰🇷 韩国%02d'].map { |f| f % n } } +
   (1..6).map { |n| '🇭🇰 香港HKT家宽%d' % n } +
@@ -44,7 +46,9 @@ HY_EXPECTED = {
   # Web3：Hyperliquid HIP-4 限制新加坡/台湾、日本隐藏预测市场，只用韩国标准 1–2、越南标准 1、印尼标准 1（花云这三地没有高级线路）。
   'XM-Web3' => ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1'],
   'XM-Bybit' => hy_pick.call('🇨🇳', '台湾', 3),
-  'XM-Apple' => hy_pick.call('🇺🇸', '美国', 4)
+  'XM-Apple' => hy_pick.call('🇺🇸', '美国', 4),
+  # Anki：fallback 固定顺序 日本高级 1 → 2 → 3（标准、实验性、高级 4+ 为负样本）。
+  'XM-Anki' => (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
 }.freeze
 # 负样本：标准 1–12（含 10+）、实验性、台湾标准 4–5、香港、马来西亚/菲律宾/越南等。
 HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸🇬', '新加坡', 1..12) + hy.call('🇲🇾', '马来西亚', 1..2) + hy.call('🇵🇭', '菲律宾', 1..2) + hy.call('🇻🇳', '越南', 1..12) +
@@ -53,9 +57,9 @@ HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸�
   ['Traffic: 0.08 GB | 150 GB', 'Expire: 2030-01-01', 'traffic 日本高级 IEPL 专线 1', 'EXPIRE 台湾高级 IEPL 专线 1', 'Traffic 新加坡标准 IEPL 专线 1']
 INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example'].freeze
 PROFILES = {
-  'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
+  'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit', 'XM-Anki'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
-  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
+  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Anki'], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
                           bybit_order: nil }
 }.freeze
 
@@ -68,7 +72,7 @@ def check_file(root, file)
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
   groups = clash.fetch('proxy-groups')
-  abort "#{file}: groups must be exactly the six XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
+  abort "#{file}: groups must be exactly the seven XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
   samples = prof[:samples] + HK_SAMPLES + prof[:expected].values.flatten.uniq.flat_map { |n| hk_variants(n) }
   hk_direct = HK_SAMPLES + (1..15).flat_map { |n| ['🇭🇰 香港 %02d' % n, '🇭🇰 香港_%02d' % n, '🇭🇰 香港HKT家宽%d' % n] + TIERS.map { |t| "🇭🇰 香港#{t} IEPL 专线 #{n}" } }
@@ -103,6 +107,8 @@ def check_file(root, file)
       n2 = second.size
       ok = selected.first(n1).sort == first.sort && selected[n1, n2].sort == second.sort
     end
+    # XM-Anki 是 fallback，节点顺序必须与预期逐个一致（1 → 2 → 3）。
+    ok &&= selected == want if name == 'XM-Anki'
     abort "#{file}: #{name} filter selects #{selected.inspect}" unless ok
   end
 
@@ -160,6 +166,9 @@ def check_file(root, file)
   tv = ['DOMAIN-SUFFIX,tv.apple.com', 'DOMAIN-SUFFIX,pancake.apple.com'] + %w[play-edge hls np-edge uts-api].map { |h| "DOMAIN,#{h}.itunes.apple.com" }
   abort 'Clash: Apple TV must use XM-Apple' unless tv.all? { |d| rules.include?("#{d},XM-Apple") }
   abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless tv.all? { |d| rules.index("#{d},XM-Apple") < rules.index('DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网').to_i }
+  anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
+  abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
+  abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
   vod = %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com,DIRECT" }
   abort 'Clash: Apple TV VOD CDN must be DIRECT before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
   abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com cdn-apple.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-日常上网") }
@@ -183,4 +192,4 @@ marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
 abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
-puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 6 url-test 300s/10ms (6–7 nodes each) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
+puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit/XM-Anki fallback, HY 6 url-test 300s/10ms + XM-Anki fallback (日本高级 1→2→3) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
