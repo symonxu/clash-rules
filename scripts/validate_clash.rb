@@ -149,6 +149,9 @@ def check_file(root, file)
     seen[key] = rule
   end
   abort 'Clash: must end with GEOIP,CN,DIRECT then MATCH,XM-日常上网' unless rules.last(2) == ['GEOIP,CN,DIRECT', 'MATCH,XM-日常上网']
+  x_rules = %w[x.com twitter.com twimg.com t.co].map { |d| "DOMAIN-SUFFIX,#{d},XM-日常上网" }
+  geoip_at = rules.index('GEOIP,CN,DIRECT')
+  abort 'Clash: X/Twitter must use XM-日常上网 before GEOIP,CN' unless x_rules.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: QUIC (UDP 443) must be rejected right after the LAN rules, before any domain rule' unless rules[11] == QUIC_RULE && rules.count(QUIC_RULE) == 1
   abort 'Clash: LAN ranges must be direct first' unless rules.first(11).all? { |r| r.match?(/\A(DOMAIN(-SUFFIX)?,(localhost|local|lan)|IP-CIDR6?,.*),DIRECT(,no-resolve)?\z/) }
   abort 'Clash: Bybit must use XM-Bybit' unless %w[bybit.com bybit.biz byabcde.com bycsi.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-Bybit") } && rules.none? { |r| r.match?(/by(bit|abcde|csi)/) && !r.end_with?(',XM-Bybit') }

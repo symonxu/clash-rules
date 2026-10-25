@@ -61,7 +61,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
 4. **XM-AI**：ChatGPT / OpenAI、Claude、Perplexity、Cursor、OpenRouter、Grok / x.ai、grokbot.com、Gemini / AI Studio（排在 Google 之前）、Slack，以及 Apple 隐私中继和 Siri 相关域名。
 5. **XM-Google**：Google、Gmail、YouTube 等，以及 `.goog` 域名和 Antigravity 自动更新服务。
-6. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai。
+6. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai，以及 X / Twitter（`x.com`、`twitter.com`、`twimg.com`、`t.co`，排在 `GEOIP,CN` 之前，域名命中后不再按 IP 判断）。
 7. **直连**：App Store 商店页（apps.apple.com）、iCloud、Apple 地图、Game Center、Apple 推送、Apple TV 视频（tv.apple.com、sps-media.apple.com）、微信、QQ。
 8. **XM-Apple**（仅 Apple TV，美国节点）：`tv.apple.com`、`pancake.apple.com`（Apple TV 配置），以及 `play-edge` / `hls` / `np-edge` / `uts-api.itunes.apple.com`（排在 `itunes.apple.com` 之前）。Apple TV 视频 CDN（`vod-ap-aoc` / `vod-ap2-aoc` / `vod-ak-aoc.tv.apple.com`）排在 `tv.apple.com` 之前，直连（DIRECT）；鉴权、片单等域名仍走 XM-Apple。App Store 不走美国节点；iCloud、推送、系统更新、`aaplimg.com` 等仍直连（CI 校验）。
    - **临时（#53，大陆 DNS 解析 App Store CDN 失败）**：`mzstatic.com`、`itunes.apple.com`、`cdn-apple.com` 走 **XM-日常上网**（日本节点，较慢、耗流量），国内 DNS 恢复后改回直连；`apps.apple.com` 直连。

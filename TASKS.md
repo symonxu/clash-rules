@@ -9,9 +9,9 @@
 
 ## 🤝 双端 AI 交接上下文 (Antigravity ⇄ Cursor)
 
-- **最近更新端**：`Antigravity` (2026-10-17)
+- **最近更新端**：`Cursor` (2026-10-25)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：仓库只保留极速云规则配置 `XM-Clash-JSY.yaml`，供 iPhone / iPad / Mac 上的 Clash App 共用，Ruby 语法与 URL 白名单校验全部通过。
+- **当前运行状态**：极速云 `XM-Clash-JSY.yaml` 与花云 `XM-Clash-HY.yaml` 的 rules 保持逐字节一致。X / Twitter（x.com、twitter.com、twimg.com、t.co）在 `GEOIP,CN` 之前走 `XM-日常上网`。
 
 ---
 
@@ -24,5 +24,6 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-25**：在 `GEOIP,CN` 之前为 x.com、twitter.com、twimg.com、t.co 增加 `DOMAIN-SUFFIX` → `XM-日常上网`（两份配置的 rules 同步，任务 22）。回滚时删掉这四条即可，未命中的流量仍按原顺序落到 `GEOIP,CN,DIRECT` 或 `MATCH,XM-日常上网`。
 - [x] **2026-10-17**：配置独立自治的 **「Cursor ⇄ Antigravity 零终端全自动规则 (`AGENTS.md` & `.cursor/rules`)」** 与进度看板 (`TASKS.md`)。
 - [x] **2026-10-16**：精简为单一配置，删除旧同步程序，校验改为独立检查 (`#46`)。
