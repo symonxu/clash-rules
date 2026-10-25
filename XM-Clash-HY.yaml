@@ -288,5 +288,10 @@ rules:
   - DOMAIN-SUFFIX,weixin.com,DIRECT
   - DOMAIN-SUFFIX,wechat.com,DIRECT
   - DOMAIN-SUFFIX,tradingview.com,XM-日常上网
+  # X / Twitter 走 XM-日常上网，必须排在 GEOIP,CN 之前：域名命中后不再按 IP 判断，避免污染解析被当成大陆地址直连。
+  - DOMAIN-SUFFIX,x.com,XM-日常上网
+  - DOMAIN-SUFFIX,twitter.com,XM-日常上网
+  - DOMAIN-SUFFIX,twimg.com,XM-日常上网
+  - DOMAIN-SUFFIX,t.co,XM-日常上网
   - GEOIP,CN,DIRECT
   - MATCH,XM-日常上网
