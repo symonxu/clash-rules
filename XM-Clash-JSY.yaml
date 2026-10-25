@@ -86,13 +86,10 @@ proxy-groups:
     timeout: 5000
   # XM-Anki：AnkiWeb 同步固定一个节点。fallback 固定顺序：日本_01 → 02 → 03（filter 用反引号分段，按顺序排列）。
   - name: XM-Anki
-    type: fallback
+    type: select
     include-all: true
     filter: '(^| )日本_01$`(^| )日本_02$`(^| )日本_03$'
     exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
-    url: https://www.gstatic.com/generate_204
-    interval: 900
-    timeout: 5000
 # 规则从上到下匹配；由 scripts/validate_clash.rb 校验（语法、目标组、重复、顺序）。
 rules:
   - DOMAIN,localhost,DIRECT

@@ -24,7 +24,7 @@ JSY_EXPECTED = {
   'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'] + (1..12).map { |n| '🇸🇬 新加坡_%02d' % n },
   'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n },
   'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n },
-  # Anki：fallback 固定顺序 日本_01 → 02 → 03（04+ 为负样本）。
+  # Anki：手动 select 日本_01、02、03（04+ 为负样本）。
   'XM-Anki' => (1..3).map { |n| '🇯🇵 日本_%02d' % n }
 }.freeze
 JSY_SAMPLES = (1..12).flat_map { |n| ['🇯🇵 日本_%02d', '🇺🇸 美国_%02d', '🇭🇰 香港_%02d', '🇹🇼 台湾_%02d', '🇸🇬 新加坡_%02d', '🇰🇷 韩国%02d'].map { |f| f % n } } +
@@ -47,7 +47,7 @@ HY_EXPECTED = {
   'XM-Web3' => ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1'],
   'XM-Bybit' => hy_pick.call('🇨🇳', '台湾', 3),
   'XM-Apple' => hy_pick.call('🇺🇸', '美国', 4),
-  # Anki：fallback 固定顺序 日本高级 1 → 2 → 3（标准、实验性、高级 4+ 为负样本）。
+  # Anki：手动 select 日本高级 1、2、3（标准、实验性、高级 4+ 为负样本）。
   'XM-Anki' => (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
 }.freeze
 # 负样本：标准 1–12（含 10+）、实验性、台湾标准 4–5、香港、马来西亚/菲律宾/越南等。
@@ -57,9 +57,9 @@ HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸�
   ['Traffic: 0.08 GB | 150 GB', 'Expire: 2030-01-01', 'traffic 日本高级 IEPL 专线 1', 'EXPIRE 台湾高级 IEPL 专线 1', 'Traffic 新加坡标准 IEPL 专线 1']
 INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example'].freeze
 PROFILES = {
-  'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit', 'XM-Anki'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
+  'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
-  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Anki'], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
+  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
                           bybit_order: nil }
 }.freeze
 
@@ -84,8 +84,15 @@ def check_file(root, file)
     excl = Regexp.new(g['exclude-filter'])
     abort "#{file}: #{name} exclude-filter must remove every Hong Kong node" unless HK_SAMPLES.all? { |n| excl.match?(n) }
     abort "#{file}: #{name} exclude-filter must remove info nodes" unless prof[:info].all? { |n| excl.match?(n) }
-    abort "#{file}: #{name} wrong test options" unless g['url'] == TEST_URL && g['interval'] == prof[:interval] && g['timeout'] == 5000
-    if prof[:fallback].include?(name)
+    if name == 'XM-Anki'
+      # XM-Anki 是手动 select 组，不测速，由用户自己选节点。
+      abort "#{file}: #{name} must be select without test options" unless g['type'] == 'select' && (g.keys & %w[url interval tolerance timeout]).empty?
+    else
+      abort "#{file}: #{name} wrong test options" unless g['url'] == TEST_URL && g['interval'] == prof[:interval] && g['timeout'] == 5000
+    end
+    if name == 'XM-Anki'
+      # select：节点集合在下面精确校验
+    elsif prof[:fallback].include?(name)
       abort "#{file}: #{name} must be fallback" unless g['type'] == 'fallback' && !g.key?('tolerance')
     else
       abort "#{file}: #{name} must be url-test with #{prof[:tolerance]}ms tolerance" unless g['type'] == 'url-test' && g['tolerance'] == prof[:tolerance]
@@ -107,7 +114,7 @@ def check_file(root, file)
       n2 = second.size
       ok = selected.first(n1).sort == first.sort && selected[n1, n2].sort == second.sort
     end
-    # XM-Anki 是 fallback，节点顺序必须与预期逐个一致（1 → 2 → 3）。
+    # XM-Anki 是 select，节点必须与预期逐个一致（1、2、3）。
     ok &&= selected == want if name == 'XM-Anki'
     abort "#{file}: #{name} filter selects #{selected.inspect}" unless ok
   end
@@ -192,4 +199,4 @@ marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
 abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
-puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit/XM-Anki fallback, HY 6 url-test 300s/10ms + XM-Anki fallback (日本高级 1→2→3) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
+puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 6 url-test 300s/10ms, XM-Anki manual select (Japan 1/2/3) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."

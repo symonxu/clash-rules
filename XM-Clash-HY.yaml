@@ -88,13 +88,10 @@ proxy-groups:
     timeout: 5000
   # XM-Anki：AnkiWeb 同步固定一个节点，避免 url-test 同步中途切换。fallback 固定顺序：日本高级 1 → 2 → 3（filter 用反引号分段，mihomo 按段顺序拼接）。
   - name: XM-Anki
-    type: fallback
+    type: select
     include-all: true
     filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$'
     exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
-    url: https://www.gstatic.com/generate_204
-    interval: 300
-    timeout: 5000
 # 规则从上到下匹配；由 scripts/validate_clash.rb 校验（语法、目标组、重复、顺序）。
 rules:
   - DOMAIN,localhost,DIRECT

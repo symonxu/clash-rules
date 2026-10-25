@@ -39,12 +39,12 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 极速云 fallback；花云 url-test |
 | XM-日常上网 | 日本_* | 同 XM-Google | url-test |
 | XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | url-test |
-| XM-Anki | 日本_01 → 日本_02 → 日本_03 | 日本高级 IEPL 专线 1 → 2 → 3 | fallback（固定一个节点，避免同步中途切换） |
+| XM-Anki | 日本_01 / 日本_02 / 日本_03 | 日本高级 IEPL 专线 1 / 2 / 3 | select（手动选一个固定节点，避免同步中途切换） |
 
 花云版每组 6–7 个节点（同地区高级 + 标准），不用实验性节点；信息条目另外排除英文的 `Traffic` / `Expire`。
 
 - url-test：用 `https://www.gstatic.com/generate_204` 测速，超时 5 秒。极速云每 900 秒测速、快超过 20ms 才切换；花云六个组全部 url-test，每 300 秒测速、快超过 10ms 就切换。
-- XM-Anki（两份都有）：fallback，固定顺序用反引号分段 filter；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`），排第一的节点可用就一直用，避免 url-test 在同步中途换节点导致中断。花云 300 秒、极速云 900 秒测速，超时 5 秒。
+- XM-Anki（两份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
 - 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。
