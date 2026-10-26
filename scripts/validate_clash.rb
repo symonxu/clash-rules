@@ -5,7 +5,7 @@ root = File.expand_path('..', __dir__)
 # 两份文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；两家节点命名不同，分组筛选各用一套虚构样例检查。
 # 不含节点、订阅或占位；各组用 include-all + filter + exclude-filter 筛选并自动测速。
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml'].freeze
-GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki'].freeze
+GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
 
@@ -25,7 +25,9 @@ JSY_EXPECTED = {
   'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n },
   'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n },
   # Anki：手动 select 日本_01、02、03（04+ 为负样本）。
-  'XM-Anki' => (1..3).map { |n| '🇯🇵 日本_%02d' % n }
+  'XM-Anki' => (1..3).map { |n| '🇯🇵 日本_%02d' % n },
+  # 系统更新：DIRECT 在前（默认），日本_01–03 备用。
+  'XM-系统更新' => (1..3).map { |n| '🇯🇵 日本_%02d' % n }
 }.freeze
 JSY_SAMPLES = (1..12).flat_map { |n| ['🇯🇵 日本_%02d', '🇺🇸 美国_%02d', '🇭🇰 香港_%02d', '🇹🇼 台湾_%02d', '🇸🇬 新加坡_%02d', '🇰🇷 韩国%02d'].map { |f| f % n } } +
   (1..6).map { |n| '🇭🇰 香港HKT家宽%d' % n } +
@@ -48,7 +50,8 @@ HY_EXPECTED = {
   'XM-Bybit' => hy_pick.call('🇨🇳', '台湾', 3),
   'XM-Apple' => hy_pick.call('🇺🇸', '美国', 4),
   # Anki：手动 select 日本高级 1、2、3（标准、实验性、高级 4+ 为负样本）。
-  'XM-Anki' => (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
+  'XM-Anki' => (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" },
+  'XM-系统更新' => (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
 }.freeze
 # 负样本：标准 1–12（含 10+）、实验性、台湾标准 4–5、香港、马来西亚/菲律宾/越南等。
 HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸🇬', '新加坡', 1..12) + hy.call('🇲🇾', '马来西亚', 1..2) + hy.call('🇵🇭', '菲律宾', 1..2) + hy.call('🇻🇳', '越南', 1..12) +
@@ -72,25 +75,29 @@ def check_file(root, file)
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
   groups = clash.fetch('proxy-groups')
-  abort "#{file}: groups must be exactly the seven XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
+  abort "#{file}: groups must be exactly the eight XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
+  manual = %w[XM-Anki XM-系统更新]
   samples = prof[:samples] + HK_SAMPLES + prof[:expected].values.flatten.uniq.flat_map { |n| hk_variants(n) }
   hk_direct = HK_SAMPLES + (1..15).flat_map { |n| ['🇭🇰 香港 %02d' % n, '🇭🇰 香港_%02d' % n, '🇭🇰 香港HKT家宽%d' % n] + TIERS.map { |t| "🇭🇰 香港#{t} IEPL 专线 #{n}" } }
   groups.each do |g|
     name = g['name']
-    abort "#{file}: #{name} has unexpected keys #{(g.keys - allowed_keys).inspect}" unless (g.keys - allowed_keys).empty?
+    keys_ok = name == 'XM-系统更新' ? allowed_keys + ['proxies'] : allowed_keys
+    abort "#{file}: #{name} has unexpected keys #{(g.keys - keys_ok).inspect}" unless (g.keys - keys_ok).empty?
+    # XM-系统更新：proxies 只能是 DIRECT（默认第一项），不得写任何节点。
+    abort "#{file}: #{name} proxies must be exactly [DIRECT]" if name == 'XM-系统更新' && g['proxies'] != ['DIRECT']
     abort "#{file}: #{name} must take nodes via include-all + filter only" unless g['include-all'] == true && g['filter'].is_a?(String)
     abort "#{file}: #{name} must have exclude-filter" unless g['exclude-filter'].is_a?(String)
     excl = Regexp.new(g['exclude-filter'])
     abort "#{file}: #{name} exclude-filter must remove every Hong Kong node" unless HK_SAMPLES.all? { |n| excl.match?(n) }
     abort "#{file}: #{name} exclude-filter must remove info nodes" unless prof[:info].all? { |n| excl.match?(n) }
-    if name == 'XM-Anki'
-      # XM-Anki 是手动 select 组，不测速，由用户自己选节点。
+    if manual.include?(name)
+      # XM-Anki / XM-系统更新 是手动 select 组，不测速，由用户自己选节点。
       abort "#{file}: #{name} must be select without test options" unless g['type'] == 'select' && (g.keys & %w[url interval tolerance timeout]).empty?
     else
       abort "#{file}: #{name} wrong test options" unless g['url'] == TEST_URL && g['interval'] == prof[:interval] && g['timeout'] == 5000
     end
-    if name == 'XM-Anki'
+    if manual.include?(name)
       # select：节点集合在下面精确校验
     elsif prof[:fallback].include?(name)
       abort "#{file}: #{name} must be fallback" unless g['type'] == 'fallback' && !g.key?('tolerance')
@@ -115,7 +122,7 @@ def check_file(root, file)
       ok = selected.first(n1).sort == first.sort && selected[n1, n2].sort == second.sort
     end
     # XM-Anki 是 select，节点必须与预期逐个一致（1、2、3）。
-    ok &&= selected == want if name == 'XM-Anki'
+    ok &&= selected == want if manual.include?(name)
     abort "#{file}: #{name} filter selects #{selected.inspect}" unless ok
   end
 
@@ -183,11 +190,14 @@ def check_file(root, file)
   abort 'Clash: Apple TV VOD CDN must be DIRECT before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
   abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com cdn-apple.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-日常上网") }
   abort 'Clash: only Apple TV may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv.map { |d| "#{d},XM-Apple" }.sort
-  # 临时 OTA：updates*.cdn-apple.com 必须直连且排在 DOMAIN-SUFFIX,cdn-apple.com 之前（否则会被 #53 临时规则吸走）。
-  ota_cdn = %w[updates.cdn-apple.com updates-http.cdn-apple.com].map { |h| "DOMAIN,#{h},DIRECT" }
+  # OTA：updates*.cdn-apple.com 必须走 XM-系统更新且排在 DOMAIN-SUFFIX,cdn-apple.com 之前（否则会被 #53 临时规则吸走）。
+  ota_cdn = %w[updates.cdn-apple.com updates-http.cdn-apple.com].map { |h| "DOMAIN,#{h},XM-系统更新" }
   cdn_at = rules.index('DOMAIN-SUFFIX,cdn-apple.com,XM-日常上网')
-  abort 'Clash: OTA updates*.cdn-apple.com must be DIRECT before cdn-apple.com' unless cdn_at && ota_cdn.all? { |r| rules.include?(r) && rules.index(r) < cdn_at }
-  direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN,swcdn.apple.com DOMAIN,swdist.apple.com DOMAIN,swdownload.apple.com DOMAIN,swscan.apple.com DOMAIN,mesu.apple.com DOMAIN,gdmf.apple.com DOMAIN,gs.apple.com DOMAIN,appldnld.apple.com DOMAIN,xp.apple.com DOMAIN-SUFFIX,aaplimg.com]
+  abort 'Clash: OTA updates*.cdn-apple.com must use XM-系统更新 before cdn-apple.com' unless cdn_at && ota_cdn.all? { |r| rules.include?(r) && rules.index(r) < cdn_at }
+  direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN-SUFFIX,aaplimg.com]
+  ota = %w[updates.cdn-apple.com updates-http.cdn-apple.com appldnld.apple.com swcdn.apple.com swdist.apple.com swdownload.apple.com swscan.apple.com mesu.apple.com gdmf.apple.com gs.apple.com xp.apple.com].map { |h| "DOMAIN,#{h},XM-系统更新" }
+  abort 'Clash: system update domains must use XM-系统更新 before GEOIP,CN' unless ota.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
+  abort 'Clash: only system update domains may use XM-系统更新' unless rules.select { |r| r.end_with?(',XM-系统更新') }.sort == ota.sort
   abort 'Clash: iCloud / push / system updates must stay DIRECT' unless direct.all? { |d| rules.include?("#{d},DIRECT") }
   # 后面的后缀规则不能被前面更宽的后缀规则遮住（否则永远匹配不到）。
   suffixes = []
@@ -206,4 +216,4 @@ marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
 abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
-puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 6 url-test 300s/10ms, XM-Anki manual select (Japan 1/2/3) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
+puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 6 url-test 300s/10ms, XM-Anki manual select (Japan 1/2/3), XM-系统更新 select (DIRECT + Japan 1/2/3) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
