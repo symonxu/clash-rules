@@ -92,6 +92,13 @@ proxy-groups:
     include-all: true
     filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$'
     exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
+  - name: XM-系统更新
+    type: select
+    proxies:
+      - DIRECT
+    include-all: true
+    filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
 # 规则从上到下匹配；由 scripts/validate_clash.rb 校验（语法、目标组、重复、顺序）。
 rules:
   - DOMAIN,localhost,DIRECT
@@ -275,6 +282,9 @@ rules:
   - DOMAIN-SUFFIX,apps.apple.com,DIRECT
   - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
   - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
+  # 系统更新（iOS/macOS OTA）走 XM-系统更新（默认 DIRECT，可手动切日本）。须排在 cdn-apple.com 之前。
+  - DOMAIN,updates.cdn-apple.com,XM-系统更新
+  - DOMAIN,updates-http.cdn-apple.com,XM-系统更新
   - DOMAIN-SUFFIX,cdn-apple.com,XM-日常上网
   - DOMAIN-SUFFIX,aaplimg.com,DIRECT
   - DOMAIN-SUFFIX,apple.com.cn,DIRECT
@@ -282,12 +292,15 @@ rules:
   - DOMAIN-SUFFIX,icloud.com.cn,DIRECT
   - DOMAIN-SUFFIX,push.apple.com,DIRECT
   - DOMAIN-SUFFIX,ess.apple.com,DIRECT
-  - DOMAIN,appldnld.apple.com,DIRECT
-  - DOMAIN,swcdn.apple.com,DIRECT
-  - DOMAIN,swdist.apple.com,DIRECT
-  - DOMAIN,swscan.apple.com,DIRECT
-  - DOMAIN,mesu.apple.com,DIRECT
-  - DOMAIN,xp.apple.com,DIRECT
+  - DOMAIN,appldnld.apple.com,XM-系统更新
+  - DOMAIN,swcdn.apple.com,XM-系统更新
+  - DOMAIN,swdist.apple.com,XM-系统更新
+  - DOMAIN,swdownload.apple.com,XM-系统更新
+  - DOMAIN,swscan.apple.com,XM-系统更新
+  - DOMAIN,mesu.apple.com,XM-系统更新
+  - DOMAIN,gdmf.apple.com,XM-系统更新
+  - DOMAIN,gs.apple.com,XM-系统更新
+  - DOMAIN,xp.apple.com,XM-系统更新
   - DOMAIN,configuration.apple.com,DIRECT
   - DOMAIN,gs-loc-cn.apple.com,DIRECT
   - DOMAIN-SUFFIX,icloud.com,DIRECT

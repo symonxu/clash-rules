@@ -25,8 +25,9 @@
    - `scripts/validate_urls.rb` 会扫描仓库内所有文件的网址链接，**严禁在任何文件中写入白名单以外的 URL**。
 2. **规则结构与顺序红线**：
    - 维护两份并行规则文件：`XM-Clash-JSY.yaml`（极速云）与 `XM-Clash-HY.yaml`（花云），rules 部分逐字节一致；都不含 `proxies`、`proxy-providers`、`rule-providers`。
-   - 七个分组（`XM-Google`, `XM-AI`, `XM-Web3`, `XM-Bybit`, `XM-日常上网`, `XM-Apple`, `XM-Anki`）名称与顺序固定。`XM-Anki` 两份都是手动 select 组（花云 日本高级 1–3，极速云 日本_01–03，用户手动固定节点，无 url/interval/timeout/tolerance，validator 精确校验节点），只用于 `ankiweb.net`、`ankiuser.net`，须排在 `GEOIP,CN` 之前（CI 校验）。其余六组：花云六个组全部 url-test（300 秒 / 10ms），每组同地区高级 1–3 + 标准（日本/美国标准 1–4，台湾标准 1–3）；XM-Web3 例外，只用韩国标准 1–2、越南标准 1、印尼标准 1（Hyperliquid HIP-4 限制新加坡/台湾，日本隐藏预测市场），不用实验性和香港节点，validator 精确校验节点集合；极速云保持 900 秒 / 20ms，XM-Bybit 为 fallback。
+   - 八个分组（`XM-Google`, `XM-AI`, `XM-Web3`, `XM-Bybit`, `XM-日常上网`, `XM-Apple`, `XM-Anki`, `XM-系统更新`）名称与顺序固定。`XM-Anki` 两份都是手动 select 组（花云 日本高级 1–3，极速云 日本_01–03，用户手动固定节点，无 url/interval/timeout/tolerance，validator 精确校验节点），只用于 `ankiweb.net`、`ankiuser.net`，须排在 `GEOIP,CN` 之前（CI 校验）。其余六组：花云六个组全部 url-test（300 秒 / 10ms），每组同地区高级 1–3 + 标准（日本/美国标准 1–4，台湾标准 1–3）；XM-Web3 例外，只用韩国标准 1–2、越南标准 1、印尼标准 1（Hyperliquid HIP-4 限制新加坡/台湾，日本隐藏预测市场），不用实验性和香港节点，validator 精确校验节点集合；极速云保持 900 秒 / 20ms，XM-Bybit 为 fallback。
    - `XM-Apple` 只用于 Apple TV（`tv.apple.com`、`pancake.apple.com` 及其 `itunes.apple.com` 流媒体子域名）；App Store 不得走 `XM-Apple`（CI 校验）。Apple TV 视频 CDN（`vod-*-aoc.tv.apple.com`）直连（`DIRECT`），鉴权、片单域名仍走 `XM-Apple`；须排在 `tv.apple.com` 之前（CI 校验）。
+   - `XM-系统更新`：两份都是 select，`proxies: [DIRECT]` 在前作默认，再 include-all 日本节点（花云 日本高级 1–3，极速云 日本_01–03），无 url/interval/timeout。只用于 Apple OTA 域名（updates/updates-http.cdn-apple.com、appldnld、swcdn、swdist、swdownload、swscan、mesu、gdmf、gs、xp.apple.com），须排在 `cdn-apple.com` 与 `GEOIP,CN` 之前（CI 校验）。
    - 局域网直连规则之后的第一条必须是 `AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`（屏蔽 QUIC，让流量回落 TCP 走域名规则），不得删除或后移（CI 校验）。
    - 规则不得重复，不得被排在前面的更宽泛 `DOMAIN-SUFFIX` 规则遮蔽；`gemini.google.com` 等 AI 域名必须排在 `google.com` 之前；最后两条必须固定为 `GEOIP,CN,DIRECT` 与 `MATCH,XM-日常上网`。
 3. **每次修改必跑校验**：
