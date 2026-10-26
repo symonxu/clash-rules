@@ -275,6 +275,9 @@ rules:
   - DOMAIN-SUFFIX,apps.apple.com,DIRECT
   - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
   - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
+  # 临时（国行 iOS/macOS 系统更新）：OTA 走大陆 CDN 直连；升级完成后可删。须排在 cdn-apple.com 之前。
+  - DOMAIN,updates.cdn-apple.com,DIRECT
+  - DOMAIN,updates-http.cdn-apple.com,DIRECT
   - DOMAIN-SUFFIX,cdn-apple.com,XM-日常上网
   - DOMAIN-SUFFIX,aaplimg.com,DIRECT
   - DOMAIN-SUFFIX,apple.com.cn,DIRECT
@@ -285,8 +288,11 @@ rules:
   - DOMAIN,appldnld.apple.com,DIRECT
   - DOMAIN,swcdn.apple.com,DIRECT
   - DOMAIN,swdist.apple.com,DIRECT
+  - DOMAIN,swdownload.apple.com,DIRECT
   - DOMAIN,swscan.apple.com,DIRECT
   - DOMAIN,mesu.apple.com,DIRECT
+  - DOMAIN,gdmf.apple.com,DIRECT
+  - DOMAIN,gs.apple.com,DIRECT
   - DOMAIN,xp.apple.com,DIRECT
   - DOMAIN,configuration.apple.com,DIRECT
   - DOMAIN,gs-loc-cn.apple.com,DIRECT

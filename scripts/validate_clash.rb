@@ -183,7 +183,11 @@ def check_file(root, file)
   abort 'Clash: Apple TV VOD CDN must be DIRECT before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
   abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com cdn-apple.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-日常上网") }
   abort 'Clash: only Apple TV may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv.map { |d| "#{d},XM-Apple" }.sort
-  direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN,swcdn.apple.com DOMAIN,swdist.apple.com DOMAIN,swscan.apple.com DOMAIN,mesu.apple.com DOMAIN,appldnld.apple.com DOMAIN-SUFFIX,aaplimg.com]
+  # 临时 OTA：updates*.cdn-apple.com 必须直连且排在 DOMAIN-SUFFIX,cdn-apple.com 之前（否则会被 #53 临时规则吸走）。
+  ota_cdn = %w[updates.cdn-apple.com updates-http.cdn-apple.com].map { |h| "DOMAIN,#{h},DIRECT" }
+  cdn_at = rules.index('DOMAIN-SUFFIX,cdn-apple.com,XM-日常上网')
+  abort 'Clash: OTA updates*.cdn-apple.com must be DIRECT before cdn-apple.com' unless cdn_at && ota_cdn.all? { |r| rules.include?(r) && rules.index(r) < cdn_at }
+  direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN,swcdn.apple.com DOMAIN,swdist.apple.com DOMAIN,swdownload.apple.com DOMAIN,swscan.apple.com DOMAIN,mesu.apple.com DOMAIN,gdmf.apple.com DOMAIN,gs.apple.com DOMAIN,appldnld.apple.com DOMAIN,xp.apple.com DOMAIN-SUFFIX,aaplimg.com]
   abort 'Clash: iCloud / push / system updates must stay DIRECT' unless direct.all? { |d| rules.include?("#{d},DIRECT") }
   # 后面的后缀规则不能被前面更宽的后缀规则遮住（否则永远匹配不到）。
   suffixes = []

@@ -9,9 +9,9 @@
 
 ## 🤝 双端 AI 交接上下文 (Antigravity ⇄ Cursor)
 
-- **最近更新端**：`Antigravity` (2026-10-25)
+- **最近更新端**：`Cursor` (2026-10-27)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：极速云 `XM-Clash-JSY.yaml` 与花云 `XM-Clash-HY.yaml` 的 rules 保持逐字节一致。Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter（x.com、twitter.com、twimg.com、t.co）在 `GEOIP,CN` 之前走 `XM-日常上网`。
+- **当前运行状态**：极速云 `XM-Clash-JSY.yaml` 与花云 `XM-Clash-HY.yaml` 的 rules 保持逐字节一致。Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。**临时**：国行 iOS/macOS OTA（`updates*.cdn-apple.com` 等）直连，升级完成后可撤。
 
 ---
 
@@ -19,11 +19,13 @@
 
 - [ ] 审阅并决定是否关闭 GitHub 上的旧分支 PR `#5 Add Hako V1.3 test profile with protected exits`（因仓库现已精简为单一配置 `XM-Clash-JSY.yaml`）。
 - [ ] 日常按需增补 Web3、AI、Google 等分流域名规则。
+- [ ] 国行系统升级完成后，撤掉临时 OTA 直连新增规则（`updates*.cdn-apple.com`、`swdownload`、`gdmf`、`gs`），保留原有 mesu/sw* 直连即可。
 
 ---
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-27**：临时为国行系统更新补齐 OTA 直连：`updates.cdn-apple.com` / `updates-http.cdn-apple.com`（排在 `cdn-apple.com` 之前）、`swdownload.apple.com`、`gdmf.apple.com`、`gs.apple.com`；原有 mesu/swscan/swcdn/swdist/appldnld/xp 保持 DIRECT。升级完成后可回滚这几条新增规则。
 - [x] **2026-10-25**：将 Notion 全家域名（`notion.so`、`notion.com`、`notion.site`、`notion.new`、`notion-static.com`、`notionusercontent.com`、`makenotion.com`、`cron.com` 及 `prod-files-secure.s3.us-west-2.amazonaws.com`）接入 `XM-AI` 分组并排在 `GEOIP,CN` 之前（两份配置的 rules 同步及 CI 校验，任务 23 / `#72`）。回滚时从两份 YAML 与 `scripts/validate_clash.rb` 移除上述 9 条 Notion 规则即可，未命中流量将恢复落入后续规则或 `MATCH,XM-日常上网`。
 - [x] **2026-10-25**：在 `GEOIP,CN` 之前为 x.com、twitter.com、twimg.com、t.co 增加 `DOMAIN-SUFFIX` → `XM-日常上网`（两份配置的 rules 同步，任务 22）。回滚时删掉这四条即可，未命中的流量仍按原顺序落到 `GEOIP,CN,DIRECT` 或 `MATCH,XM-日常上网`。
 - [x] **2026-10-17**：配置独立自治的 **「Cursor ⇄ Antigravity 零终端全自动规则 (`AGENTS.md` & `.cursor/rules`)」** 与进度看板 (`TASKS.md`)。
