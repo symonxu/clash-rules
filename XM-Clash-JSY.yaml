@@ -332,6 +332,8 @@ rules:
   - DOMAIN,gs-loc-cn.apple.com,DIRECT
   - DOMAIN-SUFFIX,icloud.com,DIRECT
   - DOMAIN-SUFFIX,icloud-content.com,DIRECT
+  - DOMAIN-SUFFIX,apple-cloudkit.com,DIRECT
+  - DOMAIN-SUFFIX,apple-livephotoskit.com,DIRECT
   - DOMAIN-SUFFIX,ls.apple.com,DIRECT
   - DOMAIN-SUFFIX,gc.apple.com,DIRECT
   - DOMAIN,gsa.apple.com,DIRECT

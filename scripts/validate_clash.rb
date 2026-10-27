@@ -197,7 +197,7 @@ def check_file(root, file)
   abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-日常上网") }
   abort 'Clash: only Apple TV may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv.map { |d| "#{d},XM-Apple" }.sort
   # OTA：cdn-apple.com 整站 + Apple 官方 Software updates 域名走 XM-系统更新（同出口，避免混合校验卡住）。
-  direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN-SUFFIX,aaplimg.com]
+  direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN-SUFFIX,aaplimg.com DOMAIN-SUFFIX,apple-cloudkit.com DOMAIN-SUFFIX,apple-livephotoskit.com]
   ota_hosts = %w[
     appldnld.apple.com swcdn.apple.com swdist.apple.com swdownload.apple.com swscan.apple.com
     swquery.apple.com swpost.apple.com mesu.apple.com gdmf.apple.com gdmf-ados.apple.com
