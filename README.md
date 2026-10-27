@@ -69,7 +69,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 7. **直连**：App Store 商店页（apps.apple.com）、iCloud、Apple 地图、Game Center、Apple 推送、Apple TV 视频（tv.apple.com、sps-media.apple.com）、微信、QQ。
 8. **XM-Apple**（仅 Apple TV，美国节点）：`tv.apple.com`、`pancake.apple.com`（Apple TV 配置），以及 `play-edge` / `hls` / `np-edge` / `uts-api.itunes.apple.com`（排在 `itunes.apple.com` 之前）。Apple TV 视频 CDN（`vod-ap-aoc` / `vod-ap2-aoc` / `vod-ak-aoc.tv.apple.com`）排在 `tv.apple.com` 之前，直连（DIRECT）；鉴权、片单等域名仍走 XM-Apple。App Store 不走美国节点；iCloud、推送、`aaplimg.com` 等仍直连，系统更新走 XM-系统更新（CI 校验）。
    - **临时（#53，大陆 DNS 解析 App Store CDN 失败）**：`mzstatic.com`、`itunes.apple.com` 走 **XM-日常上网**（日本节点，较慢、耗流量），国内 DNS 恢复后改回直连；`apps.apple.com` 直连。`cdn-apple.com` 已改走 XM-系统更新。
-   - **XM-系统更新**（iOS/macOS OTA，参考 Apple 企业网络 Software updates）：`cdn-apple.com`（DOMAIN-SUFFIX，含 updates*/fcs-keys 等）、`appldnld`、`swcdn`、`swdist`、`swdownload`、`swscan`、`swquery`、`swpost`、`mesu`、`gdmf`、`gdmf-ados`、`gs`、`gsra`、`gg`、`ig`、`skl`、`xp`、`configuration`、`oscdn`、`osrecovery`、`cds`、`download.info.apple.com`；默认 DIRECT（整条同出口，避免校验卡住），失败可手动切日本。不影响 XM-Apple / Apple TV。
+   - **XM-系统更新**（iOS/macOS OTA，参考 Apple 企业网络 Software updates）：`cdn-apple.com`（DOMAIN-SUFFIX，含 updates*/fcs-keys 等）、`appldnld`、`swcdn`、`swdist`、`swdownload`、`swscan`、`swquery`、`swpost`、`mesu`、`gdmf`、`gdmf-ados`、`gs`、`gsra`、`gg`、`ig`、`skl`、`xp`、`configuration`、`oscdn`、`osrecovery`、`cds`、`download.info.apple.com`、`ocsp2.apple.com`； DNS：这些 Apple 下载域名用 nameserver-policy 走系统 DNS + 114 + 180.76.76.76 并跳过 fake-ip（223/119 解析 updates.cdn-apple.com / swcdn 会 SERVFAIL）；默认 DIRECT（整条同出口，避免校验卡住），失败可手动切日本。不影响 XM-Apple / Apple TV。
 9. 中国大陆 IP（`GEOIP,CN`）直连。
 10. 其余流量走 **XM-日常上网**。
 
