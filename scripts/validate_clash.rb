@@ -74,9 +74,9 @@ def check_file(root, file)
   abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
-  apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net'
-  abort "#{file}: nameserver-policy must only send Apple update domains to system/114/180.76.76.76" unless dns['nameserver-policy'] == { apple_dns_key => %w[system 114.114.114.114 180.76.76.76] }
-  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
+  apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
+  abort "#{file}: nameserver-policy must only send Apple update domains to DoH 223.5.5.5 / doh.pub" unless dns['nameserver-policy'] == { apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query] }
+  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
   groups = clash.fetch('proxy-groups')
   abort "#{file}: groups must be exactly the eight XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]

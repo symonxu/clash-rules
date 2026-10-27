@@ -28,6 +28,9 @@ dns:
     - 'swdist.apple.com'
     - 'swscan.apple.com'
     - '+.aaplimg.com'
+    - '+.ks-cdn.com'
+    - '+.ksyuncdn.com'
+    - '+.alikunlun.com'
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
@@ -35,7 +38,7 @@ dns:
     - 223.5.5.5
     - 119.29.29.29
   nameserver-policy:
-    '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net': [system, 114.114.114.114, 180.76.76.76]
+    '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
 proxy-groups:
   - name: XM-Google
     type: url-test
