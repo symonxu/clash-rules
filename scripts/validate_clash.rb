@@ -21,7 +21,7 @@ end
 jp = (1..12).map { |n| '🇯🇵 日本_%02d' % n }
 JSY_EXPECTED = {
   'XM-Google' => jp, 'XM-AI' => jp, 'XM-日常上网' => jp,
-  'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'] + (1..12).map { |n| '🇸🇬 新加坡_%02d' % n },
+  'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'],
   'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n },
   'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n },
   # Anki：手动 select 日本_01、02、03（04+ 为负样本）。
@@ -69,14 +69,15 @@ PROFILES = {
 def check_file(root, file)
   prof = PROFILES.fetch(file)
   clash = YAML.safe_load(File.read(File.join(root, file)))
-  abort "#{file}: unexpected top-level fields" unless clash.keys.sort == %w[mode log-level ipv6 unified-delay tcp-concurrent profile dns proxy-groups rules].sort
+  abort "#{file}: unexpected top-level fields" unless clash.keys.sort == %w[mode log-level ipv6 unified-delay tcp-concurrent geox-url profile dns proxy-groups rules].sort
   abort "#{file}: must not contain nodes or subscriptions" if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
   abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
+  abort "#{file}: geox-url must be exactly the jsDelivr MetaCubeX mirror" unless clash['geox-url'] == { 'geoip' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat', 'geosite' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat', 'mmdb' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb' }
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
   apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
   abort "#{file}: nameserver-policy must only send Apple update domains to DoH 223.5.5.5 / doh.pub" unless dns['nameserver-policy'] == { apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query] }
-  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
+  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
   groups = clash.fetch('proxy-groups')
   abort "#{file}: groups must be exactly the eight XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
@@ -115,6 +116,8 @@ def check_file(root, file)
     selected.reject! { |n| excl.match?(n) }
     abort "#{file}: #{name} would contain Hong Kong nodes #{selected.grep(HK_RE).inspect}" unless selected.grep(HK_RE).empty?
     abort "#{file}: #{name} selects no nodes" if selected.empty?
+    # Web3：Hyperliquid 限制新加坡/台湾，两家都不得选中。
+    abort "#{file}: XM-Web3 must not contain Singapore/Taiwan nodes" if name == 'XM-Web3' && (selected.grep(/新加坡|台湾|SG|TW|Singapore|Taiwan/i).any? || regs.any? { |re| re.source.match?(/新加坡|台湾/) })
     want = prof[:expected][name]
     ok = selected.sort == want.sort
     if ok && name == 'XM-Bybit' && prof[:bybit_order]
@@ -172,7 +175,7 @@ def check_file(root, file)
     seen[key] = rule
   end
   abort 'Clash: must end with GEOIP,CN,DIRECT then MATCH,XM-日常上网' unless rules.last(2) == ['GEOIP,CN,DIRECT', 'MATCH,XM-日常上网']
-  x_rules = %w[x.com twitter.com twimg.com t.co].map { |d| "DOMAIN-SUFFIX,#{d},XM-日常上网" }
+  x_rules = %w[x.com twitter.com twimg.com t.co pscp.tv periscope.tv twittercdn.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-日常上网" }
   geoip_at = rules.index('GEOIP,CN,DIRECT')
   abort 'Clash: X/Twitter must use XM-日常上网 before GEOIP,CN' unless x_rules.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: QUIC (UDP 443) must be rejected right after the LAN rules, before any domain rule' unless rules[11] == QUIC_RULE && rules.count(QUIC_RULE) == 1
@@ -182,7 +185,7 @@ def check_file(root, file)
   # Apple TV 走 XM-Apple；App Store 不得走 XM-Apple（美国节点）；iCloud、推送、系统更新必须保持直连。
   tv = ['DOMAIN-SUFFIX,tv.apple.com', 'DOMAIN-SUFFIX,pancake.apple.com'] + %w[play-edge hls np-edge uts-api].map { |h| "DOMAIN,#{h}.itunes.apple.com" }
   abort 'Clash: Apple TV must use XM-Apple' unless tv.all? { |d| rules.include?("#{d},XM-Apple") }
-  abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless tv.all? { |d| rules.index("#{d},XM-Apple") < rules.index('DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网').to_i }
+  abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless tv.all? { |d| rules.index("#{d},XM-Apple") < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i }
   notion = %w[notion.so notion.com notion.site notion.new notion-static.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI']
   abort 'Clash: Notion must use XM-AI before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: Notion domains must only use XM-AI' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI') }
@@ -191,7 +194,7 @@ def check_file(root, file)
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
   vod = %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com,DIRECT" }
   abort 'Clash: Apple TV VOD CDN must be DIRECT before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
-  abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-日常上网") }
+  abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},DIRECT") }
   abort 'Clash: only Apple TV may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv.map { |d| "#{d},XM-Apple" }.sort
   # OTA：cdn-apple.com 整站 + Apple 官方 Software updates 域名走 XM-系统更新（同出口，避免混合校验卡住）。
   direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN-SUFFIX,aaplimg.com]
