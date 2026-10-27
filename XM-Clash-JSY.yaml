@@ -276,30 +276,41 @@ rules:
   - DOMAIN,hls.itunes.apple.com,XM-Apple
   - DOMAIN,np-edge.itunes.apple.com,XM-Apple
   - DOMAIN,uts-api.itunes.apple.com,XM-Apple
-  # App Store 不走美国节点。itunes / mzstatic / cdn-apple 为临时（#53，大陆 DNS 解析失败），恢复后改回 DIRECT。
+  # App Store 不走美国节点。itunes / mzstatic 为临时（#53，大陆 DNS 解析失败），恢复后改回 DIRECT。
+  # cdn-apple.com 已并入 XM-系统更新（整站同出口，避免更新校验一半直连一半代理卡住）。
   - DOMAIN-SUFFIX,apps.apple.com,DIRECT
   - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
   - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
-  # 系统更新（iOS/macOS OTA）走 XM-系统更新（默认 DIRECT，可手动切日本）。须排在 cdn-apple.com 之前。
-  - DOMAIN,updates.cdn-apple.com,XM-系统更新
-  - DOMAIN,updates-http.cdn-apple.com,XM-系统更新
-  - DOMAIN-SUFFIX,cdn-apple.com,XM-日常上网
+  # 系统更新（iOS/macOS OTA）走 XM-系统更新（默认 DIRECT，可手动切日本）。
+  # 域名参考 Apple 企业网络文档 Software updates + 社区常用补充。
+  - DOMAIN-SUFFIX,cdn-apple.com,XM-系统更新
+  - DOMAIN,appldnld.apple.com,XM-系统更新
+  - DOMAIN,swcdn.apple.com,XM-系统更新
+  - DOMAIN,swdist.apple.com,XM-系统更新
+  - DOMAIN,swdownload.apple.com,XM-系统更新
+  - DOMAIN,swscan.apple.com,XM-系统更新
+  - DOMAIN,swquery.apple.com,XM-系统更新
+  - DOMAIN,swpost.apple.com,XM-系统更新
+  - DOMAIN,mesu.apple.com,XM-系统更新
+  - DOMAIN,gdmf.apple.com,XM-系统更新
+  - DOMAIN,gdmf-ados.apple.com,XM-系统更新
+  - DOMAIN,gs.apple.com,XM-系统更新
+  - DOMAIN,gsra.apple.com,XM-系统更新
+  - DOMAIN,gg.apple.com,XM-系统更新
+  - DOMAIN,ig.apple.com,XM-系统更新
+  - DOMAIN,skl.apple.com,XM-系统更新
+  - DOMAIN,xp.apple.com,XM-系统更新
+  - DOMAIN,configuration.apple.com,XM-系统更新
+  - DOMAIN,oscdn.apple.com,XM-系统更新
+  - DOMAIN,osrecovery.apple.com,XM-系统更新
+  - DOMAIN,cds.apple.com,XM-系统更新
+  - DOMAIN,download.info.apple.com,XM-系统更新
   - DOMAIN-SUFFIX,aaplimg.com,DIRECT
   - DOMAIN-SUFFIX,apple.com.cn,DIRECT
   - DOMAIN-SUFFIX,cn.apple.com,DIRECT
   - DOMAIN-SUFFIX,icloud.com.cn,DIRECT
   - DOMAIN-SUFFIX,push.apple.com,DIRECT
   - DOMAIN-SUFFIX,ess.apple.com,DIRECT
-  - DOMAIN,appldnld.apple.com,XM-系统更新
-  - DOMAIN,swcdn.apple.com,XM-系统更新
-  - DOMAIN,swdist.apple.com,XM-系统更新
-  - DOMAIN,swdownload.apple.com,XM-系统更新
-  - DOMAIN,swscan.apple.com,XM-系统更新
-  - DOMAIN,mesu.apple.com,XM-系统更新
-  - DOMAIN,gdmf.apple.com,XM-系统更新
-  - DOMAIN,gs.apple.com,XM-系统更新
-  - DOMAIN,xp.apple.com,XM-系统更新
-  - DOMAIN,configuration.apple.com,DIRECT
   - DOMAIN,gs-loc-cn.apple.com,DIRECT
   - DOMAIN-SUFFIX,icloud.com,DIRECT
   - DOMAIN-SUFFIX,icloud-content.com,DIRECT
