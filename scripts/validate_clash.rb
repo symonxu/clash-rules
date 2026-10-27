@@ -74,6 +74,9 @@ def check_file(root, file)
   abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+  apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net'
+  abort "#{file}: nameserver-policy must only send Apple update domains to system/114/180.76.76.76" unless dns['nameserver-policy'] == { apple_dns_key => %w[system 114.114.114.114 180.76.76.76] }
+  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
   groups = clash.fetch('proxy-groups')
   abort "#{file}: groups must be exactly the eight XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
@@ -196,7 +199,7 @@ def check_file(root, file)
     appldnld.apple.com swcdn.apple.com swdist.apple.com swdownload.apple.com swscan.apple.com
     swquery.apple.com swpost.apple.com mesu.apple.com gdmf.apple.com gdmf-ados.apple.com
     gs.apple.com gsra.apple.com gg.apple.com ig.apple.com skl.apple.com xp.apple.com
-    configuration.apple.com oscdn.apple.com osrecovery.apple.com cds.apple.com download.info.apple.com
+    configuration.apple.com oscdn.apple.com osrecovery.apple.com cds.apple.com download.info.apple.com ocsp2.apple.com
   ]
   ota = ['DOMAIN-SUFFIX,cdn-apple.com,XM-系统更新'] + ota_hosts.map { |h| "DOMAIN,#{h},XM-系统更新" }
   abort 'Clash: system update domains must use XM-系统更新 before GEOIP,CN' unless ota.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
