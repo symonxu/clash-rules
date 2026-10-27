@@ -188,16 +188,20 @@ def check_file(root, file)
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
   vod = %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com,DIRECT" }
   abort 'Clash: Apple TV VOD CDN must be DIRECT before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
-  abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com cdn-apple.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-日常上网") }
+  abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-日常上网") }
   abort 'Clash: only Apple TV may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv.map { |d| "#{d},XM-Apple" }.sort
-  # OTA：updates*.cdn-apple.com 必须走 XM-系统更新且排在 DOMAIN-SUFFIX,cdn-apple.com 之前（否则会被 #53 临时规则吸走）。
-  ota_cdn = %w[updates.cdn-apple.com updates-http.cdn-apple.com].map { |h| "DOMAIN,#{h},XM-系统更新" }
-  cdn_at = rules.index('DOMAIN-SUFFIX,cdn-apple.com,XM-日常上网')
-  abort 'Clash: OTA updates*.cdn-apple.com must use XM-系统更新 before cdn-apple.com' unless cdn_at && ota_cdn.all? { |r| rules.include?(r) && rules.index(r) < cdn_at }
+  # OTA：cdn-apple.com 整站 + Apple 官方 Software updates 域名走 XM-系统更新（同出口，避免混合校验卡住）。
   direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN-SUFFIX,aaplimg.com]
-  ota = %w[updates.cdn-apple.com updates-http.cdn-apple.com appldnld.apple.com swcdn.apple.com swdist.apple.com swdownload.apple.com swscan.apple.com mesu.apple.com gdmf.apple.com gs.apple.com xp.apple.com].map { |h| "DOMAIN,#{h},XM-系统更新" }
+  ota_hosts = %w[
+    appldnld.apple.com swcdn.apple.com swdist.apple.com swdownload.apple.com swscan.apple.com
+    swquery.apple.com swpost.apple.com mesu.apple.com gdmf.apple.com gdmf-ados.apple.com
+    gs.apple.com gsra.apple.com gg.apple.com ig.apple.com skl.apple.com xp.apple.com
+    configuration.apple.com oscdn.apple.com osrecovery.apple.com cds.apple.com download.info.apple.com
+  ]
+  ota = ['DOMAIN-SUFFIX,cdn-apple.com,XM-系统更新'] + ota_hosts.map { |h| "DOMAIN,#{h},XM-系统更新" }
   abort 'Clash: system update domains must use XM-系统更新 before GEOIP,CN' unless ota.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: only system update domains may use XM-系统更新' unless rules.select { |r| r.end_with?(',XM-系统更新') }.sort == ota.sort
+  abort 'Clash: cdn-apple.com must use XM-系统更新 (not XM-日常上网)' unless rules.include?('DOMAIN-SUFFIX,cdn-apple.com,XM-系统更新') && rules.none? { |r| r.include?('cdn-apple.com') && r.end_with?(',XM-日常上网') }
   abort 'Clash: iCloud / push / system updates must stay DIRECT' unless direct.all? { |d| rules.include?("#{d},DIRECT") }
   # 后面的后缀规则不能被前面更宽的后缀规则遮住（否则永远匹配不到）。
   suffixes = []
