@@ -68,7 +68,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
    - **XM-Anki**：`ankiweb.net`、`ankiuser.net`（Anki 同步，固定日本节点，排在 `GEOIP,CN` 之前；CI 校验只有这两条走 XM-Anki）。
 7. **直连**：App Store 商店页（apps.apple.com）、iCloud、Apple 地图、Game Center、Apple 推送、Apple TV 视频（tv.apple.com、sps-media.apple.com）、微信、QQ。
 8. **XM-Apple**（仅 Apple TV，美国节点）：`tv.apple.com`、`pancake.apple.com`（Apple TV 配置），以及 `play-edge` / `hls` / `np-edge` / `uts-api.itunes.apple.com`（排在 `itunes.apple.com` 之前）。Apple TV 视频 CDN（`vod-ap-aoc` / `vod-ap2-aoc` / `vod-ak-aoc.tv.apple.com`）排在 `tv.apple.com` 之前，直连（DIRECT）；鉴权、片单等域名仍走 XM-Apple。App Store 不走美国节点；iCloud、推送、`aaplimg.com` 等仍直连，系统更新走 XM-系统更新（CI 校验）。
-   - App Store：`apps.apple.com`、`itunes.apple.com`、`mzstatic.com` 直连（#53 的临时代理已撤销）。`cdn-apple.com` 已改走 XM-系统更新。
+   - App Store：`mzstatic.com`、`itunes.apple.com` 走 **XM-日常上网**（#53；#78 试过改回直连，TUN 下 apps/is1-ssl.mzstatic.com、osxapps.itunes.apple.com 超时，App Store 更新卡住，所以保留代理）；`apps.apple.com` 直连。`cdn-apple.com` 已改走 XM-系统更新。
    - **XM-系统更新**（iOS/macOS OTA，参考 Apple 企业网络 Software updates）：`cdn-apple.com`（DOMAIN-SUFFIX，含 updates*/fcs-keys 等）、`appldnld`、`swcdn`、`swdist`、`swdownload`、`swscan`、`swquery`、`swpost`、`mesu`、`gdmf`、`gdmf-ados`、`gs`、`gsra`、`gg`、`ig`、`skl`、`xp`、`configuration`、`oscdn`、`osrecovery`、`cds`、`download.info.apple.com`、`ocsp2.apple.com`； DNS：这些 Apple 下载域名用 nameserver-policy （含 CNAME 落点 ks-cdn/ksyuncdn/alikunlun）走 DoH `https://223.5.5.5/dns-query` + `https://doh.pub/dns-query` 并跳过 fake-ip（TUN 下 system 会回环到 mihomo，明文 UDP 223/119 对这些域名超时/SERVFAIL）；默认 DIRECT（整条同出口，避免校验卡住），失败可手动切日本。不影响 XM-Apple / Apple TV。
 9. 中国大陆 IP（`GEOIP,CN`）直连。
 10. 其余流量走 **XM-日常上网**。

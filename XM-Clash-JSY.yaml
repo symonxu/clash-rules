@@ -294,11 +294,11 @@ rules:
   - DOMAIN,hls.itunes.apple.com,XM-Apple
   - DOMAIN,np-edge.itunes.apple.com,XM-Apple
   - DOMAIN,uts-api.itunes.apple.com,XM-Apple
-  # App Store 不走美国节点，itunes / mzstatic 直连（#53 临时代理已撤销）。
+  # App Store 不走美国节点。itunes / mzstatic 走 XM-日常上网（#53；#78 试过直连，TUN 下 mzstatic / osxapps 超时，保留代理）。
   # cdn-apple.com 已并入 XM-系统更新（整站同出口，避免更新校验一半直连一半代理卡住）。
   - DOMAIN-SUFFIX,apps.apple.com,DIRECT
-  - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
-  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
+  - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
   # 系统更新（iOS/macOS OTA）走 XM-系统更新（默认 DIRECT，可手动切日本）。
   # 域名参考 Apple 企业网络文档 Software updates + 社区常用补充。
   - DOMAIN-SUFFIX,cdn-apple.com,XM-系统更新
