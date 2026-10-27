@@ -7,6 +7,11 @@ log-level: warning
 ipv6: false
 unified-delay: true
 tcp-concurrent: true
+# GEOIP 数据库用 jsDelivr 国内可达镜像（默认 GitHub 地址在大陆常下载失败）。
+geox-url:
+  geoip: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat'
+  geosite: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat'
+  mmdb: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb'
 profile:
   store-selected: true
   store-fake-ip: true
@@ -31,6 +36,9 @@ dns:
     - '+.ks-cdn.com'
     - '+.ksyuncdn.com'
     - '+.alikunlun.com'
+    - 'ocsp2.apple.com'
+    - '+.akadns.net'
+    - '+.akamaiedge.net'
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
@@ -61,7 +69,7 @@ proxy-groups:
   - name: XM-Web3
     type: url-test
     include-all: true
-    filter: '(^| )(马来西亚|菲律宾|越南|新加坡)(_[0-9]+)?$'
+    filter: '(^| )(马来西亚|菲律宾|越南)(_[0-9]+)?$'
     exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900
@@ -94,7 +102,7 @@ proxy-groups:
     interval: 900
     tolerance: 20
     timeout: 5000
-  # XM-Anki：AnkiWeb 同步固定一个节点。fallback 固定顺序：日本_01 → 02 → 03（filter 用反引号分段，按顺序排列）。
+  # XM-Anki：AnkiWeb 同步固定一个节点。手动 select，候选按 日本_01 → 02 → 03 排列（filter 用反引号分段按顺序拼接）。
   - name: XM-Anki
     type: select
     include-all: true
@@ -276,7 +284,7 @@ rules:
   - DOMAIN-SUFFIX,wa.me,XM-日常上网
   - DOMAIN-SUFFIX,muse.ai,XM-日常上网
   # Apple TV 走 XM-Apple（美国节点）；流媒体子域名必须排在 itunes.apple.com 之前。
-  # Apple TV 视频 CDN（vod-*）走 XM-日常上网（日本节点），必须排在 tv.apple.com 之前。
+  # Apple TV 视频 CDN（vod-*）直连（DIRECT），必须排在 tv.apple.com 之前。
   - DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,DIRECT
   - DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,DIRECT
   - DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,DIRECT
@@ -286,11 +294,11 @@ rules:
   - DOMAIN,hls.itunes.apple.com,XM-Apple
   - DOMAIN,np-edge.itunes.apple.com,XM-Apple
   - DOMAIN,uts-api.itunes.apple.com,XM-Apple
-  # App Store 不走美国节点。itunes / mzstatic 为临时（#53，大陆 DNS 解析失败），恢复后改回 DIRECT。
+  # App Store 不走美国节点，itunes / mzstatic 直连（#53 临时代理已撤销）。
   # cdn-apple.com 已并入 XM-系统更新（整站同出口，避免更新校验一半直连一半代理卡住）。
   - DOMAIN-SUFFIX,apps.apple.com,DIRECT
-  - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
-  - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
+  - DOMAIN-SUFFIX,itunes.apple.com,DIRECT
+  - DOMAIN-SUFFIX,mzstatic.com,DIRECT
   # 系统更新（iOS/macOS OTA）走 XM-系统更新（默认 DIRECT，可手动切日本）。
   # 域名参考 Apple 企业网络文档 Software updates + 社区常用补充。
   - DOMAIN-SUFFIX,cdn-apple.com,XM-系统更新
@@ -344,5 +352,8 @@ rules:
   - DOMAIN-SUFFIX,twitter.com,XM-日常上网
   - DOMAIN-SUFFIX,twimg.com,XM-日常上网
   - DOMAIN-SUFFIX,t.co,XM-日常上网
+  - DOMAIN-SUFFIX,pscp.tv,XM-日常上网
+  - DOMAIN-SUFFIX,periscope.tv,XM-日常上网
+  - DOMAIN-SUFFIX,twittercdn.com,XM-日常上网
   - GEOIP,CN,DIRECT
   - MATCH,XM-日常上网
