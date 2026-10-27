@@ -185,7 +185,7 @@ def check_file(root, file)
   # Apple TV 走 XM-Apple；App Store 不得走 XM-Apple（美国节点）；iCloud、推送、系统更新必须保持直连。
   tv = ['DOMAIN-SUFFIX,tv.apple.com', 'DOMAIN-SUFFIX,pancake.apple.com'] + %w[play-edge hls np-edge uts-api].map { |h| "DOMAIN,#{h}.itunes.apple.com" }
   abort 'Clash: Apple TV must use XM-Apple' unless tv.all? { |d| rules.include?("#{d},XM-Apple") }
-  abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless tv.all? { |d| rules.index("#{d},XM-Apple") < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i }
+  abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless tv.all? { |d| rules.index("#{d},XM-Apple") < rules.index('DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网').to_i }
   notion = %w[notion.so notion.com notion.site notion.new notion-static.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI']
   abort 'Clash: Notion must use XM-AI before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: Notion domains must only use XM-AI' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI') }
@@ -194,7 +194,7 @@ def check_file(root, file)
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
   vod = %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com,DIRECT" }
   abort 'Clash: Apple TV VOD CDN must be DIRECT before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
-  abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},DIRECT") }
+  abort 'Clash: App Store must not use XM-Apple' unless rules.include?('DOMAIN-SUFFIX,apps.apple.com,DIRECT') && %w[itunes.apple.com mzstatic.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-日常上网") }
   abort 'Clash: only Apple TV may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv.map { |d| "#{d},XM-Apple" }.sort
   # OTA：cdn-apple.com 整站 + Apple 官方 Software updates 域名走 XM-系统更新（同出口，避免混合校验卡住）。
   direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN-SUFFIX,aaplimg.com]
