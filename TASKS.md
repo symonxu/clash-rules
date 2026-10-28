@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-28**：`fake-ip-filter` 增加 `+.openbot.run`、`+.openbot.site`（两份 YAML，紧跟 `+.akamaiedge.net`）。TURN/WebRTC 拿到真实 IP，分流规则仍走 `XM-AI`。回滚时从两份 YAML 的 `fake-ip-filter` 删掉这两行即可，rules 不变。
 - [x] **2026-10-28**：将 OpenBot 域名（`openbot.run` 含 api / analytics，以及 `openbot.site`）接入 `XM-AI`，排在 `GEOIP,CN` 之前（两份配置的 rules 同步及 CI 校验）。回滚时从两份 YAML 与 `scripts/validate_clash.rb` 移除上述 2 条规则即可，未命中流量将恢复落入 `MATCH,XM-日常上网`。
 - [x] **2026-10-27**：回滚 #78 的 itunes/mzstatic 直连（直连超时、App Store 更新卡住），恢复走 XM-日常上网，长期保留。
 
