@@ -13,6 +13,7 @@ allowed_urls = Set.new([
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-HY.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-MESL.yaml',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-BOOST.yaml',
   'https://clash.md/zh/guide/ios',
   'https://clash.md/zh/guide/macos',
   'https://github.com/ProjectClash/Clash-Client',
