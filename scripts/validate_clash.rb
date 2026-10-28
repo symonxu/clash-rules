@@ -21,7 +21,8 @@ end
 jp = (1..12).map { |n| '🇯🇵 日本_%02d' % n }
 JSY_EXPECTED = {
   'XM-Google' => jp, 'XM-AI' => jp, 'XM-日常上网' => jp,
-  'XM-OpenBot' => (2..4).map { |n| '🇯🇵 日本_%02d' % n },
+  # 顺序：家里宽带实测活着的在前，02/03/04 死节点在后。
+  'XM-OpenBot' => %w[01 07 05 08 06 04 02 03].map { |n| "🇯🇵 日本_#{n}" },
   'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'],
   'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n },
   'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n },
@@ -153,7 +154,7 @@ def check_file(root, file)
       ok = selected.first(n1).sort == first.sort && selected[n1, n2].sort == second.sort
     end
     # XM-Anki 是 select，节点必须与预期逐个一致（1、2、3）。
-    # XM-OpenBot 是 fallback：02/高级 1，其次 03/高级 2，最后 04/高级 3。
+    # XM-OpenBot 是 fallback：选中顺序必须与该文件 expected 列表一致。
     ok &&= selected == want if manual.include?(name) || name == 'XM-OpenBot'
     abort "#{file}: #{name} filter selects #{selected.inspect}" unless ok
   end

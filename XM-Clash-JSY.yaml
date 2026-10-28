@@ -68,11 +68,11 @@ proxy-groups:
     interval: 900
     tolerance: 20
     timeout: 5000
-  # OpenBot：fallback，日本_02 → 03 → 04。失败才换，不跟 XM-AI 测速绑定。不要日本_01。
+  # OpenBot：fallback。家里宽带实测 01/07/05/08/06 可用，02/03/04 为死节点，放在最后当备份。
   - name: XM-OpenBot
     type: fallback
     include-all: true
-    filter: '(^| )日本_02$`(^| )日本_03$`(^| )日本_04$'
+    filter: '(^| )日本_01$`(^| )日本_07$`(^| )日本_05$`(^| )日本_08$`(^| )日本_06$`(^| )日本_04$`(^| )日本_02$`(^| )日本_03$'
     exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 900

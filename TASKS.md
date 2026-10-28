@@ -11,7 +11,7 @@
 
 - **最近更新端**：`OpenBot clash-rules` (2026-10-28)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：极速云 `XM-Clash-JSY.yaml`、花云 `XM-Clash-HY.yaml` 与 MESL `XM-Clash-MESL.yaml` 的 rules 保持逐字节一致。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`（fallback，三家各自三个日本节点）；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
+- **当前运行状态**：极速云 `XM-Clash-JSY.yaml`、花云 `XM-Clash-HY.yaml` 与 MESL `XM-Clash-MESL.yaml` 的 rules 保持逐字节一致。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`（极速云 fallback：日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03）；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
 
 ---
 
@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-28**：极速云 `XM-OpenBot` 改为日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03。02/03/04 在家里宽带上刚测是死的，放到备份位。花云、MESL 和 rules 未改。回滚：把 `XM-Clash-JSY.yaml` 的 filter 和 `scripts/validate_clash.rb` 里 JSY 的 `XM-OpenBot` 期望改回日本_02 → 03 → 04。
 - [x] **2026-10-28**：新增 `XM-OpenBot` fallback 组（排在 `XM-AI` 之后）。极速云 日本_02 → 03 → 04，花云 日本高级 1 → 2 → 3，MESL 日本 02 → 03 → 04。`openbot.run` / `openbot.site` 改走该组，不跟 XM-AI 测速绑定。回滚：删掉三份 YAML 的 `XM-OpenBot`，两条域名规则改回 `XM-AI`，`scripts/validate_clash.rb` 的分组名单和校验一并改回。
 - [x] **2026-10-28**：新增 `XM-Clash-MESL.yaml`。八个分组与另外两份相同，rules 逐字节一致；只按 MESL 节点名筛选（日本 02–07 与 08–12 家宽、Web3 不用新加坡/台湾/香港、Bybit 从台湾 02 起 fallback、美国 01–03、Anki/系统更新备用日本 02–04）。带 `[0.3X]` 的节点不进组。回滚时删除该文件，并从校验脚本、README、AGENTS 去掉 MESL 条目即可。
 - [x] **2026-10-28**：`fake-ip-filter` 增加 `+.openbot.run`、`+.openbot.site`（两份 YAML，紧跟 `+.akamaiedge.net`）。TURN/WebRTC 拿到真实 IP，分流规则仍走 `XM-AI`。回滚时从两份 YAML 的 `fake-ip-filter` 删掉这两行即可，rules 不变。
