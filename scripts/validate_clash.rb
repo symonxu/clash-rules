@@ -5,7 +5,7 @@ root = File.expand_path('..', __dir__)
 # 两份文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；两家节点命名不同，分组筛选各用一套虚构样例检查。
 # 不含节点、订阅或占位；各组用 include-all + filter + exclude-filter 筛选并自动测速。
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml', 'XM-Clash-MESL.yaml'].freeze
-GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
+GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-OpenBot', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
 
@@ -21,6 +21,7 @@ end
 jp = (1..12).map { |n| '🇯🇵 日本_%02d' % n }
 JSY_EXPECTED = {
   'XM-Google' => jp, 'XM-AI' => jp, 'XM-日常上网' => jp,
+  'XM-OpenBot' => (2..4).map { |n| '🇯🇵 日本_%02d' % n },
   'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'],
   'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n },
   'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n },
@@ -45,6 +46,7 @@ hy_pick = ->(flag, place, std) { (1..3).map { |n| "#{flag} #{place}高级 IEPL �
 hy_jp_pick = hy_pick.call('🇯🇵', '日本', 4)
 HY_EXPECTED = {
   'XM-Google' => hy_jp_pick, 'XM-AI' => hy_jp_pick, 'XM-日常上网' => hy_jp_pick,
+  'XM-OpenBot' => (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" },
   # Web3：Hyperliquid HIP-4 限制新加坡/台湾、日本隐藏预测市场，只用韩国标准 1–2、越南标准 1、印尼标准 1（花云这三地没有高级线路）。
   'XM-Web3' => ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1'],
   'XM-Bybit' => hy_pick.call('🇨🇳', '台湾', 3),
@@ -69,6 +71,7 @@ mesl_us = (1..3).map { |n| '🇺🇸 美国 %02d' % n }
 mesl_anki = (2..4).map { |n| '🇯🇵 日本 %02d' % n }
 MESL_EXPECTED = {
   'XM-Google' => mesl_jp, 'XM-AI' => mesl_jp, 'XM-日常上网' => mesl_jp,
+  'XM-OpenBot' => mesl_anki,
   'XM-Web3' => mesl_web3,
   'XM-Bybit' => mesl_tw,
   'XM-Apple' => mesl_us,
@@ -80,11 +83,11 @@ MESL_SAMPLES = mesl_jp + mesl_web3 + mesl_tw + (1..12).map { |n| '🇺🇸 美�
   ['🇯🇵 日本 01 [0.3X]', '🇨🇳 台湾 01 [0.3X]', '🇸🇬 新加坡 01', '🇸🇬 新加坡 12 家宽', '🇭🇰 香港 01', '🇭🇰 香港 13 家宽',
    '🇯🇵 日本_02', '🇹🇼 台湾_02', '🇯🇵 日本 08', '🇯🇵 日本高级 IEPL 专线 1']
 PROFILES = {
-  'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
+  'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
-  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
+  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-OpenBot'], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
                           bybit_order: nil },
-  'XM-Clash-MESL.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit'], expected: MESL_EXPECTED, samples: MESL_SAMPLES, info: INFO,
+  'XM-Clash-MESL.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: MESL_EXPECTED, samples: MESL_SAMPLES, info: INFO,
                             bybit_order: [['🇨🇳 台湾 02'], ['🇨🇳 台湾 03']] }
 }.freeze
 
@@ -101,7 +104,7 @@ def check_file(root, file)
   abort "#{file}: nameserver-policy must only send Apple update domains to DoH 223.5.5.5 / doh.pub" unless dns['nameserver-policy'] == { apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query] }
   %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
   groups = clash.fetch('proxy-groups')
-  abort "#{file}: groups must be exactly the eight XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
+  abort "#{file}: groups must be exactly the nine XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
   manual = %w[XM-Anki XM-系统更新]
   samples = prof[:samples] + HK_SAMPLES + prof[:expected].values.flatten.uniq.flat_map { |n| hk_variants(n) }
@@ -150,7 +153,8 @@ def check_file(root, file)
       ok = selected.first(n1).sort == first.sort && selected[n1, n2].sort == second.sort
     end
     # XM-Anki 是 select，节点必须与预期逐个一致（1、2、3）。
-    ok &&= selected == want if manual.include?(name)
+    # XM-OpenBot 是 fallback：02/高级 1，其次 03/高级 2，最后 04/高级 3。
+    ok &&= selected == want if manual.include?(name) || name == 'XM-OpenBot'
     abort "#{file}: #{name} filter selects #{selected.inspect}" unless ok
   end
 
@@ -211,9 +215,9 @@ def check_file(root, file)
   notion = %w[notion.so notion.com notion.site notion.new notion-static.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI']
   abort 'Clash: Notion must use XM-AI before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: Notion domains must only use XM-AI' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI') }
-  openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI" }
-  abort 'Clash: OpenBot must use XM-AI before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
-  abort 'Clash: OpenBot domains must only use XM-AI' unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-AI') }
+  openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-OpenBot" }
+  abort 'Clash: OpenBot must use XM-OpenBot before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
+  abort 'Clash: OpenBot domains must only use XM-OpenBot' unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-OpenBot') }
   anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
   abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort

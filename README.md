@@ -19,7 +19,7 @@
 1. **添加订阅**：配置（Profiles）→ 添加配置（Add Profile）→ 配置链接，粘贴极速云的 Clash 订阅地址。先选中它、出站模式选"规则"并连接，下一步才能打开 GitHub（raw.githubusercontent.com 在大陆直连通常打不开）。
 2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴对应的配置链接。若有"同时登记它的规则"开关，保持打开；它会作为规则方案出现在规则库里。这份配置自己没有节点，不要单独选中使用。
 3. **组合**：把极速云配置的规则方案换成 `XM-Clash-JSY`（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选极速云，规则方案选 `XM-Clash-JSY`。花云则是节点来源选花云、规则方案选 `XM-Clash-HY`。MESL 则是节点来源选 MESL、规则方案选 `XM-Clash-MESL`。不要用机场自带的分组和规则。
-4. 选中组合后的配置，出站模式选"规则（Rule）"，连接；在"代理（Proxies）"里确认八个组都有节点。
+4. 选中组合后的配置，出站模式选"规则（Rule）"，连接；在"代理（Proxies）"里确认九个组都有节点。
 5. 检查分流：iPhone 在 工具（Utilities）→ Current Session → 连接（Connections），Mac 在侧边栏 Session → Connections，看新连接命中的规则和出站组。
 
 仓库更新后，App 按配置链接自动更新规则；想立刻生效，可在规则库对该方案点"刷新规则"，或在配置列表对它点更新。节点照常在各自的订阅配置里更新。
@@ -36,6 +36,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 | --- | --- | --- | --- | --- |
 | XM-Google | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | 日本 02–07 + 日本 08–12 家宽（不含 01 [0.3X]） | url-test |
 | XM-AI | 日本_* | 同上 | 同上 | url-test |
+| XM-OpenBot | 日本_02 → 日本_03 → 日本_04 | 日本高级 IEPL 专线 1 → 2 → 3 | 日本 02 → 03 → 04（不要 01 [0.3X]，不要家宽） | fallback（失败才换，不跟 XM-AI 测速绑定） |
 | XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | 马来西亚家宽、菲律宾、越南家宽、韩国、印度尼西亚（不含新加坡/台湾/香港/日本） | url-test |
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 台湾 02 → 03 → 04/05 → 家宽 06–10（不含 01 [0.3X]） | 极速云、MESL fallback；花云 url-test |
 | XM-日常上网 | 日本_* | 同 XM-Google | 同 XM-Google | url-test |
@@ -48,12 +49,13 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 - url-test：用 `https://www.gstatic.com/generate_204` 测速，超时 5 秒。极速云每 900 秒测速、快超过 20ms 才切换；花云和 MESL 每 300 秒测速、快超过 10ms 就切换。
 - XM-Anki（三份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03，MESL 日本 02–04），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
 - 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。MESL 的 XM-Bybit 同样是 fallback（300 秒），从台湾 02 开始。
+- **XM-OpenBot**：fallback，只有三个非家宽日本节点（极速云 日本_02 → 03 → 04，花云 日本高级 1 → 2 → 3，MESL 日本 02 → 03 → 04）。排第一的节点可用就一直用它，失败才换，不跟 XM-AI 的 url-test 绑定。只用于 `openbot.run`、`openbot.site`。
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。
 
 ## DNS
 
-`223.5.5.5`、`119.29.29.29`，fake-ip（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则仍走 XM-AI。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。不写 TUN、端口和控制器，由 App 自己管理。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
+`223.5.5.5`、`119.29.29.29`，fake-ip（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则走 XM-OpenBot。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。不写 TUN、端口和控制器，由 App 自己管理。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
 
 ## 主要分流
 
@@ -63,7 +65,8 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
    - 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。
 2. **XM-Web3**：常用链上 RPC（Infura、Alchemy、Ankr、LlamaRPC、BlockPI、BlastAPI、Omnia Tech、Stackup、Arbitrum 等公链 RPC）、钱包（MetaMask、Phantom、WalletConnect 等）、DEX 与交易站（Uniswap、Jupiter、pump.fun、Bitget、PancakeSwap、Hyperliquid、Polymarket、Across、CoinGecko 等）。
 3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
-4. **XM-AI**：ChatGPT / OpenAI、Claude、Perplexity、Cursor、OpenRouter、Grok / x.ai、grokbot.com、Gemini / AI Studio（排在 Google 之前）、Notion（`notion.so` / `.com` / `.site` / `.new`、`notion-static.com`、`notionusercontent.com`、`makenotion.com`、`cron.com` 及 `prod-files-secure.s3.us-west-2.amazonaws.com`）、Slack、OpenBot（`openbot.run`、`openbot.site`），以及 Apple 隐私中继和 Siri 相关域名。
+4. **XM-AI**：ChatGPT / OpenAI、Claude、Perplexity、Cursor、OpenRouter、Grok / x.ai、grokbot.com、Gemini / AI Studio（排在 Google 之前）、Notion（`notion.so` / `.com` / `.site` / `.new`、`notion-static.com`、`notionusercontent.com`、`makenotion.com`、`cron.com` 及 `prod-files-secure.s3.us-west-2.amazonaws.com`）、Slack，以及 Apple 隐私中继和 Siri 相关域名。
+   - **XM-OpenBot**：`openbot.run`、`openbot.site`（含 api / analytics）。fallback，三家各自固定三个日本节点，失败才换，不跟 XM-AI 测速绑定。排在 `GEOIP,CN` 之前。
 5. **XM-Google**：Google、Gmail、YouTube 等，以及 `.goog` 域名和 Antigravity 自动更新服务。
 6. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai，以及 X / Twitter（`x.com`、`twitter.com`、`twimg.com`、`t.co`、`pscp.tv`、`periscope.tv`、`twittercdn.com`，排在 `GEOIP,CN` 之前，域名命中后不再按 IP 判断）。
    - **XM-Anki**：`ankiweb.net`、`ankiuser.net`（Anki 同步，固定日本节点，排在 `GEOIP,CN` 之前；CI 校验只有这两条走 XM-Anki）。
@@ -86,11 +89,11 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
    校验内容：
    - 三份文件的规则部分逐字节一致。
    - 三份文件都不含 `proxies`、`proxy-providers`、`rule-providers`。
-   - 八个分组的名称、顺序、类型、测速参数；各组 `filter` / `exclude-filter` 对虚构样例节点名（不含真实节点）选中的结果，每组非空、排除香港节点和信息条目。
+   - 九个分组的名称、顺序、类型、测速参数；各组 `filter` / `exclude-filter` 对虚构样例节点名（不含真实节点）选中的结果，每组非空、排除香港节点和信息条目。
    - DNS。
-   - 规则语法、目标只能是八个组或 DIRECT / REJECT、无重复、不被前面的后缀规则遮住、最后两条为 `GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网`。
+   - 规则语法、目标只能是九个组或 DIRECT / REJECT、无重复、不被前面的后缀规则遮住、最后两条为 `GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网`。
    - 公开链接白名单。
 3. 开 PR。GitHub Actions 自动跑同样的校验，通过后合并到 main，App 按链接更新即可生效。
 
 - Notion 全家（notion.so/.com/.site/.new、notion-static.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
-- OpenBot（`openbot.run` 含 api / analytics，以及 `openbot.site`）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
+- OpenBot（`openbot.run` 含 api / analytics，以及 `openbot.site`）走 XM-OpenBot（fallback，三家各自三个日本节点，不跟 XM-AI 测速绑定），排在 GEOIP,CN 之前，CI 校验。

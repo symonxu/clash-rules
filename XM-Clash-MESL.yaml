@@ -68,6 +68,15 @@ proxy-groups:
     interval: 300
     tolerance: 10
     timeout: 5000
+  # OpenBot：fallback，日本 02 → 03 → 04。不要 01（[0.3X]），不要家宽。失败才换，不跟 XM-AI 测速绑定。
+  - name: XM-OpenBot
+    type: fallback
+    include-all: true
+    filter: '(^| )日本 02$`(^| )日本 03$`(^| )日本 04$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
   # Web3：马来西亚/菲律宾/越南/韩国/印尼。不用新加坡、台湾、香港、日本。
   - name: XM-Web3
     type: url-test
@@ -248,9 +257,9 @@ rules:
   - DOMAIN-SUFFIX,slack-redir.net,XM-AI
   - DOMAIN-SUFFIX,slackb.com,XM-AI
   - DOMAIN-SUFFIX,slackhq.com,XM-AI
-  # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-AI。
-  - DOMAIN-SUFFIX,openbot.run,XM-AI
-  - DOMAIN-SUFFIX,openbot.site,XM-AI
+  # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-OpenBot。fallback，不跟 XM-AI 测速绑定。
+  - DOMAIN-SUFFIX,openbot.run,XM-OpenBot
+  - DOMAIN-SUFFIX,openbot.site,XM-OpenBot
   - DOMAIN-SUFFIX,google.com,XM-Google
   - DOMAIN-SUFFIX,google.com.hk,XM-Google
   - DOMAIN-SUFFIX,googleapis.com,XM-Google
