@@ -1,0 +1,367 @@
+# XM Clash 规则配置 · MESL 版（App：Clash - 基于规则的网络代理工具，iPhone / iPad / Mac 通用；说明见 README.md）
+# 本文件只有分组、规则和 DNS，没有节点、没有订阅地址，也不需要手动编辑：用 App 的「配置链接」导入，自动跟随仓库更新。
+# 节点来自在 App 里另外导入的 MESL 订阅（节点来源）；各组用 include-all + 节点名正则从中筛选。
+# 节点名形如「🇯🇵 日本 02」「🇲🇾 马来西亚 01 家宽」。带 [0.3X] 的低倍率节点不进任何组。任何分组都不得包含香港节点（CI 校验）。
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+# GEOIP 数据库用 jsDelivr 国内可达镜像（默认 GitHub 地址在大陆常下载失败）。
+geox-url:
+  geoip: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat'
+  geosite: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat'
+  mmdb: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb'
+profile:
+  store-selected: true
+  store-fake-ip: true
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  use-hosts: true
+  fake-ip-filter:
+    - '+.lan'
+    - '+.local'
+    - 'captive.apple.com'
+    - 'time.apple.com'
+    - '+.msftncsi.com'
+    - '+.msftconnecttest.com'
+    - '+.cdn-apple.com'
+    - 'swcdn.apple.com'
+    - 'swdist.apple.com'
+    - 'swscan.apple.com'
+    - '+.aaplimg.com'
+    - '+.ks-cdn.com'
+    - '+.ksyuncdn.com'
+    - '+.alikunlun.com'
+    - 'ocsp2.apple.com'
+    - '+.akadns.net'
+    - '+.akamaiedge.net'
+    - '+.openbot.run'
+    - '+.openbot.site'
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver-policy:
+    '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
+proxy-groups:
+  - name: XM-Google
+    type: url-test
+    include-all: true
+    filter: '(^| )日本 (0[2-7]|(0[8-9]|1[0-2]) 家宽)$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  - name: XM-AI
+    type: url-test
+    include-all: true
+    filter: '(^| )日本 (0[2-7]|(0[8-9]|1[0-2]) 家宽)$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  # Web3：马来西亚/菲律宾/越南/韩国/印尼。不用新加坡、台湾、香港、日本。
+  - name: XM-Web3
+    type: url-test
+    include-all: true
+    filter: '(^| )((马来西亚|菲律宾|韩国) [0-9]+( 家宽)?|越南 家宽|印度尼西亚)$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  # 台湾 02 优先，其次 03，再 04/05，再家宽。01 带 [0.3X]，不选。filter 用 ` 分隔，按顺序排列。
+  - name: XM-Bybit
+    type: fallback
+    include-all: true
+    filter: '(^| )台湾 02$`(^| )台湾 03$`(^| )台湾 0[45]$`(^| )台湾 (0[6-9]|10) 家宽$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+  - name: XM-日常上网
+    type: url-test
+    include-all: true
+    filter: '(^| )日本 (0[2-7]|(0[8-9]|1[0-2]) 家宽)$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  - name: XM-Apple
+    type: url-test
+    include-all: true
+    filter: '(^| )美国 0[1-3]$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  # XM-Anki：手动 select。日本 02 → 03 → 04（01 是 [0.3X]，不进组）。
+  - name: XM-Anki
+    type: select
+    include-all: true
+    filter: '(^| )日本 02$`(^| )日本 03$`(^| )日本 04$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+  - name: XM-系统更新
+    type: select
+    proxies:
+      - DIRECT
+    include-all: true
+    filter: '(^| )日本 02$`(^| )日本 03$`(^| )日本 04$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
+# 规则从上到下匹配；由 scripts/validate_clash.rb 校验（语法、目标组、重复、顺序）。
+rules:
+  - DOMAIN,localhost,DIRECT
+  - DOMAIN-SUFFIX,local,DIRECT
+  - DOMAIN-SUFFIX,lan,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+  - IP-CIDR6,::1/128,DIRECT,no-resolve
+  - IP-CIDR6,fc00::/7,DIRECT,no-resolve
+  - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+  # 屏蔽 QUIC（UDP 443），迫使 App 回落到 TCP，让域名规则生效（无嗅探时 UDP 只能按 IP 匹配）。放在局域网直连之后、域名规则之前。
+  - AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
+  - DOMAIN-SUFFIX,infura.io,XM-Web3
+  - DOMAIN-SUFFIX,alchemy.com,XM-Web3
+  - DOMAIN-SUFFIX,alchemyapi.io,XM-Web3
+  - DOMAIN-SUFFIX,llamarpc.com,XM-Web3
+  - DOMAIN-SUFFIX,ankr.com,XM-Web3
+  - DOMAIN-SUFFIX,1rpc.io,XM-Web3
+  - DOMAIN-SUFFIX,publicnode.com,XM-Web3
+  - DOMAIN-SUFFIX,polygon-rpc.com,XM-Web3
+  - DOMAIN-SUFFIX,quiknode.pro,XM-Web3
+  - DOMAIN-SUFFIX,drpc.org,XM-Web3
+  - DOMAIN-SUFFIX,nodereal.io,XM-Web3
+  - DOMAIN-SUFFIX,helius-rpc.com,XM-Web3
+  - DOMAIN,api.mainnet-beta.solana.com,XM-Web3
+  - DOMAIN,api.devnet.solana.com,XM-Web3
+  - DOMAIN-SUFFIX,arbitrum.io,XM-Web3
+  - DOMAIN,mainnet.optimism.io,XM-Web3
+  - DOMAIN,mainnet.base.org,XM-Web3
+  - DOMAIN,bsc-dataseed.binance.org,XM-Web3
+  - DOMAIN,api.avax.network,XM-Web3
+  - DOMAIN,mainnet.era.zksync.io,XM-Web3
+  - DOMAIN,rpc.gnosischain.com,XM-Web3
+  - DOMAIN-SUFFIX,trongrid.io,XM-Web3
+  - DOMAIN-SUFFIX,blockpi.network,XM-Web3
+  - DOMAIN-SUFFIX,blastapi.io,XM-Web3
+  - DOMAIN-SUFFIX,omniatech.io,XM-Web3
+  - DOMAIN-SUFFIX,stackup.sh,XM-Web3
+  - DOMAIN-SUFFIX,bybit.com,XM-Bybit
+  - DOMAIN-SUFFIX,bybit.biz,XM-Bybit
+  - DOMAIN-SUFFIX,byabcde.com,XM-Bybit
+  - DOMAIN-SUFFIX,bycsi.com,XM-Bybit
+  - DOMAIN-SUFFIX,metamask.io,XM-Web3
+  - DOMAIN-SUFFIX,phantom.app,XM-Web3
+  - DOMAIN-SUFFIX,phantom.com,XM-Web3
+  - DOMAIN-SUFFIX,walletconnect.com,XM-Web3
+  - DOMAIN-SUFFIX,walletconnect.org,XM-Web3
+  - DOMAIN-SUFFIX,reown.com,XM-Web3
+  - DOMAIN-SUFFIX,web3modal.com,XM-Web3
+  - DOMAIN-SUFFIX,web3modal.org,XM-Web3
+  - DOMAIN-SUFFIX,magic.link,XM-Web3
+  - DOMAIN-SUFFIX,fomo.family,XM-Web3
+  - DOMAIN-SUFFIX,fomotrading.app,XM-Web3
+  - DOMAIN-SUFFIX,uniswap.org,XM-Web3
+  - DOMAIN-SUFFIX,jup.ag,XM-Web3
+  - DOMAIN-SUFFIX,pump.fun,XM-Web3
+  - DOMAIN-SUFFIX,bitget.com,XM-Web3
+  - DOMAIN-SUFFIX,bgbstatic.com,XM-Web3
+  - DOMAIN-SUFFIX,bgstatic.com,XM-Web3
+  - DOMAIN-SUFFIX,bitget.site,XM-Web3
+  - DOMAIN-SUFFIX,bitgetapp.com,XM-Web3
+  - DOMAIN-SUFFIX,bitgetapps.com,XM-Web3
+  - DOMAIN-SUFFIX,pancakeswap.finance,XM-Web3
+  - DOMAIN-SUFFIX,hyperliquid.xyz,XM-Web3
+  - DOMAIN-SUFFIX,hyperunit.xyz,XM-Web3
+  - DOMAIN-SUFFIX,polymarket.com,XM-Web3
+  - DOMAIN-SUFFIX,across.to,XM-Web3
+  - DOMAIN-SUFFIX,coingecko.com,XM-Web3
+  - DOMAIN-SUFFIX,apple-relay.apple.com,XM-AI
+  - DOMAIN-SUFFIX,apple-relay.cloudflare.com,XM-AI
+  - DOMAIN-SUFFIX,apple-relay.fastly-edge.com,XM-AI
+  - DOMAIN-KEYWORD,apple-relay,XM-AI
+  - DOMAIN,smoot.apple.com,XM-AI
+  - DOMAIN,guzzoni.apple.com,XM-AI
+  - DOMAIN-SUFFIX,chatgpt.com,XM-AI
+  - DOMAIN-SUFFIX,openai.com,XM-AI
+  - DOMAIN-SUFFIX,oaistatic.com,XM-AI
+  - DOMAIN-SUFFIX,oaiusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,sora.com,XM-AI
+  - DOMAIN-SUFFIX,chatgpt.livekit.cloud,XM-AI
+  - DOMAIN-SUFFIX,host.livekit.cloud,XM-AI
+  - DOMAIN-SUFFIX,turn.livekit.cloud,XM-AI
+  - DOMAIN,openai-api.arkoselabs.com,XM-AI
+  - DOMAIN-SUFFIX,anthropic.com,XM-AI
+  - DOMAIN-SUFFIX,claude.ai,XM-AI
+  - DOMAIN-SUFFIX,claude.com,XM-AI
+  - DOMAIN-SUFFIX,claudeusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,perplexity.ai,XM-AI
+  - DOMAIN-SUFFIX,perplexity.com,XM-AI
+  - DOMAIN-SUFFIX,pplx.ai,XM-AI
+  - DOMAIN-SUFFIX,cursor.com,XM-AI
+  - DOMAIN-SUFFIX,cursor.sh,XM-AI
+  - DOMAIN-SUFFIX,cursor-cdn.com,XM-AI
+  - DOMAIN-SUFFIX,cursorapi.com,XM-AI
+  - DOMAIN-SUFFIX,cursorvm.com,XM-AI
+  - DOMAIN-SUFFIX,openrouter.ai,XM-AI
+  - DOMAIN-SUFFIX,x.ai,XM-AI
+  - DOMAIN-SUFFIX,grokbot.com,XM-AI
+  - DOMAIN-SUFFIX,grok.com,XM-AI
+  - DOMAIN-SUFFIX,grokusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,grokipedia.com,XM-AI
+  - DOMAIN-SUFFIX,gemini.google.com,XM-AI
+  - DOMAIN-SUFFIX,gemini.google,XM-AI
+  - DOMAIN-SUFFIX,aistudio.google.com,XM-AI
+  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,XM-AI
+  - DOMAIN-SUFFIX,ai.google.dev,XM-AI
+  - DOMAIN,proactivebackend-pa.googleapis.com,XM-AI
+  # Notion（含 Notion Calendar / Mail）走 XM-AI。
+  - DOMAIN-SUFFIX,notion.so,XM-AI
+  - DOMAIN-SUFFIX,notion.com,XM-AI
+  - DOMAIN-SUFFIX,notion.site,XM-AI
+  - DOMAIN-SUFFIX,notion.new,XM-AI
+  - DOMAIN-SUFFIX,notion-static.com,XM-AI
+  - DOMAIN-SUFFIX,notionusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,makenotion.com,XM-AI
+  - DOMAIN-SUFFIX,cron.com,XM-AI
+  - DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI
+  - DOMAIN,geller-pa.googleapis.com,XM-AI
+  - DOMAIN-SUFFIX,slack.com,XM-AI
+  - DOMAIN-SUFFIX,slack-core.com,XM-AI
+  - DOMAIN-SUFFIX,slack-edge.com,XM-AI
+  - DOMAIN-SUFFIX,slack-files.com,XM-AI
+  - DOMAIN-SUFFIX,slack-imgs.com,XM-AI
+  - DOMAIN-SUFFIX,slack-msgs.com,XM-AI
+  - DOMAIN-SUFFIX,slack-redir.net,XM-AI
+  - DOMAIN-SUFFIX,slackb.com,XM-AI
+  - DOMAIN-SUFFIX,slackhq.com,XM-AI
+  # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-AI。
+  - DOMAIN-SUFFIX,openbot.run,XM-AI
+  - DOMAIN-SUFFIX,openbot.site,XM-AI
+  - DOMAIN-SUFFIX,google.com,XM-Google
+  - DOMAIN-SUFFIX,google.com.hk,XM-Google
+  - DOMAIN-SUFFIX,googleapis.com,XM-Google
+  - DOMAIN-SUFFIX,googleapis.cn,XM-Google
+  - DOMAIN-SUFFIX,gstatic.com,XM-Google
+  - DOMAIN-SUFFIX,googleusercontent.com,XM-Google
+  - DOMAIN-SUFFIX,gmail.com,XM-Google
+  - DOMAIN-SUFFIX,googlemail.com,XM-Google
+  - DOMAIN-SUFFIX,ggpht.com,XM-Google
+  - DOMAIN-SUFFIX,gvt1.com,XM-Google
+  - DOMAIN-SUFFIX,gvt2.com,XM-Google
+  - DOMAIN-SUFFIX,gvt3.com,XM-Google
+  - DOMAIN-SUFFIX,youtube.com,XM-Google
+  - DOMAIN-SUFFIX,youtube-nocookie.com,XM-Google
+  - DOMAIN-SUFFIX,youtu.be,XM-Google
+  - DOMAIN-SUFFIX,ytimg.com,XM-Google
+  - DOMAIN-SUFFIX,googlevideo.com,XM-Google
+  - DOMAIN-SUFFIX,goog,XM-Google
+  - DOMAIN-SUFFIX,google-analytics.com,XM-Google
+  - DOMAIN,antigravity-hub-auto-updater-974169037036.us-central1.run.app,XM-Google
+  - DOMAIN-SUFFIX,meta.com,XM-日常上网
+  - DOMAIN-SUFFIX,meta.ai,XM-日常上网
+  - DOMAIN-SUFFIX,facebook.com,XM-日常上网
+  - DOMAIN-SUFFIX,facebook.net,XM-日常上网
+  - DOMAIN-SUFFIX,fb.com,XM-日常上网
+  - DOMAIN-SUFFIX,fb.me,XM-日常上网
+  - DOMAIN-SUFFIX,fbcdn.net,XM-日常上网
+  - DOMAIN-SUFFIX,fbsbx.com,XM-日常上网
+  - DOMAIN-SUFFIX,messenger.com,XM-日常上网
+  - DOMAIN-SUFFIX,m.me,XM-日常上网
+  - DOMAIN-SUFFIX,instagram.com,XM-日常上网
+  - DOMAIN-SUFFIX,cdninstagram.com,XM-日常上网
+  - DOMAIN-SUFFIX,threads.com,XM-日常上网
+  - DOMAIN-SUFFIX,threads.net,XM-日常上网
+  - DOMAIN-SUFFIX,whatsapp.com,XM-日常上网
+  - DOMAIN-SUFFIX,whatsapp.net,XM-日常上网
+  - DOMAIN-SUFFIX,wa.me,XM-日常上网
+  - DOMAIN-SUFFIX,muse.ai,XM-日常上网
+  # Apple TV 走 XM-Apple（美国节点）；流媒体子域名必须排在 itunes.apple.com 之前。
+  # Apple TV 视频 CDN（vod-*）直连（DIRECT），必须排在 tv.apple.com 之前。
+  - DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,tv.apple.com,XM-Apple
+  - DOMAIN-SUFFIX,pancake.apple.com,XM-Apple
+  - DOMAIN,play-edge.itunes.apple.com,XM-Apple
+  - DOMAIN,hls.itunes.apple.com,XM-Apple
+  - DOMAIN,np-edge.itunes.apple.com,XM-Apple
+  - DOMAIN,uts-api.itunes.apple.com,XM-Apple
+  # App Store 不走美国节点。itunes / mzstatic 走 XM-日常上网（#53；#78 试过直连，TUN 下 mzstatic / osxapps 超时，保留代理）。
+  # cdn-apple.com 已并入 XM-系统更新（整站同出口，避免更新校验一半直连一半代理卡住）。
+  - DOMAIN-SUFFIX,apps.apple.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
+  - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
+  # 系统更新（iOS/macOS OTA）走 XM-系统更新（默认 DIRECT，可手动切日本）。
+  # 域名参考 Apple 企业网络文档 Software updates + 社区常用补充。
+  - DOMAIN-SUFFIX,cdn-apple.com,XM-系统更新
+  - DOMAIN,appldnld.apple.com,XM-系统更新
+  - DOMAIN,swcdn.apple.com,XM-系统更新
+  - DOMAIN,swdist.apple.com,XM-系统更新
+  - DOMAIN,swdownload.apple.com,XM-系统更新
+  - DOMAIN,swscan.apple.com,XM-系统更新
+  - DOMAIN,swquery.apple.com,XM-系统更新
+  - DOMAIN,swpost.apple.com,XM-系统更新
+  - DOMAIN,mesu.apple.com,XM-系统更新
+  - DOMAIN,gdmf.apple.com,XM-系统更新
+  - DOMAIN,gdmf-ados.apple.com,XM-系统更新
+  - DOMAIN,gs.apple.com,XM-系统更新
+  - DOMAIN,gsra.apple.com,XM-系统更新
+  - DOMAIN,gg.apple.com,XM-系统更新
+  - DOMAIN,ig.apple.com,XM-系统更新
+  - DOMAIN,skl.apple.com,XM-系统更新
+  - DOMAIN,xp.apple.com,XM-系统更新
+  - DOMAIN,configuration.apple.com,XM-系统更新
+  - DOMAIN,oscdn.apple.com,XM-系统更新
+  - DOMAIN,osrecovery.apple.com,XM-系统更新
+  - DOMAIN,cds.apple.com,XM-系统更新
+  - DOMAIN,download.info.apple.com,XM-系统更新
+  - DOMAIN-SUFFIX,aaplimg.com,DIRECT
+  - DOMAIN-SUFFIX,apple.com.cn,DIRECT
+  - DOMAIN-SUFFIX,cn.apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com.cn,DIRECT
+  - DOMAIN-SUFFIX,push.apple.com,DIRECT
+  - DOMAIN-SUFFIX,ess.apple.com,DIRECT
+  - DOMAIN,gs-loc-cn.apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com,DIRECT
+  - DOMAIN-SUFFIX,icloud-content.com,DIRECT
+  - DOMAIN-SUFFIX,apple-cloudkit.com,DIRECT
+  - DOMAIN-SUFFIX,apple-livephotoskit.com,DIRECT
+  - DOMAIN-SUFFIX,ls.apple.com,DIRECT
+  - DOMAIN-SUFFIX,gc.apple.com,DIRECT
+  - DOMAIN,gsa.apple.com,DIRECT
+  - DOMAIN,gsas.apple.com,DIRECT
+  - DOMAIN,time.apple.com,DIRECT
+  - DOMAIN,sps-media.apple.com,DIRECT
+  - DOMAIN-SUFFIX,ocsp.apple.com,DIRECT
+  - DOMAIN,ocsp2.apple.com,XM-系统更新
+  - DOMAIN-SUFFIX,qq.com,DIRECT
+  - DOMAIN-SUFFIX,weixin.com,DIRECT
+  - DOMAIN-SUFFIX,wechat.com,DIRECT
+  # Anki 同步走 XM-Anki（固定日本节点，排在 GEOIP,CN 之前）。
+  - DOMAIN-SUFFIX,ankiweb.net,XM-Anki
+  - DOMAIN-SUFFIX,ankiuser.net,XM-Anki
+  - DOMAIN-SUFFIX,tradingview.com,XM-日常上网
+  # X / Twitter 走 XM-日常上网，必须排在 GEOIP,CN 之前：域名命中后不再按 IP 判断，避免污染解析被当成大陆地址直连。
+  - DOMAIN-SUFFIX,x.com,XM-日常上网
+  - DOMAIN-SUFFIX,twitter.com,XM-日常上网
+  - DOMAIN-SUFFIX,twimg.com,XM-日常上网
+  - DOMAIN-SUFFIX,t.co,XM-日常上网
+  - DOMAIN-SUFFIX,pscp.tv,XM-日常上网
+  - DOMAIN-SUFFIX,periscope.tv,XM-日常上网
+  - DOMAIN-SUFFIX,twittercdn.com,XM-日常上网
+  - GEOIP,CN,DIRECT
+  - MATCH,XM-日常上网

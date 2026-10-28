@@ -4,7 +4,7 @@ root = File.expand_path('..', __dir__)
 # XM-Clash-JSY.yaml（极速云）与 XM-Clash-HY.yaml（花云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置，节点来自 App 里另外导入的订阅。
 # 两份文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；两家节点命名不同，分组筛选各用一套虚构样例检查。
 # 不含节点、订阅或占位；各组用 include-all + filter + exclude-filter 筛选并自动测速。
-FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml'].freeze
+FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml', 'XM-Clash-MESL.yaml'].freeze
 GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
@@ -59,11 +59,33 @@ HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸�
   hy.call('🇹🇭', '泰国', 1..2) + hy.call('🇮🇩', '印尼', 1..12) + ['🇮🇩 印度尼西亚', '🇰🇷 韩国01', '🇻🇳 越南', '🇭🇰 韩国标准 IEPL 专线 1 香港'] +
   ['Traffic: 0.08 GB | 150 GB', 'Expire: 2030-01-01', 'traffic 日本高级 IEPL 专线 1', 'EXPIRE 台湾高级 IEPL 专线 1', 'Traffic 新加坡标准 IEPL 专线 1']
 INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example'].freeze
+# MESL：节点名形如「🇯🇵 日本 02」「🇲🇾 马来西亚 01 家宽」（虚构样例，编号与订阅展示名同一套规则）。
+# 带 [0.3X] 的低倍率节点（日本 01、台湾 01）不进任何组。
+mesl_jp = (2..7).map { |n| '🇯🇵 日本 %02d' % n } + (8..12).map { |n| '🇯🇵 日本 %02d 家宽' % n }
+mesl_web3 = (1..3).map { |n| '🇲🇾 马来西亚 %02d 家宽' % n } + (1..2).map { |n| '🇵🇭 菲律宾 %02d' % n } +
+  ['🇻🇳 越南 家宽'] + (1..2).map { |n| '🇰🇷 韩国 %02d' % n } + (3..5).map { |n| '🇰🇷 韩国 %02d 家宽' % n } + ['🇮🇩 印度尼西亚']
+mesl_tw = (2..5).map { |n| '🇨🇳 台湾 %02d' % n } + (6..10).map { |n| '🇨🇳 台湾 %02d 家宽' % n }
+mesl_us = (1..3).map { |n| '🇺🇸 美国 %02d' % n }
+mesl_anki = (2..4).map { |n| '🇯🇵 日本 %02d' % n }
+MESL_EXPECTED = {
+  'XM-Google' => mesl_jp, 'XM-AI' => mesl_jp, 'XM-日常上网' => mesl_jp,
+  'XM-Web3' => mesl_web3,
+  'XM-Bybit' => mesl_tw,
+  'XM-Apple' => mesl_us,
+  'XM-Anki' => mesl_anki,
+  'XM-系统更新' => mesl_anki
+}.freeze
+MESL_SAMPLES = mesl_jp + mesl_web3 + mesl_tw + (1..12).map { |n| '🇺🇸 美国 %02d' % n } +
+  (10..12).map { |n| '🇺🇸 美国 %02d 家宽' % n } +
+  ['🇯🇵 日本 01 [0.3X]', '🇨🇳 台湾 01 [0.3X]', '🇸🇬 新加坡 01', '🇸🇬 新加坡 12 家宽', '🇭🇰 香港 01', '🇭🇰 香港 13 家宽',
+   '🇯🇵 日本_02', '🇹🇼 台湾_02', '🇯🇵 日本 08', '🇯🇵 日本高级 IEPL 专线 1']
 PROFILES = {
   'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
   'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                          bybit_order: nil }
+                          bybit_order: nil },
+  'XM-Clash-MESL.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit'], expected: MESL_EXPECTED, samples: MESL_SAMPLES, info: INFO,
+                            bybit_order: [['🇨🇳 台湾 02'], ['🇨🇳 台湾 03']] }
 }.freeze
 
 def check_file(root, file)
