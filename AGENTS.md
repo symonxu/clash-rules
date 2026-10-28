@@ -34,3 +34,4 @@
    - 修改任何文件后必须自动运行 `ruby scripts/validate_rules.rb`。
 
 - Notion 全家（notion.so/.com/.site/.new、notion-static.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
+- OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
