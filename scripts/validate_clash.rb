@@ -189,6 +189,9 @@ def check_file(root, file)
   notion = %w[notion.so notion.com notion.site notion.new notion-static.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI']
   abort 'Clash: Notion must use XM-AI before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: Notion domains must only use XM-AI' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI') }
+  openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI" }
+  abort 'Clash: OpenBot must use XM-AI before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
+  abort 'Clash: OpenBot domains must only use XM-AI' unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-AI') }
   anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
   abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort

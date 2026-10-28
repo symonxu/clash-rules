@@ -9,9 +9,9 @@
 
 ## 🤝 双端 AI 交接上下文 (Antigravity ⇄ Cursor)
 
-- **最近更新端**：`Cursor` (2026-10-27)
+- **最近更新端**：`OpenBot clash-rules` (2026-10-28)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：极速云 `XM-Clash-JSY.yaml` 与花云 `XM-Clash-HY.yaml` 的 rules 保持逐字节一致。Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
+- **当前运行状态**：极速云 `XM-Clash-JSY.yaml` 与花云 `XM-Clash-HY.yaml` 的 rules 保持逐字节一致。OpenBot（`openbot.run`、`openbot.site`）与 Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
 
 ---
 
@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-28**：将 OpenBot 域名（`openbot.run` 含 api / analytics，以及 `openbot.site`）接入 `XM-AI`，排在 `GEOIP,CN` 之前（两份配置的 rules 同步及 CI 校验）。回滚时从两份 YAML 与 `scripts/validate_clash.rb` 移除上述 2 条规则即可，未命中流量将恢复落入 `MATCH,XM-日常上网`。
 - [x] **2026-10-27**：回滚 #78 的 itunes/mzstatic 直连（直连超时、App Store 更新卡住），恢复走 XM-日常上网，长期保留。
 
 - [x] **2026-10-27**：全面梳理：极速云 XM-Web3 去掉新加坡（CI 禁止新加坡/台湾）；fake-ip-filter 补 ocsp2/akadns/akamaiedge；geox-url 用 jsDelivr 镜像；X 补 pscp.tv/periscope.tv/twittercdn.com；注释与文档更新。旧 PR #5 已关闭，移出待办。

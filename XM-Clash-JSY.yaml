@@ -245,6 +245,9 @@ rules:
   - DOMAIN-SUFFIX,slack-redir.net,XM-AI
   - DOMAIN-SUFFIX,slackb.com,XM-AI
   - DOMAIN-SUFFIX,slackhq.com,XM-AI
+  # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-AI。
+  - DOMAIN-SUFFIX,openbot.run,XM-AI
+  - DOMAIN-SUFFIX,openbot.site,XM-AI
   - DOMAIN-SUFFIX,google.com,XM-Google
   - DOMAIN-SUFFIX,google.com.hk,XM-Google
   - DOMAIN-SUFFIX,googleapis.com,XM-Google
