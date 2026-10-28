@@ -52,7 +52,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## DNS
 
-`223.5.5.5`、`119.29.29.29`，fake-ip（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。不写 TUN、端口和控制器，由 App 自己管理。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
+`223.5.5.5`、`119.29.29.29`，fake-ip（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则仍走 XM-AI。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。不写 TUN、端口和控制器，由 App 自己管理。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
 
 ## 主要分流
 
