@@ -1,23 +1,24 @@
 # XM 个人分流规则（Clash App）
 
-本仓库维护两份并行的规则配置，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。两份文件的 DNS、分组和**规则完全相同**，只有各组筛选节点的正则不同（两家节点命名不一样）：
+本仓库维护三份并行的规则配置，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。三份文件的 DNS、分组和**规则完全相同**，只有各组筛选节点的正则不同（各家节点命名不一样）：
 
 | 组合 | 节点来源 | 规则方案 | 配置链接 |
 | --- | --- | --- | --- |
 | 极速云 | 极速云订阅 | `XM-Clash-JSY` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml |
 | 花云 | 花云订阅 | `XM-Clash-HY` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-HY.yaml |
+| MESL | MESL 订阅 | `XM-Clash-MESL` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-MESL.yaml |
 
-两个组合可以同时存在，哪家出问题就切到另一个组合。
+三个组合可以同时存在，哪家出问题就切到另一个组合。
 
 **仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；CI 会拦截白名单以外的链接。
 
 ## 在 App 里怎么用
 
-节点和规则分开导入，再组合成一份配置（以极速云为例；花云相同，把订阅换成花云、配置链接和规则方案换成 `XM-Clash-HY`）：
+节点和规则分开导入，再组合成一份配置（以极速云为例；花云、MESL 相同，把订阅换成对应机场、配置链接和规则方案换成 `XM-Clash-HY` 或 `XM-Clash-MESL`）：
 
 1. **添加订阅**：配置（Profiles）→ 添加配置（Add Profile）→ 配置链接，粘贴极速云的 Clash 订阅地址。先选中它、出站模式选"规则"并连接，下一步才能打开 GitHub（raw.githubusercontent.com 在大陆直连通常打不开）。
 2. **添加规则配置**：同样"添加配置 → 配置链接"，粘贴对应的配置链接。若有"同时登记它的规则"开关，保持打开；它会作为规则方案出现在规则库里。这份配置自己没有节点，不要单独选中使用。
-3. **组合**：把极速云配置的规则方案换成 `XM-Clash-JSY`（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选极速云，规则方案选 `XM-Clash-JSY`。花云则是节点来源选花云、规则方案选 `XM-Clash-HY`。不要用机场自带的分组和规则。
+3. **组合**：把极速云配置的规则方案换成 `XM-Clash-JSY`（"更换规则方案"），或新建配置时"选择节点来源和规则方案"：节点来源选极速云，规则方案选 `XM-Clash-JSY`。花云则是节点来源选花云、规则方案选 `XM-Clash-HY`。MESL 则是节点来源选 MESL、规则方案选 `XM-Clash-MESL`。不要用机场自带的分组和规则。
 4. 选中组合后的配置，出站模式选"规则（Rule）"，连接；在"代理（Proxies）"里确认八个组都有节点。
 5. 检查分流：iPhone 在 工具（Utilities）→ Current Session → 连接（Connections），Mac 在侧边栏 Session → Connections，看新连接命中的规则和出站组。
 
@@ -31,22 +32,22 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 各组用 `include-all: true` 引入订阅里的全部节点，按节点名正则 `filter` 筛选，再用 `exclude-filter` 剔除香港节点（`香港|HK|Hong Kong|🇭🇰`，不区分大小写）和「剩余流量」「套餐到期」「官网」等信息条目：
 
-| 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | 类型 |
-| --- | --- | --- | --- |
-| XM-Google | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | url-test |
-| XM-AI | 日本_* | 同上 | url-test |
-| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | url-test |
-| XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 极速云 fallback；花云 url-test |
-| XM-日常上网 | 日本_* | 同 XM-Google | url-test |
-| XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | url-test |
-| XM-Anki | 日本_01 / 日本_02 / 日本_03 | 日本高级 IEPL 专线 1 / 2 / 3 | select（手动选一个固定节点，避免同步中途切换） |
-| XM-系统更新 | DIRECT（默认）+ 日本_01–03 | DIRECT（默认）+ 日本高级 IEPL 专线 1–3 | select（系统更新默认直连走大陆 CDN，失败可手动切日本） |
+| 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | MESL（`XM-Clash-MESL.yaml`） | 类型 |
+| --- | --- | --- | --- | --- |
+| XM-Google | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | 日本 02–07 + 日本 08–12 家宽（不含 01 [0.3X]） | url-test |
+| XM-AI | 日本_* | 同上 | 同上 | url-test |
+| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | 马来西亚家宽、菲律宾、越南家宽、韩国、印度尼西亚（不含新加坡/台湾/香港/日本） | url-test |
+| XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 台湾 02 → 03 → 04/05 → 家宽 06–10（不含 01 [0.3X]） | 极速云、MESL fallback；花云 url-test |
+| XM-日常上网 | 日本_* | 同 XM-Google | 同 XM-Google | url-test |
+| XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | 美国 01–03 | url-test |
+| XM-Anki | 日本_01 / 日本_02 / 日本_03 | 日本高级 IEPL 专线 1 / 2 / 3 | 日本 02 / 03 / 04 | select（手动选一个固定节点，避免同步中途切换） |
+| XM-系统更新 | DIRECT（默认）+ 日本_01–03 | DIRECT（默认）+ 日本高级 IEPL 专线 1–3 | DIRECT（默认）+ 日本 02–04 | select（系统更新默认直连走大陆 CDN，失败可手动切日本） |
 
 花云版多数组 6–7 个节点（XM-Web3 4 个，XM-Anki 3 个，XM-系统更新 DIRECT + 3 个）（同地区高级 + 标准），不用实验性节点；信息条目另外排除英文的 `Traffic` / `Expire`。
 
-- url-test：用 `https://www.gstatic.com/generate_204` 测速，超时 5 秒。极速云每 900 秒测速、快超过 20ms 才切换；花云六个组全部 url-test，每 300 秒测速、快超过 10ms 就切换。
-- XM-Anki（两份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
-- 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。
+- url-test：用 `https://www.gstatic.com/generate_204` 测速，超时 5 秒。极速云每 900 秒测速、快超过 20ms 才切换；花云和 MESL 每 300 秒测速、快超过 10ms 就切换。
+- XM-Anki（三份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03，MESL 日本 02–04），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
+- 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。MESL 的 XM-Bybit 同样是 fallback（300 秒），从台湾 02 开始。
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。
 
@@ -75,7 +76,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## 修改规则
 
-1. 新建分支修改规则。**改规则（`rules`）时，`XM-Clash-JSY.yaml` 和 `XM-Clash-HY.yaml` 必须做完全相同的修改**：两份文件从「# 规则从上到下匹配」到末尾必须逐字节一致，CI 会检查。只改某家的节点筛选时，只改对应文件的 `proxy-groups`。
+1. 新建分支修改规则。**改规则（`rules`）时，`XM-Clash-JSY.yaml`、`XM-Clash-HY.yaml` 和 `XM-Clash-MESL.yaml` 必须做完全相同的修改**：三份文件从「# 规则从上到下匹配」到末尾必须逐字节一致，CI 会检查。只改某家的节点筛选时，只改对应文件的 `proxy-groups`。
 2. 本地校验：
 
    ```sh
@@ -83,8 +84,8 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
    ```
 
    校验内容：
-   - 两份文件的规则部分逐字节一致。
-   - 两份文件都不含 `proxies`、`proxy-providers`、`rule-providers`。
+   - 三份文件的规则部分逐字节一致。
+   - 三份文件都不含 `proxies`、`proxy-providers`、`rule-providers`。
    - 八个分组的名称、顺序、类型、测速参数；各组 `filter` / `exclude-filter` 对虚构样例节点名（不含真实节点）选中的结果，每组非空、排除香港节点和信息条目。
    - DNS。
    - 规则语法、目标只能是八个组或 DIRECT / REJECT、无重复、不被前面的后缀规则遮住、最后两条为 `GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网`。
