@@ -119,10 +119,25 @@ def check_file(root, file)
   abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
   abort "#{file}: geox-url must be exactly the jsDelivr MetaCubeX mirror" unless clash['geox-url'] == { 'geoip' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat', 'geosite' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat', 'mmdb' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb' }
   dns = clash.fetch('dns')
-  abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+  # 花云一份用 redir-host + 加密 DNS（返回真实 IP），其余三份仍是 fake-ip + 明文国内 DNS。
+  if file == 'XM-Clash-HY.yaml'
+    abort "#{file}: DNS must be redir-host" unless dns['enable'] == true && dns['ipv6'] == false && dns['enhanced-mode'] == 'redir-host'
+    abort "#{file}: redir-host must not carry fake-ip keys" unless (dns.keys & %w[fake-ip-range fake-ip-filter]).empty?
+    abort "#{file}: nameserver must be DoH doh.pub + DoT alidns" unless dns['nameserver'] == %w[https://doh.pub/dns-query tls://dns.alidns.com]
+    abort "#{file}: fallback must be DoT 1.1.1.1 + DoH 8.8.8.8" unless dns['fallback'] == %w[tls://1.1.1.1 https://8.8.8.8/dns-query]
+    abort "#{file}: fallback-filter must be geoip CN" unless dns['fallback-filter'] == { 'geoip' => true, 'geoip-code' => 'CN' }
+    abort "#{file}: default-nameserver must stay plain IPs for bootstrap" unless dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+    # 所有真解析的服务器必须加密（https:// 或 tls://），不能回落到明文 53 端口。
+    (dns['nameserver'] + dns['fallback']).each do |ns|
+      abort "#{file}: DNS server #{ns} is not encrypted" unless ns.match?(%r{\A(https|tls)://})
+    end
+  else
+    abort "#{file}: DNS must be fake-ip" unless dns['enhanced-mode'] == 'fake-ip'
+    abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+  end
   apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
   abort "#{file}: nameserver-policy must only send Apple update domains to DoH 223.5.5.5 / doh.pub" unless dns['nameserver-policy'] == { apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query] }
-  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
+  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) } unless file == 'XM-Clash-HY.yaml'
   groups = clash.fetch('proxy-groups')
   abort "#{file}: groups must be exactly the nine XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
