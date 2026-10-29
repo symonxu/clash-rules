@@ -94,18 +94,18 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 300
     timeout: 5000
-  # OpenBot：只走极速云日本，fallback。家里宽带实测 01/07/05/08/06 可用，02/03/04 放备份。
+  # OpenBot：只走花云日本，fallback。花云不转发 UDP，客户端退回 TURN 的 TCP 443（实测一晚没断）；
+  # 极速云 AnyTLS 的 UDP 连续打洞会掉（15 次里 6 次超时），所以不再用极速云。
   - name: XM-OpenBot
     type: fallback
     proxies:
-      - '🇯🇵 日本_01'
-      - '🇯🇵 日本_07'
-      - '🇯🇵 日本_05'
-      - '🇯🇵 日本_08'
-      - '🇯🇵 日本_06'
-      - '🇯🇵 日本_04'
-      - '🇯🇵 日本_02'
-      - '🇯🇵 日本_03'
+      - '🇯🇵 日本高级 IEPL 专线 1'
+      - '🇯🇵 日本高级 IEPL 专线 2'
+      - '🇯🇵 日本高级 IEPL 专线 3'
+      - '🇯🇵 日本标准 IEPL 专线 1'
+      - '🇯🇵 日本标准 IEPL 专线 2'
+      - '🇯🇵 日本标准 IEPL 专线 3'
+      - '🇯🇵 日本标准 IEPL 专线 4'
     url: https://www.gstatic.com/generate_204
     interval: 900
     timeout: 5000
@@ -334,6 +334,10 @@ rules:
   - DOMAIN-SUFFIX,slackb.com,XM-AI
   - DOMAIN-SUFFIX,slackhq.com,XM-AI
   # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-OpenBot。fallback，不跟 XM-AI 测速绑定。
+  # 上面两条先掐掉 UDP：TURN 的 UDP 在花云上转不出去，直接 REJECT 让客户端立刻退到 TCP 443，不要先等超时。
+  # 只有本文件多这两条；另外四份单订阅规则不变。
+  - AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT
+  - AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.site)),REJECT
   - DOMAIN-SUFFIX,openbot.run,XM-OpenBot
   - DOMAIN-SUFFIX,openbot.site,XM-OpenBot
   - DOMAIN-SUFFIX,google.com,XM-Google

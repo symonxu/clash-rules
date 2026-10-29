@@ -11,7 +11,7 @@
 
 四个组合可以同时存在，哪家出问题就切到另一个组合。
 
-另有一份规则方案 `XM-Clash-MULTI.yaml`：OpenBot 只用极速云日本节点，Web3 用花云的韩国/越南/印尼，其余组优先花云、极速云垫底。文件里没有订阅地址。用法见下方「一个配置挂两家订阅」。
+另有一份规则方案 `XM-Clash-MULTI.yaml`：OpenBot 只走花云日本节点（花云不转发 UDP，规则里把 OpenBot 的 UDP 直接拒绝，客户端走 TURN 的 TCP 443），Web3 用花云的韩国/越南/印尼，其余组优先花云、极速云垫底。文件里没有订阅地址。用法见下方「一个配置挂两家订阅」。
 
 **仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；CI 会拦截白名单以外的链接。
 
@@ -37,7 +37,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 配置链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-MULTI.yaml
 
-文件里 234 条规则与另外四份逐字节一致，分组直接写节点显示名。订阅地址不在文件里。Clash App 把每份配置记成「一个规则方案 + 若干代理来源」，来源由 App 自己下载和更新。
+文件里 234 条规则与另外四份相同，另外多两条 OpenBot 的 UDP 拒绝规则（只有这一份有），分组直接写节点显示名。订阅地址不在文件里。Clash App 把每份配置记成「一个规则方案 + 若干代理来源」，来源由 App 自己下载和更新。
 
 Mac 和 iPhone 步骤相同：
 
@@ -49,7 +49,7 @@ Mac 和 iPhone 步骤相同：
 
 | 分组 | 去向 |
 | --- | --- |
-| XM-OpenBot | 只使用极速云：日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（900 秒） |
+| XM-OpenBot | 只使用花云：日本高级 IEPL 专线 1 → 2 → 3，然后日本标准 IEPL 专线 1 → 2 → 3 → 4（fallback）。`openbot.run` / `openbot.site` 的 UDP 在规则里直接 REJECT，客户端走 TURN 的 TCP 443 |
 | XM-Web3 | 花云韩国标准 1–2、越南标准 1、印尼标准 1；这四个都失败才用马来西亚/菲律宾/泰国。不用美国、香港、新加坡、台湾、日本 |
 | XM-Google / XM-AI / XM-日常上网 | 花云日本（高级 1–3 + 标准 1–4）优先，整组失败才换极速云日本（顺序同 OpenBot） |
 | XM-Apple | 花云美国（高级 1–3 + 标准 1–4）优先，失败再换极速云美国_01–03 |
@@ -79,6 +79,7 @@ Mac 和 iPhone 步骤相同：
 - XM-Anki（三份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03，MESL 日本 02–04），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
 - 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。MESL 的 XM-Bybit 同样是 fallback（300 秒），从台湾 02 开始。
 - **XM-OpenBot**：fallback。极速云顺序是日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（02/03/04 在家里宽带上刚测是死的，所以放在备份位；回滚时把 filter 和校验期望改回 02 → 03 → 04）。花云仍是日本高级 1 → 2 → 3，MESL 仍是日本 02 → 03 → 04，Boost 是日本1 → 日本8。排第一的节点可用就一直用它，失败才换，不跟 XM-AI 的 url-test 绑定。只用于 `openbot.run`、`openbot.site`。
+- **MULTI 的 XM-OpenBot 例外**：只用花云日本高级 1–3 + 标准 1–4，并且 rules 里比另外四份多两条 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run|openbot.site)),REJECT`。原因是极速云 AnyTLS 的 UDP 转发撑不住 TURN（连续 15 次 STUN 掉了 6 次），花云不转发 UDP，客户端收到拒绝后立刻改走 TURN 的 TCP 443，实测一晚没断。
 - Boost 节点名不带国旗：日本1–8、台湾1–4、美国1–4、马来西亚-3倍率。香港1–12、新加坡1–8，以及英国/土耳其/阿根廷/澳洲倍率节点不进任何组。规则链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-BOOST.yaml
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。
@@ -96,7 +97,7 @@ Mac 和 iPhone 步骤相同：
 2. **XM-Web3**：常用链上 RPC（Infura、Alchemy、Ankr、LlamaRPC、BlockPI、BlastAPI、Omnia Tech、Stackup、Arbitrum 等公链 RPC）、钱包（MetaMask、Phantom、WalletConnect 等）、DEX 与交易站（Uniswap、Jupiter、pump.fun、Bitget、PancakeSwap、Hyperliquid、Polymarket、Across、CoinGecko 等）。
 3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
 4. **XM-AI**：ChatGPT / OpenAI、Claude、Perplexity、Cursor、OpenRouter、Grok / x.ai、grokbot.com、Gemini / AI Studio（排在 Google 之前）、Notion（`notion.so` / `.com` / `.site` / `.new`、`notion-static.com`、`notionusercontent.com`、`makenotion.com`、`cron.com` 及 `prod-files-secure.s3.us-west-2.amazonaws.com`）、Slack，以及 Apple 隐私中继和 Siri 相关域名。
-   - **XM-OpenBot**：`openbot.run`、`openbot.site`（含 api / analytics）。fallback，三家各自固定三个日本节点，失败才换，不跟 XM-AI 测速绑定。排在 `GEOIP,CN` 之前。
+   - **XM-OpenBot**：`openbot.run`、`openbot.site`（含 api / analytics）。fallback，三家各自固定三个日本节点，失败才换，不跟 XM-AI 测速绑定。排在 `GEOIP,CN` 之前。`XM-Clash-MULTI.yaml` 里这条组是花云日本，并且前面多两条 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.*)),REJECT`，强制走 TCP。
 5. **XM-Google**：Google、Gmail、YouTube 等，以及 `.goog` 域名和 Antigravity 自动更新服务。
 6. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai，以及 X / Twitter（`x.com`、`twitter.com`、`twimg.com`、`t.co`、`pscp.tv`、`periscope.tv`、`twittercdn.com`，排在 `GEOIP,CN` 之前，域名命中后不再按 IP 判断）。
    - **XM-Anki**：`ankiweb.net`、`ankiuser.net`（Anki 同步，固定日本节点，排在 `GEOIP,CN` 之前；CI 校验只有这两条走 XM-Anki）。
@@ -126,4 +127,4 @@ Mac 和 iPhone 步骤相同：
 3. 开 PR。GitHub Actions 自动跑同样的校验，通过后合并到 main，App 按链接更新即可生效。
 
 - Notion 全家（notion.so/.com/.site/.new、notion-static.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
-- OpenBot（`openbot.run` 含 api / analytics，以及 `openbot.site`）走 XM-OpenBot（fallback，三家各自三个日本节点，不跟 XM-AI 测速绑定），排在 GEOIP,CN 之前，CI 校验。
+- OpenBot（`openbot.run` 含 api / analytics，以及 `openbot.site`）走 XM-OpenBot（fallback，三家各自三个日本节点，不跟 XM-AI 测速绑定），排在 GEOIP,CN 之前，CI 校验。MULTI 里这组是花云日本，且这两条域名之前另有两条 UDP 拒绝规则（UDP 直连会被 TURN 用到，花云转不出去，先拒掉让它走 TCP）；CI 只允许 MULTI 有这两条，四份单订阅配置的 rules 仍逐字节一致。

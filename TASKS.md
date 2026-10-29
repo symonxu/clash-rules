@@ -11,7 +11,7 @@
 
 - **最近更新端**：`OpenBot clash-rules` (2026-10-28)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：极速云 `XM-Clash-JSY.yaml`、花云 `XM-Clash-HY.yaml`、MESL `XM-Clash-MESL.yaml` 与 Boost `XM-Clash-BOOST.yaml` 的 rules 保持逐字节一致。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`（极速云 fallback：日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03）；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
+- **当前运行状态**：极速云 `XM-Clash-JSY.yaml`、花云 `XM-Clash-HY.yaml`、MESL `XM-Clash-MESL.yaml` 与 Boost `XM-Clash-BOOST.yaml` 的 rules 保持逐字节一致。`XM-Clash-MULTI.yaml` 的 rules 与它们相同，只多两条 OpenBot 的 UDP 拒绝规则；它的 `XM-OpenBot` 走花云日本（高级 1–3 → 标准 1–4），不再用极速云。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`（极速云 fallback：日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03）；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
 
 ---
 
@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-29**：修 `XM-Clash-MULTI.yaml` 的手机掉线。极速云 AnyTLS 的 UDP 撑不住 TURN：连续 15 次 STUN 到 `turn.openbot.run:3478`、间隔 2.5 秒，9 次成功 6 次超时，连接表里该 UDP 会话字节数冻住后 socket 直接消失（同配置 TCP 一直通）。改成 OpenBot 走 TCP：① `XM-OpenBot` 由「极速云 8 个日本」换成花云 日本高级 IEPL 专线 1→2→3 + 日本标准 IEPL 专线 1→2→3→4，仍是 fallback（无 tolerance）；② rules 在 `DOMAIN-SUFFIX,openbot.run,XM-OpenBot` 之前插入 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT` 和 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.site)),REJECT`，让客户端立刻退到 TURN 的 TCP 443。这两条只有 MULTI 有，另外四份 rules 仍逐字节一致；`scripts/validate_clash.rb` 的 MULTI 断言从「逐字节相同」放宽为「234 条相同 + 恰好这两条，且排在 QUIC 之后、openbot 域名规则之前」，四份单订阅的校验没动。其余分组、`fake-ip-filter`、`nameserver-policy` 都没改。回滚：把 `XM-OpenBot` 的 proxies 换回极速云 日本_01→07→05→08→06→04→02→03，删掉那两条 AND 规则，并把 validator 里 `MULTI_ONLY_RULES` 改回空、`MULTI_EXPECTED['XM-OpenBot']` 改回 `JSY_JP`。
 - [x] **2026-10-29**：`XM-Clash-MULTI.yaml` 改为纯规则方案。去掉节点集合和 19 段规则集，234 条规则与四份逐字节内联。分组直接写极速云、花云的显示名：OpenBot 只走极速云日本 fallback（01→07→05→08→06→04→02→03）；Web3 走花云韩国标准 1–2、越南标准 1、印尼标准 1，失败再用马来西亚/菲律宾/泰国；其余组花云优先、极速云垫底。订阅地址不进仓库。删掉 `rules/`、`scripts/build_multi.rb`，并删掉本机带订阅地址的 `local/XM-Clash-MULTI.yaml`。回滚：回到 `3e90e034b3ead807ff2e92f6b493991163295682` 上的这些文件。不要动四份原规则。
 - [x] **2026-10-29**：新增多订阅模板 `XM-Clash-MULTI.yaml`（仓库内只有占位符，没有订阅地址）。OpenBot 只走极速云日本 fallback（01→07→05→08→06→04→02→03）；Web3 走花云韩国/越南/印尼，失败再用马来西亚/菲律宾/泰国；其余组花云优先、极速云垫底。234 条规则拆成 19 个 classical 规则集（GEOIP 和 MATCH 留在主配置里），因为内核一条 RULE-SET 只认一个策略，而且 GEOIP 放进规则集会被丢掉。本机可导入文件是 gitignore 的 `local/XM-Clash-MULTI.yaml`。回滚：删掉 `XM-Clash-MULTI.yaml`、`rules/`、`scripts/build_multi.rb` 和 `.gitignore`，并撤回 `scripts/validate_clash.rb`、`scripts/validate_urls.rb`、README、AGENTS 里的 MULTI 条目。不要动四份原规则。
 - [x] **2026-10-28**：新增 `XM-Clash-BOOST.yaml`。节点名不带国旗。Google / AI / 日常上网 / OpenBot 用日本1–8；Web3 再加马来西亚-3倍率；Bybit 台湾1–4 fallback；Apple 美国1–3；Anki 与系统更新备用日本1–3。香港、新加坡和其余倍率节点不进组。回滚：删除该文件，并从 `scripts/validate_clash.rb`、`scripts/validate_urls.rb`、README、AGENTS 去掉 Boost 条目。

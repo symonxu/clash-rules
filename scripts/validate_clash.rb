@@ -270,7 +270,9 @@ def check_file(root, file)
   rules.size
 end
 
-# MULTI 是规则方案：分组直接写极速云、花云的显示名，rules 与极速云逐字节一致。不进 FILES（那四份用 include-all + filter）。
+# MULTI 是规则方案：分组直接写极速云、花云的显示名。不进 FILES（那四份用 include-all + filter）。
+# MULTI 的 rules 与极速云一致，只多两条 OpenBot 的 UDP 拒绝规则：花云不转发 UDP，先 REJECT 让客户端立刻退到 TCP 443。
+# 这两条只存在于 MULTI，四份单订阅配置的 rules 仍保持逐字节一致。
 HY_JP = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" } + (1..4).map { |n| "🇯🇵 日本标准 IEPL 专线 #{n}" }
 JSY_JP = %w[01 07 05 08 06 04 02 03].map { |n| "🇯🇵 日本_#{n}" }
 HY_JP3 = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
@@ -278,10 +280,15 @@ JSY_JP3 = %w[01 02 03].map { |n| "🇯🇵 日本_#{n}" }
 MULTI_WEB3 = ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1', '🇲🇾 马来西亚标准 IEPL 专线 1', '🇵🇭 菲律宾标准 IEPL 专线 1', '🇹🇭 泰国标准 IEPL 专线 1'].freeze
 MULTI_BYBIT = (1..3).map { |n| "🇨🇳 台湾高级 IEPL 专线 #{n}" } + (1..3).map { |n| "🇨🇳 台湾标准 IEPL 专线 #{n}" } + (1..5).map { |n| '🇹🇼 台湾_%02d' % n }
 MULTI_APPLE = (1..3).map { |n| "🇺🇸 美国高级 IEPL 专线 #{n}" } + (1..4).map { |n| "🇺🇸 美国标准 IEPL 专线 #{n}" } + (1..3).map { |n| '🇺🇸 美国_%02d' % n }
+MULTI_ONLY_RULES = [
+  'AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT',
+  'AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.site)),REJECT'
+].freeze
 MULTI_EXPECTED = {
   'XM-Google' => HY_JP + JSY_JP,
   'XM-AI' => HY_JP + JSY_JP,
-  'XM-OpenBot' => JSY_JP,
+  # OpenBot：花云日本（Shadowsocks，不转发 UDP），客户端退到 TURN 的 TCP 443。
+  'XM-OpenBot' => HY_JP,
   'XM-Web3' => MULTI_WEB3,
   'XM-Bybit' => MULTI_BYBIT,
   'XM-日常上网' => HY_JP + JSY_JP,
@@ -295,7 +302,6 @@ def check_multi(root)
   multi_text = File.read(File.join(root, 'XM-Clash-MULTI.yaml'))
   marker = "\n# 规则从上到下匹配"
   abort 'MULTI: rules marker missing' unless jsy_text.scan(marker).size == 1 && multi_text.scan(marker).size == 1
-  abort 'MULTI: rules section must be byte-identical to XM-Clash-JSY.yaml' unless multi_text.split(marker, 2)[1] == jsy_text.split(marker, 2)[1]
   abort 'MULTI: subscription placeholder left in the file' if multi_text.include?('PASTE_')
   jsy = YAML.safe_load(jsy_text)
   clash = YAML.safe_load(multi_text)
@@ -304,7 +310,18 @@ def check_multi(root)
   abort 'MULTI: fake-ip-filter drifted' unless clash.dig('dns', 'fake-ip-filter') == jsy.dig('dns', 'fake-ip-filter')
   abort 'MULTI: nameserver-policy drifted' unless clash.dig('dns', 'nameserver-policy') == jsy.dig('dns', 'nameserver-policy')
   abort 'MULTI: geox-url drifted' unless clash['geox-url'] == jsy['geox-url']
-  abort 'MULTI: rules must equal the 234 JSY rules' unless clash.fetch('rules') == jsy.fetch('rules') && clash.fetch('rules').size == 234
+  multi_rules = clash.fetch('rules')
+  jsy_rules = jsy.fetch('rules')
+  abort 'MULTI: must have exactly 234 JSY rules plus the two OpenBot UDP rejects' unless multi_rules.size == jsy_rules.size + MULTI_ONLY_RULES.size
+  abort 'MULTI: rules must equal the 234 JSY rules plus the two OpenBot UDP rejects' unless multi_rules.reject { |r| MULTI_ONLY_RULES.include?(r) } == jsy_rules
+  MULTI_ONLY_RULES.each do |r|
+    abort "MULTI: #{r} must appear exactly once" unless multi_rules.count(r) == 1
+    domain = r[/\(DOMAIN-SUFFIX,([^)]+)\)/, 1]
+    domain_rule = "DOMAIN-SUFFIX,#{domain},XM-OpenBot"
+    abort "MULTI: #{r} must precede #{domain_rule}" unless multi_rules.index(r) < multi_rules.index(domain_rule).to_i
+    abort "MULTI: #{r} must come after the QUIC reject" unless multi_rules.index(QUIC_RULE) < multi_rules.index(r)
+  end
+  abort 'MULTI: openbot rules may only target XM-OpenBot or REJECT' unless multi_rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-OpenBot', ',REJECT') }
   groups = clash.fetch('proxy-groups')
   abort 'MULTI: groups must be exactly the nine XM groups in order' unless groups.map { |g| g['name'] } == GROUP_NAMES
   groups.each do |g|
@@ -324,7 +341,7 @@ def check_multi(root)
   web3 = groups.find { |g| g['name'] == 'XM-Web3' }.fetch('proxies')
   abort 'MULTI: XM-Web3 contains a forbidden region' if web3.any? { |n| n.match?(/美国|香港|新加坡|台湾|日本/) }
   openbot = groups.find { |g| g['name'] == 'XM-OpenBot' }.fetch('proxies')
-  abort 'MULTI: XM-OpenBot must be only the eight JSY Japan nodes' unless openbot == JSY_JP
+  abort 'MULTI: XM-OpenBot must be only the seven HY Japan nodes' unless openbot == HY_JP
 end
 
 check_multi(root)
@@ -334,4 +351,4 @@ texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
 abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
 puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 6 url-test 300s/10ms, XM-Anki manual select (Japan 1/2/3), XM-系统更新 select (DIRECT + Japan 1/2/3) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
-puts 'Validated XM-Clash-MULTI.yaml (explicit JSY+HY names, inline 234 rules, no providers, no subscription URL).'
+puts 'Validated XM-Clash-MULTI.yaml (explicit JSY+HY names, inline 234 rules + 2 OpenBot UDP rejects, XM-OpenBot on HY Japan, no providers, no subscription URL).'
