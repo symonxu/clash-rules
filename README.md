@@ -11,6 +11,8 @@
 
 四个组合可以同时存在，哪家出问题就切到另一个组合。
 
+另有一份多订阅配置 `XM-Clash-MULTI.yaml`：OpenBot 只用极速云日本节点（UDP），Web3 用花云的韩国/越南/印尼，其余组优先花云、极速云垫底。仓库里的文件是模板，两个 `url` 是占位符，不是订阅。可导入的副本在本机 `local/XM-Clash-MULTI.yaml`（已 gitignore）。用法见下方「一个配置挂两家订阅」。
+
 **仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；CI 会拦截白名单以外的链接。
 
 ## 在 App 里怎么用
@@ -28,6 +30,34 @@
 入口和模式的说明见 clash.md 文档：iPhone https://clash.md/zh/guide/ios ，Mac https://clash.md/zh/guide/macos 。节点来源与规则方案的组合方式以 App 开源代码为准：https://github.com/ProjectClash/Clash-Client 。
 
 Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash Verge），两个都会接管系统流量。
+
+## 一个配置挂两家订阅
+
+`XM-Clash-JSY` / `HY` / `MESL` / `BOOST` 仍是「一个订阅 + 一份规则方案」。多订阅是另一份完整配置，不要挂到现有订阅上，也不要替换那四份。
+
+Clash 1.0.14（内核 mihomo 1.19.32）实测：
+
+- 策略组可以用 `use` 指定某一家节点集，再用 `filter` 按节点名筛选。极速云日本顺序能固定成 日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03。
+- `type: http` 的节点集可以下载。iPhone 上导入的配置不能用外部 `type: file` 节点集（App 会拒绝，并要求改用 HTTPS 或 inline）。所以模板用 `type: http`，不把订阅地址写进仓库。
+- 一条 `RULE-SET` 只会使用这一条上写的策略。规则集里每条自己的策略不会生效。`AND` 的策略如果留在规则集行内，条件会被拼坏。`GEOIP` 放进规则集后内核不会装入。因此 234 条里、GEOIP 之前的规则按连续的同一策略切成 19 个文件（`rules/xm-seg-00.yaml` … `xm-seg-18.yaml`），`GEOIP,CN,DIRECT` 和 `MATCH,XM-日常上网` 留在配置里。`rules/xm-rules.yaml` 是这 234 条的完整副本，给校验对照。
+
+分组：
+
+| 分组 | 去向 |
+| --- | --- |
+| XM-OpenBot | 只使用极速云，fallback：日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03 |
+| XM-Web3 | 花云韩国标准 1–2、越南标准 1、印尼标准 1；这四个都失败才用马来西亚/菲律宾/泰国。不用美国、香港、新加坡、台湾、日本 |
+| XM-Google / XM-AI / XM-日常上网 | 花云日本（高级 1–3 + 标准 1–4）优先，整组失败才换极速云日本 |
+| XM-Apple | 花云美国优先，失败再换极速云美国_01–03 |
+| XM-Bybit | 花云台湾优先，失败再换极速云台湾（台湾_01 起 fallback） |
+| XM-Anki | 手动选择。候选顺序是花云日本高级 1–3，然后极速云日本_01–03 |
+| XM-系统更新 | fallback：花云日本高级 1–3，然后极速云日本_01–03，最后 DIRECT |
+
+Mac：用「添加配置 → 从文件导入」导入 `local/XM-Clash-MULTI.yaml`，作为新配置，不要选成当前正在用的那一份，除非你准备切换。出站模式用规则。
+
+iPhone：把同一份 `local/XM-Clash-MULTI.yaml` 用隔空投送或「文件」拷过去，再从文件导入。不要改成 `type: file`。不要把它设成某个订阅的规则方案。
+
+规则内容会按规则集链接更新。若以后新增的规则把同一策略的连续段拆开，需要再跑 `ruby scripts/build_multi.rb` 并更新这份配置，只改规则集文件不够。
 
 ## 分组
 

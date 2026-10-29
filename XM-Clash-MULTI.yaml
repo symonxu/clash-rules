@@ -1,0 +1,375 @@
+# XM Clash 多订阅方案（模板）。仓库里没有订阅地址。
+# 本机可导入的副本是 local/XM-Clash-MULTI.yaml（不入库）：只把下面两个 PASTE_ 占位符换成极速云、花云的订阅地址。
+# 导入时作为一份独立配置，不要把它当成「规则方案」挂到某一个订阅上，否则 App 只会留下那一家节点。
+# iPhone 不能用 type: file 的外部节点集（Clash 1.0.14 会拒绝）。这里用 type: http。
+# 规则按策略切成 19 个 classical 规则集。mihomo 1.19.32 的一条 RULE-SET 只使用这一条上的策略；AND 的策略不能留在规则集行内；GEOIP 放进规则集会被丢掉，所以 GEOIP 和 MATCH 留在下面的 rules 里。
+mode: rule
+log-level: warning
+ipv6: false
+unified-delay: true
+tcp-concurrent: true
+geox-url:
+  geoip: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat'
+  geosite: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat'
+  mmdb: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb'
+profile:
+  store-selected: true
+  store-fake-ip: true
+dns:
+  enable: true
+  ipv6: false
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  use-hosts: true
+  fake-ip-filter:
+    - '+.lan'
+    - '+.local'
+    - 'captive.apple.com'
+    - 'time.apple.com'
+    - '+.msftncsi.com'
+    - '+.msftconnecttest.com'
+    - '+.cdn-apple.com'
+    - 'swcdn.apple.com'
+    - 'swdist.apple.com'
+    - 'swscan.apple.com'
+    - '+.aaplimg.com'
+    - '+.ks-cdn.com'
+    - '+.ksyuncdn.com'
+    - '+.alikunlun.com'
+    - 'ocsp2.apple.com'
+    - '+.akadns.net'
+    - '+.akamaiedge.net'
+    - '+.openbot.run'
+    - '+.openbot.site'
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver-policy:
+    '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
+proxy-providers:
+  jsy:
+    type: http
+    url: "PASTE_JSY_SUBSCRIPTION_URL"
+    path: ./providers/jsy.yaml
+    interval: 86400
+    header:
+      User-Agent: ["Clash"]
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+      timeout: 5000
+  hy:
+    type: http
+    url: "PASTE_HY_SUBSCRIPTION_URL"
+    path: ./providers/hy.yaml
+    interval: 86400
+    header:
+      User-Agent: ["Clash"]
+    health-check:
+      enable: true
+      url: https://www.gstatic.com/generate_204
+      interval: 300
+      timeout: 5000
+rule-providers:
+  xm-seg-00:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-00.yaml'
+    path: ./providers/xm-seg-00.yaml
+    interval: 86400
+  xm-seg-01:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-01.yaml'
+    path: ./providers/xm-seg-01.yaml
+    interval: 86400
+  xm-seg-02:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-02.yaml'
+    path: ./providers/xm-seg-02.yaml
+    interval: 86400
+  xm-seg-03:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-03.yaml'
+    path: ./providers/xm-seg-03.yaml
+    interval: 86400
+  xm-seg-04:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-04.yaml'
+    path: ./providers/xm-seg-04.yaml
+    interval: 86400
+  xm-seg-05:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-05.yaml'
+    path: ./providers/xm-seg-05.yaml
+    interval: 86400
+  xm-seg-06:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-06.yaml'
+    path: ./providers/xm-seg-06.yaml
+    interval: 86400
+  xm-seg-07:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-07.yaml'
+    path: ./providers/xm-seg-07.yaml
+    interval: 86400
+  xm-seg-08:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-08.yaml'
+    path: ./providers/xm-seg-08.yaml
+    interval: 86400
+  xm-seg-09:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-09.yaml'
+    path: ./providers/xm-seg-09.yaml
+    interval: 86400
+  xm-seg-10:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-10.yaml'
+    path: ./providers/xm-seg-10.yaml
+    interval: 86400
+  xm-seg-11:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-11.yaml'
+    path: ./providers/xm-seg-11.yaml
+    interval: 86400
+  xm-seg-12:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-12.yaml'
+    path: ./providers/xm-seg-12.yaml
+    interval: 86400
+  xm-seg-13:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-13.yaml'
+    path: ./providers/xm-seg-13.yaml
+    interval: 86400
+  xm-seg-14:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-14.yaml'
+    path: ./providers/xm-seg-14.yaml
+    interval: 86400
+  xm-seg-15:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-15.yaml'
+    path: ./providers/xm-seg-15.yaml
+    interval: 86400
+  xm-seg-16:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-16.yaml'
+    path: ./providers/xm-seg-16.yaml
+    interval: 86400
+  xm-seg-17:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-17.yaml'
+    path: ./providers/xm-seg-17.yaml
+    interval: 86400
+  xm-seg-18:
+    type: http
+    behavior: classical
+    format: yaml
+    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-18.yaml'
+    path: ./providers/xm-seg-18.yaml
+    interval: 86400
+proxy-groups:
+  - name: HY-日本
+    type: url-test
+    use: [hy]
+    filter: '(^| )日本高级 IEPL 专线 [1-3]$`(^| )日本标准 IEPL 专线 [1-4]$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  - name: JSY-日本
+    type: url-test
+    use: [jsy]
+    filter: '(^| )日本_[0-9]+$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 900
+    tolerance: 20
+    timeout: 5000
+  - name: XM-Google
+    type: fallback
+    proxies: [HY-日本, JSY-日本]
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+  - name: XM-AI
+    type: fallback
+    proxies: [HY-日本, JSY-日本]
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+  - name: XM-OpenBot
+    type: fallback
+    use: [jsy]
+    filter: '(^| )日本_01$`(^| )日本_07$`(^| )日本_05$`(^| )日本_08$`(^| )日本_06$`(^| )日本_04$`(^| )日本_02$`(^| )日本_03$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 900
+    timeout: 5000
+  - name: HY-Web3
+    type: url-test
+    use: [hy]
+    filter: '(^| )韩国标准 IEPL 专线 [12]$`(^| )越南标准 IEPL 专线 1$`(^| )印尼标准 IEPL 专线 1$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire|美国|新加坡|台湾|日本'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  - name: HY-Web3-备用
+    type: url-test
+    use: [hy]
+    filter: '(^| )马来西亚标准 IEPL 专线 [0-9]+$`(^| )菲律宾标准 IEPL 专线 [0-9]+$`(^| )泰国标准 IEPL 专线 [0-9]+$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire|美国|新加坡|台湾|日本'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  - name: XM-Web3
+    type: fallback
+    proxies: [HY-Web3, HY-Web3-备用]
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+  - name: HY-台湾
+    type: url-test
+    use: [hy]
+    filter: '(^| )台湾高级 IEPL 专线 [1-3]$`(^| )台湾标准 IEPL 专线 [1-3]$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  - name: JSY-台湾
+    type: fallback
+    use: [jsy]
+    filter: '(^| )台湾_01$`(^| )台湾_02$`(^| )台湾_(0[3-9]|[1-9][0-9])$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 900
+    timeout: 5000
+  - name: XM-Bybit
+    type: fallback
+    proxies: [HY-台湾, JSY-台湾]
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+  - name: XM-日常上网
+    type: fallback
+    proxies: [HY-日本, JSY-日本]
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+  - name: HY-美国
+    type: url-test
+    use: [hy]
+    filter: '(^| )美国高级 IEPL 专线 [1-3]$`(^| )美国标准 IEPL 专线 [1-4]$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    tolerance: 10
+    timeout: 5000
+  - name: JSY-美国
+    type: url-test
+    use: [jsy]
+    filter: '(^| )美国_0[1-3]$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 900
+    tolerance: 20
+    timeout: 5000
+  - name: XM-Apple
+    type: fallback
+    proxies: [HY-美国, JSY-美国]
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+  - name: XM-Anki
+    type: select
+    use: [hy, jsy]
+    filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$`(^| )日本_01$`(^| )日本_02$`(^| )日本_03$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+  - name: HY-系统更新
+    type: fallback
+    use: [hy]
+    filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+  - name: JSY-系统更新
+    type: fallback
+    use: [jsy]
+    filter: '(^| )日本_01$`(^| )日本_02$`(^| )日本_03$'
+    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    url: https://www.gstatic.com/generate_204
+    interval: 900
+    timeout: 5000
+  - name: XM-系统更新
+    type: fallback
+    proxies: [HY-系统更新, JSY-系统更新, DIRECT]
+    url: https://www.gstatic.com/generate_204
+    interval: 300
+    timeout: 5000
+rules:
+  - RULE-SET,xm-seg-00,DIRECT
+  - RULE-SET,xm-seg-01,REJECT
+  - RULE-SET,xm-seg-02,XM-Web3
+  - RULE-SET,xm-seg-03,XM-Bybit
+  - RULE-SET,xm-seg-04,XM-Web3
+  - RULE-SET,xm-seg-05,XM-AI
+  - RULE-SET,xm-seg-06,XM-OpenBot
+  - RULE-SET,xm-seg-07,XM-Google
+  - RULE-SET,xm-seg-08,XM-日常上网
+  - RULE-SET,xm-seg-09,DIRECT
+  - RULE-SET,xm-seg-10,XM-Apple
+  - RULE-SET,xm-seg-11,DIRECT
+  - RULE-SET,xm-seg-12,XM-日常上网
+  - RULE-SET,xm-seg-13,XM-系统更新
+  - RULE-SET,xm-seg-14,DIRECT
+  - RULE-SET,xm-seg-15,XM-系统更新
+  - RULE-SET,xm-seg-16,DIRECT
+  - RULE-SET,xm-seg-17,XM-Anki
+  - RULE-SET,xm-seg-18,XM-日常上网
+  - GEOIP,CN,DIRECT
+  - MATCH,XM-日常上网

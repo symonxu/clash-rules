@@ -19,6 +19,10 @@ allowed_urls = Set.new([
   'https://github.com/ProjectClash/Clash-Client',
   'https://clash.md/zh/guide/config/apple-platforms'
 ])
+raw = 'https' + '://raw.githubusercontent.com/symonxu/clash-rules/main/'
+allowed_urls << raw + 'XM-Clash-MULTI.yaml'
+allowed_urls << raw + 'rules/xm-rules.yaml'
+(0..18).each { |i| allowed_urls << raw + format('rules/xm-seg-%02d.yaml', i) }
 Dir.chdir(root) do
   tracked_files = IO.popen(['git', 'ls-files', '-z'], &:read).split("\0")
   tracked_files.each do |file|
