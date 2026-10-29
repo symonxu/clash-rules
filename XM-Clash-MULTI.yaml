@@ -1,13 +1,15 @@
-# XM Clash 多订阅方案（模板）。仓库里没有订阅地址。
-# 本机可导入的副本是 local/XM-Clash-MULTI.yaml（不入库）：只把下面两个 PASTE_ 占位符换成极速云、花云的订阅地址。
-# 导入时作为一份独立配置，不要把它当成「规则方案」挂到某一个订阅上，否则 App 只会留下那一家节点。
-# iPhone 不能用 type: file 的外部节点集（Clash 1.0.14 会拒绝）。这里用 type: http。
-# 规则按策略切成 19 个 classical 规则集。mihomo 1.19.32 的一条 RULE-SET 只使用这一条上的策略；AND 的策略不能留在规则集行内；GEOIP 放进规则集会被丢掉，所以 GEOIP 和 MATCH 留在下面的 rules 里。
+# XM Clash 规则配置 · 极速云 + 花云（App：Clash - 基于规则的网络代理工具，iPhone / iPad / Mac 通用；说明见 README.md）
+# 本文件只有分组、规则和 DNS，没有节点，也没有订阅地址。节点和规则集的地址都不写在这个文件里。
+# 用 App 的「添加配置链接」导入。导入后在这份配置里「添加代理来源」，分别选已经导入的极速云和 Flower_SS。订阅由 App 自己保存和更新。
+# 分组里写的是这两家节点的显示名。来源里的名字如果改了，对应项会解析不到，需要改这里。
+# 两个来源都加上之前，不要点「使用此配置」。不点「使用此配置」就不会替换当前正在用的配置。
+# 任何分组都不含香港节点。
 mode: rule
 log-level: warning
 ipv6: false
 unified-delay: true
 tcp-concurrent: true
+# GEOIP 数据库用 jsDelivr 国内可达镜像（默认 GitHub 地址在大陆常下载失败）。
 geox-url:
   geoip: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat'
   geosite: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat'
@@ -49,327 +51,402 @@ dns:
     - 119.29.29.29
   nameserver-policy:
     '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
-proxy-providers:
-  jsy:
-    type: http
-    url: "PASTE_JSY_SUBSCRIPTION_URL"
-    path: ./providers/jsy.yaml
-    interval: 86400
-    header:
-      User-Agent: ["Clash"]
-    health-check:
-      enable: true
-      url: https://www.gstatic.com/generate_204
-      interval: 300
-      timeout: 5000
-  hy:
-    type: http
-    url: "PASTE_HY_SUBSCRIPTION_URL"
-    path: ./providers/hy.yaml
-    interval: 86400
-    header:
-      User-Agent: ["Clash"]
-    health-check:
-      enable: true
-      url: https://www.gstatic.com/generate_204
-      interval: 300
-      timeout: 5000
-rule-providers:
-  xm-seg-00:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-00.yaml'
-    path: ./providers/xm-seg-00.yaml
-    interval: 86400
-  xm-seg-01:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-01.yaml'
-    path: ./providers/xm-seg-01.yaml
-    interval: 86400
-  xm-seg-02:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-02.yaml'
-    path: ./providers/xm-seg-02.yaml
-    interval: 86400
-  xm-seg-03:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-03.yaml'
-    path: ./providers/xm-seg-03.yaml
-    interval: 86400
-  xm-seg-04:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-04.yaml'
-    path: ./providers/xm-seg-04.yaml
-    interval: 86400
-  xm-seg-05:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-05.yaml'
-    path: ./providers/xm-seg-05.yaml
-    interval: 86400
-  xm-seg-06:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-06.yaml'
-    path: ./providers/xm-seg-06.yaml
-    interval: 86400
-  xm-seg-07:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-07.yaml'
-    path: ./providers/xm-seg-07.yaml
-    interval: 86400
-  xm-seg-08:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-08.yaml'
-    path: ./providers/xm-seg-08.yaml
-    interval: 86400
-  xm-seg-09:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-09.yaml'
-    path: ./providers/xm-seg-09.yaml
-    interval: 86400
-  xm-seg-10:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-10.yaml'
-    path: ./providers/xm-seg-10.yaml
-    interval: 86400
-  xm-seg-11:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-11.yaml'
-    path: ./providers/xm-seg-11.yaml
-    interval: 86400
-  xm-seg-12:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-12.yaml'
-    path: ./providers/xm-seg-12.yaml
-    interval: 86400
-  xm-seg-13:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-13.yaml'
-    path: ./providers/xm-seg-13.yaml
-    interval: 86400
-  xm-seg-14:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-14.yaml'
-    path: ./providers/xm-seg-14.yaml
-    interval: 86400
-  xm-seg-15:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-15.yaml'
-    path: ./providers/xm-seg-15.yaml
-    interval: 86400
-  xm-seg-16:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-16.yaml'
-    path: ./providers/xm-seg-16.yaml
-    interval: 86400
-  xm-seg-17:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-17.yaml'
-    path: ./providers/xm-seg-17.yaml
-    interval: 86400
-  xm-seg-18:
-    type: http
-    behavior: classical
-    format: yaml
-    url: 'https://raw.githubusercontent.com/symonxu/clash-rules/main/rules/xm-seg-18.yaml'
-    path: ./providers/xm-seg-18.yaml
-    interval: 86400
 proxy-groups:
-  - name: HY-日本
-    type: url-test
-    use: [hy]
-    filter: '(^| )日本高级 IEPL 专线 [1-3]$`(^| )日本标准 IEPL 专线 [1-4]$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-    url: https://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 10
-    timeout: 5000
-  - name: JSY-日本
-    type: url-test
-    use: [jsy]
-    filter: '(^| )日本_[0-9]+$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-    url: https://www.gstatic.com/generate_204
-    interval: 900
-    tolerance: 20
-    timeout: 5000
   - name: XM-Google
     type: fallback
-    proxies: [HY-日本, JSY-日本]
+    proxies:
+      - '🇯🇵 日本高级 IEPL 专线 1'
+      - '🇯🇵 日本高级 IEPL 专线 2'
+      - '🇯🇵 日本高级 IEPL 专线 3'
+      - '🇯🇵 日本标准 IEPL 专线 1'
+      - '🇯🇵 日本标准 IEPL 专线 2'
+      - '🇯🇵 日本标准 IEPL 专线 3'
+      - '🇯🇵 日本标准 IEPL 专线 4'
+      - '🇯🇵 日本_01'
+      - '🇯🇵 日本_07'
+      - '🇯🇵 日本_05'
+      - '🇯🇵 日本_08'
+      - '🇯🇵 日本_06'
+      - '🇯🇵 日本_04'
+      - '🇯🇵 日本_02'
+      - '🇯🇵 日本_03'
     url: https://www.gstatic.com/generate_204
     interval: 300
     timeout: 5000
   - name: XM-AI
     type: fallback
-    proxies: [HY-日本, JSY-日本]
+    proxies:
+      - '🇯🇵 日本高级 IEPL 专线 1'
+      - '🇯🇵 日本高级 IEPL 专线 2'
+      - '🇯🇵 日本高级 IEPL 专线 3'
+      - '🇯🇵 日本标准 IEPL 专线 1'
+      - '🇯🇵 日本标准 IEPL 专线 2'
+      - '🇯🇵 日本标准 IEPL 专线 3'
+      - '🇯🇵 日本标准 IEPL 专线 4'
+      - '🇯🇵 日本_01'
+      - '🇯🇵 日本_07'
+      - '🇯🇵 日本_05'
+      - '🇯🇵 日本_08'
+      - '🇯🇵 日本_06'
+      - '🇯🇵 日本_04'
+      - '🇯🇵 日本_02'
+      - '🇯🇵 日本_03'
     url: https://www.gstatic.com/generate_204
     interval: 300
     timeout: 5000
+  # OpenBot：只走极速云日本，fallback。家里宽带实测 01/07/05/08/06 可用，02/03/04 放备份。
   - name: XM-OpenBot
     type: fallback
-    use: [jsy]
-    filter: '(^| )日本_01$`(^| )日本_07$`(^| )日本_05$`(^| )日本_08$`(^| )日本_06$`(^| )日本_04$`(^| )日本_02$`(^| )日本_03$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
+    proxies:
+      - '🇯🇵 日本_01'
+      - '🇯🇵 日本_07'
+      - '🇯🇵 日本_05'
+      - '🇯🇵 日本_08'
+      - '🇯🇵 日本_06'
+      - '🇯🇵 日本_04'
+      - '🇯🇵 日本_02'
+      - '🇯🇵 日本_03'
     url: https://www.gstatic.com/generate_204
     interval: 900
     timeout: 5000
-  - name: HY-Web3
-    type: url-test
-    use: [hy]
-    filter: '(^| )韩国标准 IEPL 专线 [12]$`(^| )越南标准 IEPL 专线 1$`(^| )印尼标准 IEPL 专线 1$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire|美国|新加坡|台湾|日本'
-    url: https://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 10
-    timeout: 5000
-  - name: HY-Web3-备用
-    type: url-test
-    use: [hy]
-    filter: '(^| )马来西亚标准 IEPL 专线 [0-9]+$`(^| )菲律宾标准 IEPL 专线 [0-9]+$`(^| )泰国标准 IEPL 专线 [0-9]+$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire|美国|新加坡|台湾|日本'
-    url: https://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 10
-    timeout: 5000
+  # Web3：花云韩国标准 1–2、越南标准 1、印尼标准 1，失败再用马来西亚/菲律宾/泰国。不用美国、香港、新加坡、台湾、日本。
   - name: XM-Web3
     type: fallback
-    proxies: [HY-Web3, HY-Web3-备用]
+    proxies:
+      - '🇰🇷 韩国标准 IEPL 专线 1'
+      - '🇰🇷 韩国标准 IEPL 专线 2'
+      - '🇻🇳 越南标准 IEPL 专线 1'
+      - '🇮🇩 印尼标准 IEPL 专线 1'
+      - '🇲🇾 马来西亚标准 IEPL 专线 1'
+      - '🇵🇭 菲律宾标准 IEPL 专线 1'
+      - '🇹🇭 泰国标准 IEPL 专线 1'
     url: https://www.gstatic.com/generate_204
     interval: 300
     timeout: 5000
-  - name: HY-台湾
-    type: url-test
-    use: [hy]
-    filter: '(^| )台湾高级 IEPL 专线 [1-3]$`(^| )台湾标准 IEPL 专线 [1-3]$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-    url: https://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 10
-    timeout: 5000
-  - name: JSY-台湾
-    type: fallback
-    use: [jsy]
-    filter: '(^| )台湾_01$`(^| )台湾_02$`(^| )台湾_(0[3-9]|[1-9][0-9])$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-    url: https://www.gstatic.com/generate_204
-    interval: 900
-    timeout: 5000
+  # Bybit：花云台湾（高级 1–3 + 标准 1–3）优先，失败再用极速云台湾_01 起。
   - name: XM-Bybit
     type: fallback
-    proxies: [HY-台湾, JSY-台湾]
+    proxies:
+      - '🇨🇳 台湾高级 IEPL 专线 1'
+      - '🇨🇳 台湾高级 IEPL 专线 2'
+      - '🇨🇳 台湾高级 IEPL 专线 3'
+      - '🇨🇳 台湾标准 IEPL 专线 1'
+      - '🇨🇳 台湾标准 IEPL 专线 2'
+      - '🇨🇳 台湾标准 IEPL 专线 3'
+      - '🇹🇼 台湾_01'
+      - '🇹🇼 台湾_02'
+      - '🇹🇼 台湾_03'
+      - '🇹🇼 台湾_04'
+      - '🇹🇼 台湾_05'
     url: https://www.gstatic.com/generate_204
     interval: 300
     timeout: 5000
   - name: XM-日常上网
     type: fallback
-    proxies: [HY-日本, JSY-日本]
+    proxies:
+      - '🇯🇵 日本高级 IEPL 专线 1'
+      - '🇯🇵 日本高级 IEPL 专线 2'
+      - '🇯🇵 日本高级 IEPL 专线 3'
+      - '🇯🇵 日本标准 IEPL 专线 1'
+      - '🇯🇵 日本标准 IEPL 专线 2'
+      - '🇯🇵 日本标准 IEPL 专线 3'
+      - '🇯🇵 日本标准 IEPL 专线 4'
+      - '🇯🇵 日本_01'
+      - '🇯🇵 日本_07'
+      - '🇯🇵 日本_05'
+      - '🇯🇵 日本_08'
+      - '🇯🇵 日本_06'
+      - '🇯🇵 日本_04'
+      - '🇯🇵 日本_02'
+      - '🇯🇵 日本_03'
     url: https://www.gstatic.com/generate_204
     interval: 300
-    timeout: 5000
-  - name: HY-美国
-    type: url-test
-    use: [hy]
-    filter: '(^| )美国高级 IEPL 专线 [1-3]$`(^| )美国标准 IEPL 专线 [1-4]$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-    url: https://www.gstatic.com/generate_204
-    interval: 300
-    tolerance: 10
-    timeout: 5000
-  - name: JSY-美国
-    type: url-test
-    use: [jsy]
-    filter: '(^| )美国_0[1-3]$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-    url: https://www.gstatic.com/generate_204
-    interval: 900
-    tolerance: 20
     timeout: 5000
   - name: XM-Apple
     type: fallback
-    proxies: [HY-美国, JSY-美国]
+    proxies:
+      - '🇺🇸 美国高级 IEPL 专线 1'
+      - '🇺🇸 美国高级 IEPL 专线 2'
+      - '🇺🇸 美国高级 IEPL 专线 3'
+      - '🇺🇸 美国标准 IEPL 专线 1'
+      - '🇺🇸 美国标准 IEPL 专线 2'
+      - '🇺🇸 美国标准 IEPL 专线 3'
+      - '🇺🇸 美国标准 IEPL 专线 4'
+      - '🇺🇸 美国_01'
+      - '🇺🇸 美国_02'
+      - '🇺🇸 美国_03'
     url: https://www.gstatic.com/generate_204
     interval: 300
     timeout: 5000
+  # XM-Anki：手动 select。候选是花云日本高级 1–3，然后极速云日本_01–03。
   - name: XM-Anki
     type: select
-    use: [hy, jsy]
-    filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$`(^| )日本_01$`(^| )日本_02$`(^| )日本_03$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-  - name: HY-系统更新
-    type: fallback
-    use: [hy]
-    filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-    url: https://www.gstatic.com/generate_204
-    interval: 300
-    timeout: 5000
-  - name: JSY-系统更新
-    type: fallback
-    use: [jsy]
-    filter: '(^| )日本_01$`(^| )日本_02$`(^| )日本_03$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰|Traffic|Expire'
-    url: https://www.gstatic.com/generate_204
-    interval: 900
-    timeout: 5000
+    proxies:
+      - '🇯🇵 日本高级 IEPL 专线 1'
+      - '🇯🇵 日本高级 IEPL 专线 2'
+      - '🇯🇵 日本高级 IEPL 专线 3'
+      - '🇯🇵 日本_01'
+      - '🇯🇵 日本_02'
+      - '🇯🇵 日本_03'
+  # XM-系统更新：花云日本高级 1–3，然后极速云日本_01–03，最后 DIRECT。
   - name: XM-系统更新
     type: fallback
-    proxies: [HY-系统更新, JSY-系统更新, DIRECT]
+    proxies:
+      - '🇯🇵 日本高级 IEPL 专线 1'
+      - '🇯🇵 日本高级 IEPL 专线 2'
+      - '🇯🇵 日本高级 IEPL 专线 3'
+      - '🇯🇵 日本_01'
+      - '🇯🇵 日本_02'
+      - '🇯🇵 日本_03'
+      - DIRECT
     url: https://www.gstatic.com/generate_204
     interval: 300
     timeout: 5000
+
+# 规则从上到下匹配；由 scripts/validate_clash.rb 校验（语法、目标组、重复、顺序）。
 rules:
-  - RULE-SET,xm-seg-00,DIRECT
-  - RULE-SET,xm-seg-01,REJECT
-  - RULE-SET,xm-seg-02,XM-Web3
-  - RULE-SET,xm-seg-03,XM-Bybit
-  - RULE-SET,xm-seg-04,XM-Web3
-  - RULE-SET,xm-seg-05,XM-AI
-  - RULE-SET,xm-seg-06,XM-OpenBot
-  - RULE-SET,xm-seg-07,XM-Google
-  - RULE-SET,xm-seg-08,XM-日常上网
-  - RULE-SET,xm-seg-09,DIRECT
-  - RULE-SET,xm-seg-10,XM-Apple
-  - RULE-SET,xm-seg-11,DIRECT
-  - RULE-SET,xm-seg-12,XM-日常上网
-  - RULE-SET,xm-seg-13,XM-系统更新
-  - RULE-SET,xm-seg-14,DIRECT
-  - RULE-SET,xm-seg-15,XM-系统更新
-  - RULE-SET,xm-seg-16,DIRECT
-  - RULE-SET,xm-seg-17,XM-Anki
-  - RULE-SET,xm-seg-18,XM-日常上网
+  - DOMAIN,localhost,DIRECT
+  - DOMAIN-SUFFIX,local,DIRECT
+  - DOMAIN-SUFFIX,lan,DIRECT
+  - IP-CIDR,127.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,10.0.0.0/8,DIRECT,no-resolve
+  - IP-CIDR,172.16.0.0/12,DIRECT,no-resolve
+  - IP-CIDR,192.168.0.0/16,DIRECT,no-resolve
+  - IP-CIDR,169.254.0.0/16,DIRECT,no-resolve
+  - IP-CIDR6,::1/128,DIRECT,no-resolve
+  - IP-CIDR6,fc00::/7,DIRECT,no-resolve
+  - IP-CIDR6,fe80::/10,DIRECT,no-resolve
+  # 屏蔽 QUIC（UDP 443），迫使 App 回落到 TCP，让域名规则生效（无嗅探时 UDP 只能按 IP 匹配）。放在局域网直连之后、域名规则之前。
+  - AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
+  - DOMAIN-SUFFIX,infura.io,XM-Web3
+  - DOMAIN-SUFFIX,alchemy.com,XM-Web3
+  - DOMAIN-SUFFIX,alchemyapi.io,XM-Web3
+  - DOMAIN-SUFFIX,llamarpc.com,XM-Web3
+  - DOMAIN-SUFFIX,ankr.com,XM-Web3
+  - DOMAIN-SUFFIX,1rpc.io,XM-Web3
+  - DOMAIN-SUFFIX,publicnode.com,XM-Web3
+  - DOMAIN-SUFFIX,polygon-rpc.com,XM-Web3
+  - DOMAIN-SUFFIX,quiknode.pro,XM-Web3
+  - DOMAIN-SUFFIX,drpc.org,XM-Web3
+  - DOMAIN-SUFFIX,nodereal.io,XM-Web3
+  - DOMAIN-SUFFIX,helius-rpc.com,XM-Web3
+  - DOMAIN,api.mainnet-beta.solana.com,XM-Web3
+  - DOMAIN,api.devnet.solana.com,XM-Web3
+  - DOMAIN-SUFFIX,arbitrum.io,XM-Web3
+  - DOMAIN,mainnet.optimism.io,XM-Web3
+  - DOMAIN,mainnet.base.org,XM-Web3
+  - DOMAIN,bsc-dataseed.binance.org,XM-Web3
+  - DOMAIN,api.avax.network,XM-Web3
+  - DOMAIN,mainnet.era.zksync.io,XM-Web3
+  - DOMAIN,rpc.gnosischain.com,XM-Web3
+  - DOMAIN-SUFFIX,trongrid.io,XM-Web3
+  - DOMAIN-SUFFIX,blockpi.network,XM-Web3
+  - DOMAIN-SUFFIX,blastapi.io,XM-Web3
+  - DOMAIN-SUFFIX,omniatech.io,XM-Web3
+  - DOMAIN-SUFFIX,stackup.sh,XM-Web3
+  - DOMAIN-SUFFIX,bybit.com,XM-Bybit
+  - DOMAIN-SUFFIX,bybit.biz,XM-Bybit
+  - DOMAIN-SUFFIX,byabcde.com,XM-Bybit
+  - DOMAIN-SUFFIX,bycsi.com,XM-Bybit
+  - DOMAIN-SUFFIX,metamask.io,XM-Web3
+  - DOMAIN-SUFFIX,phantom.app,XM-Web3
+  - DOMAIN-SUFFIX,phantom.com,XM-Web3
+  - DOMAIN-SUFFIX,walletconnect.com,XM-Web3
+  - DOMAIN-SUFFIX,walletconnect.org,XM-Web3
+  - DOMAIN-SUFFIX,reown.com,XM-Web3
+  - DOMAIN-SUFFIX,web3modal.com,XM-Web3
+  - DOMAIN-SUFFIX,web3modal.org,XM-Web3
+  - DOMAIN-SUFFIX,magic.link,XM-Web3
+  - DOMAIN-SUFFIX,fomo.family,XM-Web3
+  - DOMAIN-SUFFIX,fomotrading.app,XM-Web3
+  - DOMAIN-SUFFIX,uniswap.org,XM-Web3
+  - DOMAIN-SUFFIX,jup.ag,XM-Web3
+  - DOMAIN-SUFFIX,pump.fun,XM-Web3
+  - DOMAIN-SUFFIX,bitget.com,XM-Web3
+  - DOMAIN-SUFFIX,bgbstatic.com,XM-Web3
+  - DOMAIN-SUFFIX,bgstatic.com,XM-Web3
+  - DOMAIN-SUFFIX,bitget.site,XM-Web3
+  - DOMAIN-SUFFIX,bitgetapp.com,XM-Web3
+  - DOMAIN-SUFFIX,bitgetapps.com,XM-Web3
+  - DOMAIN-SUFFIX,pancakeswap.finance,XM-Web3
+  - DOMAIN-SUFFIX,hyperliquid.xyz,XM-Web3
+  - DOMAIN-SUFFIX,hyperunit.xyz,XM-Web3
+  - DOMAIN-SUFFIX,polymarket.com,XM-Web3
+  - DOMAIN-SUFFIX,across.to,XM-Web3
+  - DOMAIN-SUFFIX,coingecko.com,XM-Web3
+  - DOMAIN-SUFFIX,apple-relay.apple.com,XM-AI
+  - DOMAIN-SUFFIX,apple-relay.cloudflare.com,XM-AI
+  - DOMAIN-SUFFIX,apple-relay.fastly-edge.com,XM-AI
+  - DOMAIN-KEYWORD,apple-relay,XM-AI
+  - DOMAIN,smoot.apple.com,XM-AI
+  - DOMAIN,guzzoni.apple.com,XM-AI
+  - DOMAIN-SUFFIX,chatgpt.com,XM-AI
+  - DOMAIN-SUFFIX,openai.com,XM-AI
+  - DOMAIN-SUFFIX,oaistatic.com,XM-AI
+  - DOMAIN-SUFFIX,oaiusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,sora.com,XM-AI
+  - DOMAIN-SUFFIX,chatgpt.livekit.cloud,XM-AI
+  - DOMAIN-SUFFIX,host.livekit.cloud,XM-AI
+  - DOMAIN-SUFFIX,turn.livekit.cloud,XM-AI
+  - DOMAIN,openai-api.arkoselabs.com,XM-AI
+  - DOMAIN-SUFFIX,anthropic.com,XM-AI
+  - DOMAIN-SUFFIX,claude.ai,XM-AI
+  - DOMAIN-SUFFIX,claude.com,XM-AI
+  - DOMAIN-SUFFIX,claudeusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,perplexity.ai,XM-AI
+  - DOMAIN-SUFFIX,perplexity.com,XM-AI
+  - DOMAIN-SUFFIX,pplx.ai,XM-AI
+  - DOMAIN-SUFFIX,cursor.com,XM-AI
+  - DOMAIN-SUFFIX,cursor.sh,XM-AI
+  - DOMAIN-SUFFIX,cursor-cdn.com,XM-AI
+  - DOMAIN-SUFFIX,cursorapi.com,XM-AI
+  - DOMAIN-SUFFIX,cursorvm.com,XM-AI
+  - DOMAIN-SUFFIX,openrouter.ai,XM-AI
+  - DOMAIN-SUFFIX,x.ai,XM-AI
+  - DOMAIN-SUFFIX,grokbot.com,XM-AI
+  - DOMAIN-SUFFIX,grok.com,XM-AI
+  - DOMAIN-SUFFIX,grokusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,grokipedia.com,XM-AI
+  - DOMAIN-SUFFIX,gemini.google.com,XM-AI
+  - DOMAIN-SUFFIX,gemini.google,XM-AI
+  - DOMAIN-SUFFIX,aistudio.google.com,XM-AI
+  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,XM-AI
+  - DOMAIN-SUFFIX,ai.google.dev,XM-AI
+  - DOMAIN,proactivebackend-pa.googleapis.com,XM-AI
+  # Notion（含 Notion Calendar / Mail）走 XM-AI。
+  - DOMAIN-SUFFIX,notion.so,XM-AI
+  - DOMAIN-SUFFIX,notion.com,XM-AI
+  - DOMAIN-SUFFIX,notion.site,XM-AI
+  - DOMAIN-SUFFIX,notion.new,XM-AI
+  - DOMAIN-SUFFIX,notion-static.com,XM-AI
+  - DOMAIN-SUFFIX,notionusercontent.com,XM-AI
+  - DOMAIN-SUFFIX,makenotion.com,XM-AI
+  - DOMAIN-SUFFIX,cron.com,XM-AI
+  - DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI
+  - DOMAIN,geller-pa.googleapis.com,XM-AI
+  - DOMAIN-SUFFIX,slack.com,XM-AI
+  - DOMAIN-SUFFIX,slack-core.com,XM-AI
+  - DOMAIN-SUFFIX,slack-edge.com,XM-AI
+  - DOMAIN-SUFFIX,slack-files.com,XM-AI
+  - DOMAIN-SUFFIX,slack-imgs.com,XM-AI
+  - DOMAIN-SUFFIX,slack-msgs.com,XM-AI
+  - DOMAIN-SUFFIX,slack-redir.net,XM-AI
+  - DOMAIN-SUFFIX,slackb.com,XM-AI
+  - DOMAIN-SUFFIX,slackhq.com,XM-AI
+  # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-OpenBot。fallback，不跟 XM-AI 测速绑定。
+  - DOMAIN-SUFFIX,openbot.run,XM-OpenBot
+  - DOMAIN-SUFFIX,openbot.site,XM-OpenBot
+  - DOMAIN-SUFFIX,google.com,XM-Google
+  - DOMAIN-SUFFIX,google.com.hk,XM-Google
+  - DOMAIN-SUFFIX,googleapis.com,XM-Google
+  - DOMAIN-SUFFIX,googleapis.cn,XM-Google
+  - DOMAIN-SUFFIX,gstatic.com,XM-Google
+  - DOMAIN-SUFFIX,googleusercontent.com,XM-Google
+  - DOMAIN-SUFFIX,gmail.com,XM-Google
+  - DOMAIN-SUFFIX,googlemail.com,XM-Google
+  - DOMAIN-SUFFIX,ggpht.com,XM-Google
+  - DOMAIN-SUFFIX,gvt1.com,XM-Google
+  - DOMAIN-SUFFIX,gvt2.com,XM-Google
+  - DOMAIN-SUFFIX,gvt3.com,XM-Google
+  - DOMAIN-SUFFIX,youtube.com,XM-Google
+  - DOMAIN-SUFFIX,youtube-nocookie.com,XM-Google
+  - DOMAIN-SUFFIX,youtu.be,XM-Google
+  - DOMAIN-SUFFIX,ytimg.com,XM-Google
+  - DOMAIN-SUFFIX,googlevideo.com,XM-Google
+  - DOMAIN-SUFFIX,goog,XM-Google
+  - DOMAIN-SUFFIX,google-analytics.com,XM-Google
+  - DOMAIN,antigravity-hub-auto-updater-974169037036.us-central1.run.app,XM-Google
+  - DOMAIN-SUFFIX,meta.com,XM-日常上网
+  - DOMAIN-SUFFIX,meta.ai,XM-日常上网
+  - DOMAIN-SUFFIX,facebook.com,XM-日常上网
+  - DOMAIN-SUFFIX,facebook.net,XM-日常上网
+  - DOMAIN-SUFFIX,fb.com,XM-日常上网
+  - DOMAIN-SUFFIX,fb.me,XM-日常上网
+  - DOMAIN-SUFFIX,fbcdn.net,XM-日常上网
+  - DOMAIN-SUFFIX,fbsbx.com,XM-日常上网
+  - DOMAIN-SUFFIX,messenger.com,XM-日常上网
+  - DOMAIN-SUFFIX,m.me,XM-日常上网
+  - DOMAIN-SUFFIX,instagram.com,XM-日常上网
+  - DOMAIN-SUFFIX,cdninstagram.com,XM-日常上网
+  - DOMAIN-SUFFIX,threads.com,XM-日常上网
+  - DOMAIN-SUFFIX,threads.net,XM-日常上网
+  - DOMAIN-SUFFIX,whatsapp.com,XM-日常上网
+  - DOMAIN-SUFFIX,whatsapp.net,XM-日常上网
+  - DOMAIN-SUFFIX,wa.me,XM-日常上网
+  - DOMAIN-SUFFIX,muse.ai,XM-日常上网
+  # Apple TV 走 XM-Apple（美国节点）；流媒体子域名必须排在 itunes.apple.com 之前。
+  # Apple TV 视频 CDN（vod-*）直连（DIRECT），必须排在 tv.apple.com 之前。
+  - DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,tv.apple.com,XM-Apple
+  - DOMAIN-SUFFIX,pancake.apple.com,XM-Apple
+  - DOMAIN,play-edge.itunes.apple.com,XM-Apple
+  - DOMAIN,hls.itunes.apple.com,XM-Apple
+  - DOMAIN,np-edge.itunes.apple.com,XM-Apple
+  - DOMAIN,uts-api.itunes.apple.com,XM-Apple
+  # App Store 不走美国节点。itunes / mzstatic 走 XM-日常上网（#53；#78 试过直连，TUN 下 mzstatic / osxapps 超时，保留代理）。
+  # cdn-apple.com 已并入 XM-系统更新（整站同出口，避免更新校验一半直连一半代理卡住）。
+  - DOMAIN-SUFFIX,apps.apple.com,DIRECT
+  - DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网
+  - DOMAIN-SUFFIX,mzstatic.com,XM-日常上网
+  # 系统更新（iOS/macOS OTA）走 XM-系统更新（默认 DIRECT，可手动切日本）。
+  # 域名参考 Apple 企业网络文档 Software updates + 社区常用补充。
+  - DOMAIN-SUFFIX,cdn-apple.com,XM-系统更新
+  - DOMAIN,appldnld.apple.com,XM-系统更新
+  - DOMAIN,swcdn.apple.com,XM-系统更新
+  - DOMAIN,swdist.apple.com,XM-系统更新
+  - DOMAIN,swdownload.apple.com,XM-系统更新
+  - DOMAIN,swscan.apple.com,XM-系统更新
+  - DOMAIN,swquery.apple.com,XM-系统更新
+  - DOMAIN,swpost.apple.com,XM-系统更新
+  - DOMAIN,mesu.apple.com,XM-系统更新
+  - DOMAIN,gdmf.apple.com,XM-系统更新
+  - DOMAIN,gdmf-ados.apple.com,XM-系统更新
+  - DOMAIN,gs.apple.com,XM-系统更新
+  - DOMAIN,gsra.apple.com,XM-系统更新
+  - DOMAIN,gg.apple.com,XM-系统更新
+  - DOMAIN,ig.apple.com,XM-系统更新
+  - DOMAIN,skl.apple.com,XM-系统更新
+  - DOMAIN,xp.apple.com,XM-系统更新
+  - DOMAIN,configuration.apple.com,XM-系统更新
+  - DOMAIN,oscdn.apple.com,XM-系统更新
+  - DOMAIN,osrecovery.apple.com,XM-系统更新
+  - DOMAIN,cds.apple.com,XM-系统更新
+  - DOMAIN,download.info.apple.com,XM-系统更新
+  - DOMAIN-SUFFIX,aaplimg.com,DIRECT
+  - DOMAIN-SUFFIX,apple.com.cn,DIRECT
+  - DOMAIN-SUFFIX,cn.apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com.cn,DIRECT
+  - DOMAIN-SUFFIX,push.apple.com,DIRECT
+  - DOMAIN-SUFFIX,ess.apple.com,DIRECT
+  - DOMAIN,gs-loc-cn.apple.com,DIRECT
+  - DOMAIN-SUFFIX,icloud.com,DIRECT
+  - DOMAIN-SUFFIX,icloud-content.com,DIRECT
+  - DOMAIN-SUFFIX,apple-cloudkit.com,DIRECT
+  - DOMAIN-SUFFIX,apple-livephotoskit.com,DIRECT
+  - DOMAIN-SUFFIX,ls.apple.com,DIRECT
+  - DOMAIN-SUFFIX,gc.apple.com,DIRECT
+  - DOMAIN,gsa.apple.com,DIRECT
+  - DOMAIN,gsas.apple.com,DIRECT
+  - DOMAIN,time.apple.com,DIRECT
+  - DOMAIN,sps-media.apple.com,DIRECT
+  - DOMAIN-SUFFIX,ocsp.apple.com,DIRECT
+  - DOMAIN,ocsp2.apple.com,XM-系统更新
+  - DOMAIN-SUFFIX,qq.com,DIRECT
+  - DOMAIN-SUFFIX,weixin.com,DIRECT
+  - DOMAIN-SUFFIX,wechat.com,DIRECT
+  # Anki 同步走 XM-Anki（固定日本节点，排在 GEOIP,CN 之前）。
+  - DOMAIN-SUFFIX,ankiweb.net,XM-Anki
+  - DOMAIN-SUFFIX,ankiuser.net,XM-Anki
+  - DOMAIN-SUFFIX,tradingview.com,XM-日常上网
+  # X / Twitter 走 XM-日常上网，必须排在 GEOIP,CN 之前：域名命中后不再按 IP 判断，避免污染解析被当成大陆地址直连。
+  - DOMAIN-SUFFIX,x.com,XM-日常上网
+  - DOMAIN-SUFFIX,twitter.com,XM-日常上网
+  - DOMAIN-SUFFIX,twimg.com,XM-日常上网
+  - DOMAIN-SUFFIX,t.co,XM-日常上网
+  - DOMAIN-SUFFIX,pscp.tv,XM-日常上网
+  - DOMAIN-SUFFIX,periscope.tv,XM-日常上网
+  - DOMAIN-SUFFIX,twittercdn.com,XM-日常上网
   - GEOIP,CN,DIRECT
   - MATCH,XM-日常上网

@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-29**：`XM-Clash-MULTI.yaml` 改为纯规则方案。去掉节点集合和 19 段规则集，234 条规则与四份逐字节内联。分组直接写极速云、花云的显示名：OpenBot 只走极速云日本 fallback（01→07→05→08→06→04→02→03）；Web3 走花云韩国标准 1–2、越南标准 1、印尼标准 1，失败再用马来西亚/菲律宾/泰国；其余组花云优先、极速云垫底。订阅地址不进仓库。删掉 `rules/`、`scripts/build_multi.rb`，并删掉本机带订阅地址的 `local/XM-Clash-MULTI.yaml`。回滚：回到 `3e90e034b3ead807ff2e92f6b493991163295682` 上的这些文件。不要动四份原规则。
 - [x] **2026-10-29**：新增多订阅模板 `XM-Clash-MULTI.yaml`（仓库内只有占位符，没有订阅地址）。OpenBot 只走极速云日本 fallback（01→07→05→08→06→04→02→03）；Web3 走花云韩国/越南/印尼，失败再用马来西亚/菲律宾/泰国；其余组花云优先、极速云垫底。234 条规则拆成 19 个 classical 规则集（GEOIP 和 MATCH 留在主配置里），因为内核一条 RULE-SET 只认一个策略，而且 GEOIP 放进规则集会被丢掉。本机可导入文件是 gitignore 的 `local/XM-Clash-MULTI.yaml`。回滚：删掉 `XM-Clash-MULTI.yaml`、`rules/`、`scripts/build_multi.rb` 和 `.gitignore`，并撤回 `scripts/validate_clash.rb`、`scripts/validate_urls.rb`、README、AGENTS 里的 MULTI 条目。不要动四份原规则。
 - [x] **2026-10-28**：新增 `XM-Clash-BOOST.yaml`。节点名不带国旗。Google / AI / 日常上网 / OpenBot 用日本1–8；Web3 再加马来西亚-3倍率；Bybit 台湾1–4 fallback；Apple 美国1–3；Anki 与系统更新备用日本1–3。香港、新加坡和其余倍率节点不进组。回滚：删除该文件，并从 `scripts/validate_clash.rb`、`scripts/validate_urls.rb`、README、AGENTS 去掉 Boost 条目。
 - [x] **2026-10-28**：极速云 `XM-OpenBot` 改为日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03。02/03/04 在家里宽带上刚测是死的，放到备份位。花云、MESL 和 rules 未改。回滚：把 `XM-Clash-JSY.yaml` 的 filter 和 `scripts/validate_clash.rb` 里 JSY 的 `XM-OpenBot` 期望改回日本_02 → 03 → 04。
