@@ -270,9 +270,82 @@ def check_file(root, file)
   rules.size
 end
 
+def check_multi(root)
+  jsy_rules = YAML.safe_load(File.read(File.join(root, 'XM-Clash-JSY.yaml'))).fetch('rules')
+  payload = YAML.safe_load(File.read(File.join(root, 'rules', 'xm-rules.yaml'))).fetch('payload')
+  abort 'MULTI: rules/xm-rules.yaml payload must equal the 234 rules' unless payload == jsy_rules
+  segs = (0..18).map do |i|
+    file = format('rules/xm-seg-%02d.yaml', i)
+    body = YAML.safe_load(File.read(File.join(root, file))).fetch('payload')
+    abort "#{file}: empty segment" if body.empty?
+    abort "#{file}: MATCH/RULE-SET/SUB-RULE cannot live in a classical set" if body.any? { |r| r.match?(/\A(MATCH|RULE-SET|SUB-RULE),/) }
+    body
+  end
+  def self.multi_target(rule)
+    fields = rule.split(',')
+    return fields[1] if fields[0] == 'MATCH'
+    return fields[-2] if fields.last == 'no-resolve'
+    fields.last
+  end
+  runs = []
+  jsy_rules.each do |rule|
+    target = multi_target(rule)
+    if runs.empty? || runs[-1][0] != target || rule.start_with?('MATCH,')
+      runs << [target, [rule]]
+    else
+      runs[-1][1] << rule
+    end
+  end
+  abort 'MULTI: expected GEOIP then MATCH at the end' unless runs.size == 21 && runs[-2][1] == ['GEOIP,CN,DIRECT'] && runs.last[1] == ['MATCH,XM-日常上网']
+  runs_for_sets = runs[0..-3]
+  reattach = lambda do |line, policy|
+    fields = line.split(',')
+    fields.last == 'no-resolve' ? (fields[0..-2] + [policy, 'no-resolve']).join(',') : "#{line},#{policy}"
+  end
+  rebuilt = segs.flat_map.with_index { |body, i| body.map { |line| reattach.call(line, runs_for_sets[i][0]) } }
+  abort 'MULTI: segments do not rebuild the rules before GEOIP' unless rebuilt + ['GEOIP,CN,DIRECT', 'MATCH,XM-日常上网'] == jsy_rules
+  clash = YAML.safe_load(File.read(File.join(root, 'XM-Clash-MULTI.yaml')))
+  abort 'MULTI: fake-ip-filter drifted from the four schemes' unless clash.dig('dns', 'fake-ip-filter') == YAML.safe_load(File.read(File.join(root, 'XM-Clash-JSY.yaml'))).dig('dns', 'fake-ip-filter')
+  pp = clash.fetch('proxy-providers')
+  abort 'MULTI: proxy-providers must be exactly jsy and hy' unless pp.keys == %w[jsy hy]
+  abort 'MULTI: jsy url placeholder missing' unless pp['jsy']['url'] == 'PASTE_JSY_SUBSCRIPTION_URL' && pp['jsy']['type'] == 'http'
+  abort 'MULTI: hy url placeholder missing' unless pp['hy']['url'] == 'PASTE_HY_SUBSCRIPTION_URL' && pp['hy']['type'] == 'http'
+  rps = clash.fetch('rule-providers')
+  abort 'MULTI: expected 19 rule-providers' unless rps.keys == (0..18).map { |i| format('xm-seg-%02d', i) }
+  rps.each do |name, spec|
+    i = name[-2, 2].to_i
+    prefix = 'https' + '://raw.githubusercontent.com/symonxu/clash-rules/main/'
+    want = prefix + format('rules/xm-seg-%02d.yaml', i)
+    abort "#{name}: rule-provider must be classical http" unless spec['type'] == 'http' && spec['behavior'] == 'classical' && spec['url'] == want
+  end
+  want_rules = (0..18).map { |i| "RULE-SET,xm-seg-#{format('%02d', i)},#{runs_for_sets[i][0]}" } + ['GEOIP,CN,DIRECT', 'MATCH,XM-日常上网']
+  abort "MULTI: rules skeleton drifted #{clash.fetch('rules').inspect}" unless clash.fetch('rules') == want_rules
+  groups = clash.fetch('proxy-groups').map { |g| [g['name'], g] }.to_h
+  openbot = groups.fetch('XM-OpenBot')
+  abort 'MULTI: XM-OpenBot must use only the jsy provider' unless openbot['type'] == 'fallback' && openbot['use'] == ['jsy'] && !openbot.key?('include-all')
+  abort 'MULTI: XM-OpenBot filter order drifted' unless openbot['filter'] == '(^| )日本_01$`(^| )日本_07$`(^| )日本_05$`(^| )日本_08$`(^| )日本_06$`(^| )日本_04$`(^| )日本_02$`(^| )日本_03$'
+  web3 = groups.fetch('XM-Web3')
+  abort 'MULTI: XM-Web3 must prefer HY Korea/Vietnam/Indonesia' unless web3['proxies'] == ['HY-Web3', 'HY-Web3-备用']
+  %w[HY-Web3 HY-Web3-备用].each do |name|
+    abort "#{name} must use only hy" unless groups.fetch(name)['use'] == ['hy']
+    abort "#{name} filter matches a forbidden region" if groups.fetch(name)['filter'].match?(/美国|香港|新加坡|台湾|日本_/)
+  end
+  abort 'MULTI: daily groups must prefer hy then jsy' unless %w[XM-Google XM-AI XM-日常上网].all? { |n| groups.fetch(n)['proxies'] == ['HY-日本', 'JSY-日本'] }
+  abort 'MULTI: system update must prefer hy, then jsy, then DIRECT' unless groups.fetch('XM-系统更新')['proxies'] == ['HY-系统更新', 'JSY-系统更新', 'DIRECT']
+  %w[XM-Google XM-AI XM-OpenBot XM-Web3 XM-Bybit XM-日常上网 XM-Apple XM-Anki XM-系统更新].each do |name|
+    abort "MULTI: missing #{name}" unless groups.key?(name)
+  end
+  groups.each_value do |g|
+    next unless g['filter']
+    abort "#{g['name']} filter matches Hong Kong" if g['filter'].match?(/香港|Hong ?Kong|🇭🇰/)
+  end
+end
+
+check_multi(root)
 counts = FILES.map { |f| check_file(root, f) }
 marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
 abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
 puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 6 url-test 300s/10ms, XM-Anki manual select (Japan 1/2/3), XM-系统更新 select (DIRECT + Japan 1/2/3) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
+puts 'Validated XM-Clash-MULTI.yaml (jsy+hy providers, 19 classical rule-providers, no subscription URL).'

@@ -1,0 +1,4 @@
+payload:
+  - 'DOMAIN-SUFFIX,qq.com'
+  - 'DOMAIN-SUFFIX,weixin.com'
+  - 'DOMAIN-SUFFIX,wechat.com'
