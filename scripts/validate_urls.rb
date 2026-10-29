@@ -15,6 +15,8 @@ allowed_urls = Set.new([
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-HY.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-MESL.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-BOOST.yaml',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-SWY.yaml',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket.conf',
   'https://clash.md/zh/guide/ios',
   'https://clash.md/zh/guide/macos',
   'https://github.com/ProjectClash/Clash-Client',
@@ -29,7 +31,7 @@ Dir.chdir(root) do
     content = File.read(file, encoding: 'UTF-8')
     abort "Non-text tracked file: #{file}" unless content.valid_encoding? && !content.include?("\0")
     content.scan(%r{https?://[^\s<>"'`)\],，。；]+}).each do |url|
-      abort "Unexpected public URL in #{file}" unless allowed_urls.include?(url)
+      abort "Unexpected public URL in #{file}: #{url}" unless allowed_urls.include?(url)
     end
   end
 end

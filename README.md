@@ -1,6 +1,6 @@
 # XM 个人分流规则（Clash App）
 
-本仓库维护四份并行的规则配置，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。四份文件的 DNS、分组和**规则完全相同**，只有各组筛选节点的正则不同（各家节点命名不一样）：
+本仓库维护五份并行的 Clash 规则配置与一份 Shadowrocket（小火箭）规则配置，给 Clash App（「Clash - 基于规则的网络代理工具」，clash.md）在 iPhone、iPad 和 Mac 上共用。四份文件的 DNS、分组和**规则完全相同**，只有各组筛选节点的正则不同（各家节点命名不一样）：
 
 | 组合 | 节点来源 | 规则方案 | 配置链接 |
 | --- | --- | --- | --- |
@@ -8,8 +8,10 @@
 | 花云 | 花云订阅 | `XM-Clash-HY` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-HY.yaml |
 | MESL | MESL 订阅 | `XM-Clash-MESL` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-MESL.yaml |
 | Boost | Boost 订阅 | `XM-Clash-BOOST` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-BOOST.yaml |
+| 三文鱼（SWY） | 三文鱼订阅 | `XM-Clash-SWY` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-SWY.yaml |
+| 小火箭（Shadowrocket） | 任意订阅 | `XM-Shadowrocket` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket.conf |
 
-四个组合可以同时存在，哪家出问题就切到另一个组合。
+五个 Clash 组合可以同时存在，哪家出问题就切到另一个组合；小火箭用户可直接使用 `XM-Shadowrocket.conf`。
 
 另有一份规则方案 `XM-Clash-MULTI.yaml`：OpenBot 走极速云日本节点（OpenBot 的 UDP 在规则里直接拒绝，客户端走 TURN 的 TCP 443），Web3 极速云优先、花云整组垫底，其余组优先花云、极速云垫底。文件里没有订阅地址。用法见下方「一个配置挂两家订阅」。
 
@@ -30,6 +32,19 @@
 入口和模式的说明见 clash.md 文档：iPhone https://clash.md/zh/guide/ios ，Mac https://clash.md/zh/guide/macos 。节点来源与规则方案的组合方式以 App 开源代码为准：https://github.com/ProjectClash/Clash-Client 。
 
 Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash Verge），两个都会接管系统流量。
+
+## 在小火箭（Shadowrocket）里怎么用
+
+小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket.conf`，内置九大分流策略组与全部 234 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配三文鱼（SWY）等订阅中的节点：
+
+配置链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket.conf
+
+使用步骤：
+1. **添加节点订阅**：在小火箭主界面点击右上角 `+`，类型选择 `Subscribe`（订阅），粘贴三文鱼或其他机场的订阅地址，保存并更新出节点列表。
+2. **添加配置**：点击底部「配置」标签页，右上角点击 `+`。
+3. **输入配置链接**：在 URL 框中粘贴上面的规则链接，点击「下载」。
+4. **启用配置**：在「远程文件」中点击刚刚下载的 `XM-Shadowrocket.conf`，选择「使用配置」使其变为勾选状态。
+5. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
 
 ## 一个配置挂两家订阅
 
@@ -61,17 +76,17 @@ Mac 和 iPhone 步骤相同：
 
 各组用 `include-all: true` 引入订阅里的全部节点，按节点名正则 `filter` 筛选，再用 `exclude-filter` 剔除香港节点（`香港|HK|Hong Kong|🇭🇰`，不区分大小写）和「剩余流量」「套餐到期」「官网」等信息条目：
 
-| 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | MESL（`XM-Clash-MESL.yaml`） | Boost（`XM-Clash-BOOST.yaml`） | 类型 |
+| 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | MESL（`XM-Clash-MESL.yaml`） | Boost（`XM-Clash-BOOST.yaml`） | 三文鱼（`XM-Clash-SWY.yaml`） | 类型 |
 | --- | --- | --- | --- | --- | --- |
-| XM-Google | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | 日本 02–07 + 日本 08–12 家宽（不含 01 [0.3X]） | 日本1–日本8 | url-test |
-| XM-AI | 日本_* | 同上 | 同上 | 同上 | url-test |
-| XM-OpenBot | 日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（02/03/04 家里宽带刚测是死的，放备份） | 日本高级 IEPL 专线 1 → 2 → 3 | 日本 02 → 03 → 04（不要 01 [0.3X]，不要家宽） | 日本1 → 日本8 | fallback（失败才换，不跟 XM-AI 测速绑定） |
-| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | 马来西亚家宽、菲律宾、越南家宽、韩国、印度尼西亚（不含新加坡/台湾/香港/日本） | 日本1–8 + 马来西亚-3倍率（不含新加坡/台湾/香港/美国） | url-test |
-| XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 台湾 02 → 03 → 04/05 → 家宽 06–10（不含 01 [0.3X]） | 台湾1 → 台湾2 → 台湾3 → 台湾4 | 极速云、MESL、Boost fallback；花云 url-test |
-| XM-日常上网 | 日本_* | 同 XM-Google | 同 XM-Google | 同 XM-Google | url-test |
-| XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | 美国 01–03 | 美国1–美国3（不要美国4） | url-test |
-| XM-Anki | 日本_01 / 日本_02 / 日本_03 | 日本高级 IEPL 专线 1 / 2 / 3 | 日本 02 / 03 / 04 | 日本1 / 日本2 / 日本3 | select（手动选一个固定节点，避免同步中途切换） |
-| XM-系统更新 | DIRECT（默认）+ 日本_01–03 | DIRECT（默认）+ 日本高级 IEPL 专线 1–3 | DIRECT（默认）+ 日本 02–04 | DIRECT（默认）+ 日本1–日本3 | select（系统更新默认直连走大陆 CDN，失败可手动切日本） |
+| XM-Google | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | 日本 02–07 + 日本 08–12 家宽（不含 01 [0.3X]） | 日本1–日本8 | 日本-1–6 | url-test |
+| XM-AI | 日本_* | 同上 | 同上 | 同上 | 日本-1–6 | url-test |
+| XM-OpenBot | 日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（02/03/04 家里宽带刚测是死的，放备份） | 日本高级 IEPL 专线 1 → 2 → 3 | 日本 02 → 03 → 04（不要 01 [0.3X]，不要家宽） | 日本1 → 日本8 | 日本-1 → 6 → 【V6】日本-7/8 | fallback（失败才换，不跟 XM-AI 测速绑定） |
+| XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | 马来西亚家宽、菲律宾、越南家宽、韩国、印度尼西亚（不含新加坡/台湾/香港/日本） | 日本1–8 + 马来西亚-3倍率（不含新加坡/台湾/香港/美国） | 日本-1–6 + 韩国/印度/德国/英国/加拿大（不含新/台/港/美） | url-test |
+| XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 台湾 02 → 03 → 04/05 → 家宽 06–10（不含 01 [0.3X]） | 台湾1 → 台湾2 → 台湾3 → 台湾4 | 台湾家宽\|1.5X\|-1 → 【V6】台湾家宽\|1.5X\|-2 | 极速云、MESL、Boost、SWY fallback；花云 url-test |
+| XM-日常上网 | 日本_* | 同 XM-Google | 同 XM-Google | 同 XM-Google | 日本-1–6 | url-test |
+| XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | 美国 01–03 | 美国1–美国3（不要美国4） | 美国-1–3 | url-test |
+| XM-Anki | 日本_01 / 日本_02 / 日本_03 | 日本高级 IEPL 专线 1 / 2 / 3 | 日本 02 / 03 / 04 | 日本1 / 日本2 / 日本3 | 日本-1 / 日本-2 / 日本-3 | select（手动选一个固定节点，避免同步中途切换） |
+| XM-系统更新 | DIRECT（默认）+ 日本_01–03 | DIRECT（默认）+ 日本高级 IEPL 专线 1–3 | DIRECT（默认）+ 日本 02–04 | DIRECT（默认）+ 日本1–日本3 | DIRECT（默认）+ 日本-1–3 | select（系统更新默认直连走大陆 CDN，失败可手动切日本） |
 
 花云版多数组 6–7 个节点（XM-Web3 4 个，XM-Anki 3 个，XM-系统更新 DIRECT + 3 个）（同地区高级 + 标准），不用实验性节点；信息条目另外排除英文的 `Traffic` / `Expire`。
 
@@ -80,6 +95,7 @@ Mac 和 iPhone 步骤相同：
 - 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳。MESL 的 XM-Bybit 同样是 fallback（300 秒），从台湾 02 开始。
 - **XM-OpenBot**：fallback。极速云顺序是日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（02/03/04 在家里宽带上刚测是死的，所以放在备份位；回滚时把 filter 和校验期望改回 02 → 03 → 04）。花云仍是日本高级 1 → 2 → 3，MESL 仍是日本 02 → 03 → 04，Boost 是日本1 → 日本8。排第一的节点可用就一直用它，失败才换，不跟 XM-AI 的 url-test 绑定。只用于 `openbot.run`、`openbot.site`。
 - **MULTI 的 XM-OpenBot 例外**：用极速云日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03，并且 rules 里比另外四份多两条 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run|openbot.site)),REJECT`。原因是极速云 AnyTLS 的 UDP 转发撑不住 TURN（连续 15 次 STUN 掉了 6 次），把 UDP 拒掉后客户端改走 TURN 的 TCP 443，只借用极速云的 TCP 线路。花云故障期间 OpenBot 和 Web3 曾经全废（花云节点健康检查全挂），所以 MULTI 的两个组都以极速云为主、花云垫底。
+- 三文鱼（SWY）节点名形如：日本-1–6、台湾家宽|1.5X|-1、美国-1–6、韩国、印度、德国、英国、加拿大。香港节点及只有备用/信息节点不进任何组。规则链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-SWY.yaml
 - Boost 节点名不带国旗：日本1–8、台湾1–4、美国1–4、马来西亚-3倍率。香港1–12、新加坡1–8，以及英国/土耳其/阿根廷/澳洲倍率节点不进任何组。规则链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-BOOST.yaml
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。

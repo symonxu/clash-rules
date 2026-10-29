@@ -4,7 +4,7 @@ root = File.expand_path('..', __dir__)
 # XM-Clash-JSY.yaml（极速云）与 XM-Clash-HY.yaml（花云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置，节点来自 App 里另外导入的订阅。
 # 四份文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；各家节点命名不同，分组筛选各用一套虚构样例检查。
 # 不含节点或订阅；四份用 include-all + filter + exclude-filter。XM-Clash-MULTI.yaml 另写显示名，rules 与极速云逐字节一致。
-FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml', 'XM-Clash-MESL.yaml', 'XM-Clash-BOOST.yaml'].freeze
+FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml', 'XM-Clash-MESL.yaml', 'XM-Clash-BOOST.yaml', 'XM-Clash-SWY.yaml'].freeze
 GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-OpenBot', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
@@ -100,6 +100,26 @@ BOOST_EXPECTED = {
 BOOST_SAMPLES = boost_jp + boost_tw + (1..4).map { |n| "美国#{n}" } +
   (1..12).map { |n| "香港#{n}" } + (1..8).map { |n| "新加坡#{n}" } +
   ['马来西亚-3倍率', '英国-3倍率', '土耳其-5倍率', '阿根廷-5倍率', '澳洲-3倍率']
+# SWY（三文鱼）：节点名形如「日本-1」「台湾家宽|1.5X|-1」「韩国」。
+swy_jp = (1..6).map { |n| "日本-#{n}" }
+swy_jp_all = swy_jp + (7..8).map { |n| "【V6】日本-#{n}" }
+swy_tw = ['台湾家宽|1.5X|-1', '【V6】台湾家宽|1.5X|-2']
+swy_us = (1..3).map { |n| "美国-#{n}" }
+swy_web3 = swy_jp + %w[韩国 印度 德国 英国 加拿大]
+SWY_EXPECTED = {
+  'XM-Google' => swy_jp, 'XM-AI' => swy_jp, 'XM-日常上网' => swy_jp,
+  'XM-OpenBot' => swy_jp_all,
+  'XM-Web3' => swy_web3,
+  'XM-Bybit' => swy_tw,
+  'XM-Apple' => swy_us,
+  'XM-Anki' => swy_jp.first(3),
+  'XM-系统更新' => swy_jp.first(3)
+}.freeze
+SWY_SAMPLES = swy_jp_all + swy_tw + (1..6).map { |n| "美国-#{n}" } +
+  %w[韩国 印度 德国 英国 加拿大] + (1..4).map { |n| "新加坡-#{n}" } +
+  (1..10).map { |n| "香港-#{n}" } + (11..14).map { |n| "【V6】香港-#{n}" } +
+  ['香港家宽|1.5X|-01', '香港家宽|1.5X|-02', '【备用】|香港-1', '【备用】|日本-1', '【备用】|美国-1', '【备用】|新加坡-1', '只有备用节点的换官网推荐的客户端']
+
 PROFILES = {
   'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
@@ -108,7 +128,9 @@ PROFILES = {
   'XM-Clash-MESL.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: MESL_EXPECTED, samples: MESL_SAMPLES, info: INFO,
                             bybit_order: [['🇨🇳 台湾 02'], ['🇨🇳 台湾 03']] },
   'XM-Clash-BOOST.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: BOOST_EXPECTED, samples: BOOST_SAMPLES, info: INFO,
-                             bybit_order: [['台湾1'], ['台湾2']] }
+                             bybit_order: [['台湾1'], ['台湾2']] },
+'XM-Clash-SWY.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: SWY_EXPECTED, samples: SWY_SAMPLES, info: INFO + ['只有备用节点的换官网推荐的客户端', '【备用】|香港-1'],
+                           bybit_order: [['台湾家宽|1.5X|-1'], ['【V6】台湾家宽|1.5X|-2']] },
 }.freeze
 
 def check_file(root, file)
