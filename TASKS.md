@@ -23,6 +23,11 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-30**：花云（HY）订阅切换 Trojan 协议适配与兼容。
+  - 节点命名审计：花云 Trojan 订阅节点包含国旗 Emoji（`🇨🇳 台湾`、`🇯🇵 日本`、`🇺🇸 美国`、`🇸🇬 新加坡`、`🇭🇰 香港`，高级/标准 IEPL 专线）。
+  - 正则与排港校验：`XM-Clash-HY.yaml` 与 `XM-Shadowrocket.conf` 现有正则对带国旗 Emoji 完全向前兼容并有效剔除实验性与香港节点；严格排港机制（`exclude-filter`）正常生效。
+  - 代理来源名称兼容：文档与指引适配 `Flower_SS / Flower_Trojan`，并在客户端说明中明确刷新与添加代理来源步骤。
+  - 测试与校验：`ruby scripts/validate_rules.rb` 全量通过（YAML、规则一致性、Shadowrocket 语法、URL 白名单 100% PASS）。
 - [x] **2026-10-29**：新增三文鱼（SWY）配置 `XM-Clash-SWY.yaml` 与小火箭配置文件 `XM-Shadowrocket.conf`。
   - 适配三文鱼订阅（swywl.com）全部 54 个节点：日本-1–6、台湾家宽|1.5X|-1、美国-1–6、韩国、印度、德国、英国、加拿大等；严格排除香港节点（CI 禁止）、只有备用及信息条目。
   - `XM-Shadowrocket.conf`：标准小火箭 `.conf` 格式，支持 `[General]`（本地 DNS 223.5.5.5 / 119.29.29.29、skip-proxy、tun-excluded-routes）、`[Proxy Group]`（九大分流策略组，通过 `policy-regex-filter` 自动匹配节点）、`[Rule]`（全量 234 条分流规则 + QUIC 拦截 + FINAL 收尾）。
