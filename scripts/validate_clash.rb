@@ -3,7 +3,7 @@ require 'yaml'
 root = File.expand_path('..', __dir__)
 # XM-Clash-JSY.yaml（极速云）与 XM-Clash-HY.yaml（花云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置，节点来自 App 里另外导入的订阅。
 # 五份单订阅文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；各家节点命名不同，分组筛选各用一套虚构样例检查。
-# 花云另有 hosts：订阅节点域名 *.aws-agent.org 改写到 *.apt-agent.org，并用加密 DNS 解析。Clash 组合规则方案时丢掉订阅里的 hosts。
+# 花云另有 hosts：3 个 *.aws-agent.org 写成国内入口 IP。Clash 组合规则方案时丢掉订阅里的 hosts。
 # 不含节点或订阅；四份用 include-all + filter + exclude-filter。XM-Clash-MULTI.yaml 另写显示名，rules 与极速云逐字节一致。
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml', 'XM-Clash-MESL.yaml', 'XM-Clash-BOOST.yaml', 'XM-Clash-SWY.yaml'].freeze
 GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-OpenBot', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
@@ -150,13 +150,14 @@ def check_file(root, file)
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be fake-ip" unless dns['enhanced-mode'] == 'fake-ip'
   if file == 'XM-Clash-HY.yaml'
-    hy_ns = %w[tls://119.29.29.29 tls://223.5.5.5 https://dns.pub/dns-query https://dns.alidns.com/dns-query]
-    abort "#{file}: DNS must use Flower encrypted nameservers, with plaintext 223/119 only as default-nameserver" unless dns['enable'] == true && dns['ipv6'] == false && dns['use-hosts'] == true && dns['nameserver'] == hy_ns && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+    hy_ns = %w[tls://223.5.5.5 https://dns.alidns.com/dns-query]
+    abort "#{file}: DNS must use the Wi-Fi-reachable encrypted nameservers, with plaintext 223/119 only as default-nameserver" unless dns['enable'] == true && dns['ipv6'] == false && dns['use-hosts'] == true && dns['nameserver'] == hy_ns && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+    abort "#{file}: proxy-server-nameserver must be UDP 223.5.5.5 / 119.29.29.29" unless dns['proxy-server-nameserver'] == %w[223.5.5.5 119.29.29.29]
     abort "#{file}: fake-ip-filter missing +.apt-agent.org" unless dns.fetch('fake-ip-filter').include?('+.apt-agent.org')
     expected_hosts = {
-      '0bc52bj2-10e0.aws-agent.org' => 'bad18bj2-1f25.apt-agent.org',
-      'e3585sh0-3ad5.aws-agent.org' => '9a558sh8-8de9.apt-agent.org',
-      'fd025gz8-c617.aws-agent.org' => 'b36d5gz0-2ac1.apt-agent.org'
+      '0bc52bj2-10e0.aws-agent.org' => '116.242.224.8',
+      'e3585sh0-3ad5.aws-agent.org' => '180.188.20.131',
+      'fd025gz8-c617.aws-agent.org' => '119.147.195.213'
     }
     abort "#{file}: hosts must map the three Flower entrances" unless clash['hosts'] == expected_hosts
   else
