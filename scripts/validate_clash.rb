@@ -2,7 +2,8 @@
 require 'yaml'
 root = File.expand_path('..', __dir__)
 # XM-Clash-JSY.yaml（极速云）与 XM-Clash-HY.yaml（花云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置，节点来自 App 里另外导入的订阅。
-# 四份文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；各家节点命名不同，分组筛选各用一套虚构样例检查。
+# 五份单订阅文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；各家节点命名不同，分组筛选各用一套虚构样例检查。
+# 花云另有 hosts：订阅节点域名 *.aws-agent.org 改写到 *.apt-agent.org，并用加密 DNS 解析。Clash 组合规则方案时丢掉订阅里的 hosts。
 # 不含节点或订阅；四份用 include-all + filter + exclude-filter。XM-Clash-MULTI.yaml 另写显示名，rules 与极速云逐字节一致。
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml', 'XM-Clash-MESL.yaml', 'XM-Clash-BOOST.yaml', 'XM-Clash-SWY.yaml'].freeze
 GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-OpenBot', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
@@ -140,13 +141,27 @@ PROFILES = {
 def check_file(root, file)
   prof = PROFILES.fetch(file)
   clash = YAML.safe_load(File.read(File.join(root, file)))
-  abort "#{file}: unexpected top-level fields" unless clash.keys.sort == %w[mode log-level ipv6 unified-delay tcp-concurrent geox-url profile dns proxy-groups rules].sort
+  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent geox-url profile dns proxy-groups rules]
+  expected_keys << 'hosts' if file == 'XM-Clash-HY.yaml'
+  abort "#{file}: unexpected top-level fields" unless clash.keys.sort == expected_keys.sort
   abort "#{file}: must not contain nodes or subscriptions" if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
   abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
   abort "#{file}: geox-url must be exactly the jsDelivr MetaCubeX mirror" unless clash['geox-url'] == { 'geoip' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat', 'geosite' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat', 'mmdb' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb' }
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be fake-ip" unless dns['enhanced-mode'] == 'fake-ip'
-  abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+  if file == 'XM-Clash-HY.yaml'
+    hy_ns = %w[tls://119.29.29.29 tls://223.5.5.5 https://dns.pub/dns-query https://dns.alidns.com/dns-query]
+    abort "#{file}: DNS must use Flower encrypted nameservers, with plaintext 223/119 only as default-nameserver" unless dns['enable'] == true && dns['ipv6'] == false && dns['use-hosts'] == true && dns['nameserver'] == hy_ns && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+    abort "#{file}: fake-ip-filter missing +.apt-agent.org" unless dns.fetch('fake-ip-filter').include?('+.apt-agent.org')
+    expected_hosts = {
+      '0bc52bj2-10e0.aws-agent.org' => 'bad18bj2-1f25.apt-agent.org',
+      'e3585sh0-3ad5.aws-agent.org' => '9a558sh8-8de9.apt-agent.org',
+      'fd025gz8-c617.aws-agent.org' => 'b36d5gz0-2ac1.apt-agent.org'
+    }
+    abort "#{file}: hosts must map the three Flower entrances" unless clash['hosts'] == expected_hosts
+  else
+    abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+  end
   apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
   abort "#{file}: nameserver-policy must only send Apple update domains to DoH 223.5.5.5 / doh.pub" unless dns['nameserver-policy'] == { apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query] }
   %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net +.openbot.run +.openbot.site].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
@@ -219,8 +234,6 @@ def check_file(root, file)
     if type == 'AND'
       if rule == QUIC_RULE
         condition, target = 'quic', 'REJECT'
-      elsif file == 'XM-Clash-HY.yaml' && OPENBOT_UDP_RULES.include?(rule)
-        condition, target = rule, 'REJECT'
       else
         abort "#{file}: unsupported AND rule #{rule}"
       end
@@ -269,18 +282,7 @@ def check_file(root, file)
   openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-OpenBot" }
   abort 'Clash: OpenBot must use XM-OpenBot before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort "#{file}: OpenBot domains must only use XM-OpenBot or REJECT" unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-OpenBot', ',REJECT') }
-  if file == 'XM-Clash-HY.yaml'
-    abort "#{file}: must include OpenBot UDP reject rules" unless OPENBOT_UDP_RULES.all? { |r| rules.include?(r) }
-    OPENBOT_UDP_RULES.each do |r|
-      abort "#{file}: #{r} must appear exactly once" unless rules.count(r) == 1
-      domain = r[/DOMAIN-SUFFIX,([^)]+)/, 1]
-      domain_rule = "DOMAIN-SUFFIX,#{domain},XM-OpenBot"
-      abort "#{file}: #{r} must precede #{domain_rule}" unless rules.index(r) < rules.index(domain_rule).to_i
-      abort "#{file}: #{r} must come after the QUIC reject" unless rules.index(QUIC_RULE) < rules.index(r)
-    end
-  else
-    abort "#{file}: OpenBot UDP reject rules must only be in HY and MULTI" if OPENBOT_UDP_RULES.any? { |r| rules.include?(r) }
-  end
+  abort "#{file}: OpenBot UDP reject rules belong in MULTI only" if OPENBOT_UDP_RULES.any? { |r| rules.include?(r) }
   anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
   abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
@@ -314,8 +316,8 @@ def check_file(root, file)
 end
 
 # MULTI 是规则方案：分组直接写极速云、花云的显示名。不进 FILES（那四份用 include-all + filter）。
-# MULTI 的 rules 与极速云一致，只多两条 OpenBot 的 UDP 拒绝规则：花云不转发 UDP，先 REJECT 让客户端立刻退到 TCP 443。
-# 这两条只存在于 MULTI，四份单订阅配置的 rules 仍保持逐字节一致。
+# MULTI 的 rules 与极速云一致，只多两条 OpenBot 的 UDP 拒绝规则：极速云 AnyTLS 的 UDP 转发撑不住 TURN，先 REJECT 让客户端立刻退到 TCP 443。
+# 这两条只存在于 MULTI，五份单订阅配置的 rules 仍保持逐字节一致。
 HY_JP = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" } + (1..4).map { |n| "🇯🇵 日本标准 IEPL 专线 #{n}" }
 JSY_JP = %w[01 07 05 08 06 04 02 03].map { |n| "🇯🇵 日本_#{n}" }
 HY_JP3 = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
@@ -393,15 +395,7 @@ counts = FILES.map { |f| check_file(root, f) }
 marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
-identical_files = FILES - ['XM-Clash-HY.yaml']
-identical_texts = identical_files.map { |f| File.read(File.join(root, f)) }
-abort "Clash: rules sections of #{identical_files.join(', ')} must be byte-identical" unless identical_texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
+abort "Clash: rules sections of #{FILES.join(', ')} must be byte-identical" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
 
-hy = YAML.safe_load(File.read(File.join(root, 'XM-Clash-HY.yaml')))
-jsy = YAML.safe_load(File.read(File.join(root, 'XM-Clash-JSY.yaml')))
-hy_rules = hy.fetch('rules')
-jsy_rules = jsy.fetch('rules')
-abort 'HY: rules must equal JSY rules plus the two OpenBot UDP rejects' unless hy_rules.reject { |r| OPENBOT_UDP_RULES.include?(r) } == jsy_rules
-
-puts "Validated #{FILES.join(' + ')}: JSY/MESL/BOOST/SWY identical #{counts[0]} rules; HY #{counts[1]} rules (expanded XM-OpenBot 7 Japan nodes + 2 UDP rejects)."
+puts "Validated #{FILES.join(' + ')}: identical #{counts[0]} rules; HY has Flower hosts and encrypted DNS."
 puts 'Validated XM-Clash-MULTI.yaml (explicit JSY+HY names, inline 234 rules + 2 OpenBot UDP rejects, XM-OpenBot on JSY Japan, XM-Web3 JSY-first with HY fallback, no providers, no subscription URL).'
