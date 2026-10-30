@@ -48,17 +48,20 @@ dns:
     - 223.5.5.5
     - 119.29.29.29
   nameserver:
-    - tls://119.29.29.29
     - tls://223.5.5.5
-    - https://dns.pub/dns-query
     - https://dns.alidns.com/dns-query
+  # 节点域名不走上面的 DoT。119.29.29.29 的 853 在家庭宽带上会挂满健康检查的 5 秒。
+  proxy-server-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
   nameserver-policy:
     '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
-# 花云订阅把节点域名写成 *.aws-agent.org，再用 hosts 指到 *.apt-agent.org。家庭 Wi-Fi 上明文 DNS 解析不到这条国内入口。
+# 花云节点域名 *.aws-agent.org 在家庭宽带上会解析到 147.90.*，这些地址端口超时。
+# 下面三个地址是对应 *.apt-agent.org 今天在家里解析到的国内入口，TCP 能连上。入口 IP 变了要一起改。
 hosts:
-  0bc52bj2-10e0.aws-agent.org: bad18bj2-1f25.apt-agent.org
-  e3585sh0-3ad5.aws-agent.org: 9a558sh8-8de9.apt-agent.org
-  fd025gz8-c617.aws-agent.org: b36d5gz0-2ac1.apt-agent.org
+  0bc52bj2-10e0.aws-agent.org: 116.242.224.8
+  e3585sh0-3ad5.aws-agent.org: 180.188.20.131
+  fd025gz8-c617.aws-agent.org: 119.147.195.213
 proxy-groups:
   # 花云：每组 6–7 个节点（同地区高级 1–3 + 标准），全部 url-test 自动选延迟最低；不用实验性和香港节点。
   - name: XM-Google
