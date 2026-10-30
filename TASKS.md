@@ -11,7 +11,7 @@
 
 - **最近更新端**：`OpenBot clash-rules` (2026-10-28)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：极速云 `XM-Clash-JSY.yaml`、花云 `XM-Clash-HY.yaml`、MESL `XM-Clash-MESL.yaml` 与 Boost `XM-Clash-BOOST.yaml` 的 rules 保持逐字节一致。DNS 统一采用 fake-ip 模式（223.5.5.5 / 119.29.29.29 + 完整 fake-ip-filter）。`XM-Clash-MULTI.yaml` 的 rules 与它们相同，只多两条 OpenBot 的 UDP 拒绝规则；它的 `XM-OpenBot` 走极速云日本（01→07→05→08→06→04→02→03，UDP 被规则拒掉走 TCP），`XM-Web3` 极速云优先、花云整组垫底。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`（极速云 fallback：日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03）；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
+- **当前运行状态**：极速云 `XM-Clash-JSY.yaml`、MESL `XM-Clash-MESL.yaml`、Boost `XM-Clash-BOOST.yaml` 与三文鱼 `XM-Clash-SWY.yaml` 的 rules 保持逐字节一致；花云 `XM-Clash-HY.yaml` 与 `XM-Clash-MULTI.yaml` 包含两条 OpenBot UDP 拒绝规则以加速回退 TCP 443。DNS 统一采用 fake-ip 模式（223.5.5.5 / 119.29.29.29 + 完整 fake-ip-filter）。`XM-Clash-MULTI.yaml` 的 rules 与它们相同，只多两条 OpenBot 的 UDP 拒绝规则；它的 `XM-OpenBot` 走极速云日本（01→07→05→08→06→04→02→03，UDP 被规则拒掉走 TCP），`XM-Web3` 极速云优先、花云整组垫底。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`（极速云 fallback：日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03）；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
 
 ---
 
@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-30**：修复 `XM-Clash-HY.yaml` 在家庭 Wi-Fi 下 OpenBot 连接超时。① `XM-OpenBot` 分组候选节点过滤正则扩充为日本高级 1–3 + 日本标准 1–4（共 7 个节点，按高级在前标准在后 fallback）；② rules 在 `DOMAIN-SUFFIX,openbot.run,XM-OpenBot` 之前插入两条 UDP 拒绝规则（`AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT` 和 `...openbot.site,REJECT`），强制客户端立刻回退到 TCP 443，防止 UDP WebRTC/TURN 报文在专线 NAT 穿透丢包超时。校验脚本 `scripts/validate_clash.rb` 同步更新断言（HY rules 允许这两条 UDP REJECT，单订阅 JSY/MESL/BOOST/SWY 仍保持逐字节一致）。回滚：把 `XM-Clash-HY.yaml` 的 filter 还原为高级 1–3，删去两条 UDP REJECT 规则，并将 `scripts/validate_clash.rb` 校验还原。
 - [x] **2026-10-30**：修复花云 `XM-Clash-HY.yaml` 在家庭 Wi-Fi 宽带下无法连接的问题，DNS 还原为标准 fake-ip 模式。
   - 问题根因：之前采用的 `redir-host` + 境外 DoH/DoT（8.8.8.8 / 1.1.1.1）在家庭 Wi-Fi 环境下遭到污染与阻断，导致域名解析彻底失败；还原为 fake-ip 后由远端节点解析即可恢复正常。
   - DNS 配置还原：`enhanced-mode: fake-ip`、`fake-ip-range: 198.18.0.1/16`、包含 `+.openbot.run` 与 `+.openbot.site` 的完整 `fake-ip-filter`，`nameserver` 与 `default-nameserver` 均为 `223.5.5.5` 与 `119.29.29.29`。

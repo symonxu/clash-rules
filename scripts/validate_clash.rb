@@ -7,6 +7,10 @@ root = File.expand_path('..', __dir__)
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml', 'XM-Clash-MESL.yaml', 'XM-Clash-BOOST.yaml', 'XM-Clash-SWY.yaml'].freeze
 GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-OpenBot', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
+OPENBOT_UDP_RULES = [
+  'AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT',
+  'AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.site)),REJECT'
+].freeze
 TEST_URL = 'https://www.gstatic.com/generate_204'.freeze
 
 # 任何分组都不得包含香港节点。每组必须有 exclude-filter，且它要能剔除下面这些（虚构的）香港节点名；
@@ -47,7 +51,7 @@ hy_pick = ->(flag, place, std) { (1..3).map { |n| "#{flag} #{place}高级 IEPL �
 hy_jp_pick = hy_pick.call('🇯🇵', '日本', 4)
 HY_EXPECTED = {
   'XM-Google' => hy_jp_pick, 'XM-AI' => hy_jp_pick, 'XM-日常上网' => hy_jp_pick,
-  'XM-OpenBot' => (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" },
+  'XM-OpenBot' => hy_jp_pick,
   # Web3：Hyperliquid HIP-4 限制新加坡/台湾、日本隐藏预测市场，只用韩国标准 1–2、越南标准 1、印尼标准 1（花云这三地没有高级线路）。
   'XM-Web3' => ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1'],
   'XM-Bybit' => hy_pick.call('🇨🇳', '台湾', 3),
@@ -213,9 +217,13 @@ def check_file(root, file)
     abort "Clash: empty field in #{rule}" if fields.any?(&:empty?)
     type = fields.first
     if type == 'AND'
-      # 只允许这一条组合规则：屏蔽 QUIC。
-      abort "Clash: unsupported AND rule #{rule}" unless rule == QUIC_RULE
-      condition, target = 'quic', 'REJECT'
+      if rule == QUIC_RULE
+        condition, target = 'quic', 'REJECT'
+      elsif file == 'XM-Clash-HY.yaml' && OPENBOT_UDP_RULES.include?(rule)
+        condition, target = rule, 'REJECT'
+      else
+        abort "#{file}: unsupported AND rule #{rule}"
+      end
     elsif type == 'MATCH'
       abort 'Clash: MATCH must be the last rule' unless i == rules.size - 1 && fields.size == 2
       condition, target = nil, fields[1]
@@ -260,7 +268,19 @@ def check_file(root, file)
   abort 'Clash: Notion domains must only use XM-AI' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI') }
   openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-OpenBot" }
   abort 'Clash: OpenBot must use XM-OpenBot before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
-  abort 'Clash: OpenBot domains must only use XM-OpenBot' unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-OpenBot') }
+  abort "#{file}: OpenBot domains must only use XM-OpenBot or REJECT" unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-OpenBot', ',REJECT') }
+  if file == 'XM-Clash-HY.yaml'
+    abort "#{file}: must include OpenBot UDP reject rules" unless OPENBOT_UDP_RULES.all? { |r| rules.include?(r) }
+    OPENBOT_UDP_RULES.each do |r|
+      abort "#{file}: #{r} must appear exactly once" unless rules.count(r) == 1
+      domain = r[/DOMAIN-SUFFIX,([^)]+)/, 1]
+      domain_rule = "DOMAIN-SUFFIX,#{domain},XM-OpenBot"
+      abort "#{file}: #{r} must precede #{domain_rule}" unless rules.index(r) < rules.index(domain_rule).to_i
+      abort "#{file}: #{r} must come after the QUIC reject" unless rules.index(QUIC_RULE) < rules.index(r)
+    end
+  else
+    abort "#{file}: OpenBot UDP reject rules must only be in HY and MULTI" if OPENBOT_UDP_RULES.any? { |r| rules.include?(r) }
+  end
   anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
   abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
@@ -304,10 +324,7 @@ JSY_JP3 = %w[01 02 03].map { |n| "🇯🇵 日本_#{n}" }
 MULTI_WEB3 = (1..8).map { |n| '🇯🇵 日本_%02d' % n } + ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'] + ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1', '🇲🇾 马来西亚标准 IEPL 专线 1', '🇵🇭 菲律宾标准 IEPL 专线 1', '🇹🇭 泰国标准 IEPL 专线 1'].freeze
 MULTI_BYBIT = (1..3).map { |n| "🇨🇳 台湾高级 IEPL 专线 #{n}" } + (1..3).map { |n| "🇨🇳 台湾标准 IEPL 专线 #{n}" } + (1..5).map { |n| '🇹🇼 台湾_%02d' % n }
 MULTI_APPLE = (1..3).map { |n| "🇺🇸 美国高级 IEPL 专线 #{n}" } + (1..4).map { |n| "🇺🇸 美国标准 IEPL 专线 #{n}" } + (1..3).map { |n| '🇺🇸 美国_%02d' % n }
-MULTI_ONLY_RULES = [
-  'AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT',
-  'AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.site)),REJECT'
-].freeze
+MULTI_ONLY_RULES = OPENBOT_UDP_RULES
 MULTI_EXPECTED = {
   'XM-Google' => HY_JP + JSY_JP,
   'XM-AI' => HY_JP + JSY_JP,
@@ -376,6 +393,15 @@ counts = FILES.map { |f| check_file(root, f) }
 marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
-abort "Clash: #{FILES[1]} rules section must be byte-identical to #{FILES[0]}" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
-puts "Validated #{FILES.join(' + ')} (identical rules): JSY 5 url-test + XM-Bybit fallback, HY 6 url-test 300s/10ms, XM-Anki manual select (Japan 1/2/3), XM-系统更新 select (DIRECT + Japan 1/2/3) (include-all + filter + exclude-filter, no HK, no nodes or subscriptions), #{counts.first} rules."
+identical_files = FILES - ['XM-Clash-HY.yaml']
+identical_texts = identical_files.map { |f| File.read(File.join(root, f)) }
+abort "Clash: rules sections of #{identical_files.join(', ')} must be byte-identical" unless identical_texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
+
+hy = YAML.safe_load(File.read(File.join(root, 'XM-Clash-HY.yaml')))
+jsy = YAML.safe_load(File.read(File.join(root, 'XM-Clash-JSY.yaml')))
+hy_rules = hy.fetch('rules')
+jsy_rules = jsy.fetch('rules')
+abort 'HY: rules must equal JSY rules plus the two OpenBot UDP rejects' unless hy_rules.reject { |r| OPENBOT_UDP_RULES.include?(r) } == jsy_rules
+
+puts "Validated #{FILES.join(' + ')}: JSY/MESL/BOOST/SWY identical #{counts[0]} rules; HY #{counts[1]} rules (expanded XM-OpenBot 7 Japan nodes + 2 UDP rejects)."
 puts 'Validated XM-Clash-MULTI.yaml (explicit JSY+HY names, inline 234 rules + 2 OpenBot UDP rejects, XM-OpenBot on JSY Japan, XM-Web3 JSY-first with HY fallback, no providers, no subscription URL).'
