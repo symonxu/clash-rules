@@ -70,11 +70,11 @@ proxy-groups:
     interval: 300
     tolerance: 10
     timeout: 5000
-  # OpenBot：fallback，日本高级 1 → 2 → 3。失败才换，不跟 XM-AI 测速绑定。
+  # OpenBot：fallback，日本高级 1 → 2 → 3，然后日本标准 1 → 2 → 3 → 4。失败才换，不跟 XM-AI 测速绑定。
   - name: XM-OpenBot
     type: fallback
     include-all: true
-    filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$'
+    filter: '(^| )日本高级 IEPL 专线 1$`(^| )日本高级 IEPL 专线 2$`(^| )日本高级 IEPL 专线 3$`(^| )日本标准 IEPL 专线 1$`(^| )日本标准 IEPL 专线 2$`(^| )日本标准 IEPL 专线 3$`(^| )日本标准 IEPL 专线 4$'
     exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|traffic|expire|香港|HK|Hong ?Kong|🇭🇰'
     url: https://www.gstatic.com/generate_204
     interval: 300
@@ -259,6 +259,9 @@ rules:
   - DOMAIN-SUFFIX,slackb.com,XM-AI
   - DOMAIN-SUFFIX,slackhq.com,XM-AI
   # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-OpenBot。fallback，不跟 XM-AI 测速绑定。
+  # 上面两条先掐掉 UDP：TURN 的 UDP 在专线 NAT 上易丢包超时，直接 REJECT 让客户端立刻退到 TCP 443。
+  - AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT
+  - AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.site)),REJECT
   - DOMAIN-SUFFIX,openbot.run,XM-OpenBot
   - DOMAIN-SUFFIX,openbot.site,XM-OpenBot
   - DOMAIN-SUFFIX,google.com,XM-Google
