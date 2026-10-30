@@ -7,7 +7,6 @@ allowed_urls = Set.new([
   'https://www.gstatic.com/generate_204',
   'https://223.5.5.5/dns-query',
   'https://doh.pub/dns-query',
-  'https://8.8.8.8/dns-query',
   'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat',
   'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat',
   'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb',
