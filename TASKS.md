@@ -11,7 +11,7 @@
 
 - **最近更新端**：`OpenBot` (2026-10-30)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：五份单订阅配置（JSY / HY / MESL / BOOST / SWY）的 rules 逐字节一致。只有 `XM-Clash-MULTI.yaml` 多两条 OpenBot UDP 拒绝规则。花云 `XM-Clash-HY.yaml` 用 hosts 把 3 个 `*.aws-agent.org` 写成国内入口 IP（`116.242.224.8`、`180.188.20.131`、`119.147.195.213`），`nameserver` 为 `tls://223.5.5.5` 与 `https://dns.alidns.com/dns-query`，`proxy-server-nameserver` 为明文 223.5.5.5 / 119.29.29.29，fake-ip 保留。其余四份和 MULTI 仍是明文国内 DNS。`XM-Clash-MULTI.yaml` 的 `XM-OpenBot` 走极速云日本（01→07→05→08→06→04→02→03，UDP 被规则拒掉走 TCP），`XM-Web3` 极速云优先、花云整组垫底。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
+- **当前运行状态**：两份 Clash 配置（`XM-Clash-HY.yaml` / `XM-Clash-JSY.yaml`）的 rules 逐字节一致。花云 `XM-Clash-HY.yaml` 用 hosts 把 3 个 `*.aws-agent.org` 写成国内入口 IP（`116.242.224.8`、`180.188.20.131`、`119.147.195.213`），`nameserver` 为 `tls://223.5.5.5` 与 `https://dns.alidns.com/dns-query`，`proxy-server-nameserver` 为明文 223.5.5.5 / 119.29.29.29，fake-ip 保留。其余四份和 MULTI 仍是明文国内 DNS。`XM-Clash-MULTI.yaml` 的 `XM-OpenBot` 走极速云日本（01→07→05→08→06→04→02→03，UDP 被规则拒掉走 TCP），`XM-Web3` 极速云优先、花云整组垫底。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
 
 ---
 
@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-31**：按用户指令清理未在使用的机场订阅配置，删掉 `XM-Clash-BOOST.yaml`、`XM-Clash-MESL.yaml`、`XM-Clash-SWY.yaml` 及 `XM-Clash-MULTI.yaml`，仅保留核心在用的两份配置 `XM-Clash-HY.yaml`（花云）与 `XM-Clash-JSY.yaml`（极速云），以及 `XM-Shadowrocket.conf`（小火箭）。校验脚本及文档同步精简。
 - [x] **2026-10-31**：在 XM-AI 分组中补齐 Notion 官方 AI 域名与状态服务（`notion.ai`、`notion-status.com`），规则由 234 条扩增至 236 条。六份配置文件（JSY / HY / MESL / BOOST / SWY / MULTI）与小火箭配置同步更新并通过 CI 全量校验。
 - [x] **2026-10-30**：上一版 hosts 写成 `*.apt-agent.org` 之后，家庭 Wi-Fi 上节点仍全部超时。实测 `147.90.*` 的节点端口超时，对应国内入口 `116.242.224.8` / `180.188.20.131` / `119.147.195.213` 同端口能连上；`tls://119.29.29.29`（853）在这条宽带上超时，会吃掉 5 秒健康检查。`hosts` 改为这三个 IP，`nameserver` 去掉挂死的 DoT，`proxy-server-nameserver` 用明文 223.5.5.5 / 119.29.29.29。
 - [x] **2026-10-30**：花云个人规则在家庭 Wi-Fi 上不通、蜂窝上正常。对照花云订阅自带配置：节点域名是 `*.aws-agent.org`，hosts 改写到 `*.apt-agent.org`，并用 DoT/DoH 解析。Clash 组合规则方案时丢掉订阅里的 hosts，个人规则又用明文 DNS，所以家庭宽带解析到公网地址、连不上国内入口。`XM-Clash-HY.yaml` 写入这 3 条 hosts，`nameserver` 改成 `tls://119.29.29.29`、`tls://223.5.5.5`、`https://dns.pub/dns-query`、`https://dns.alidns.com/dns-query`，fake-ip-filter 加 `+.apt-agent.org`，并删掉花云上那两条 OpenBot UDP REJECT（MULTI 保留）。分组和 234 条 rules 没动。订阅轮换这 3 个入口域名时要一起改 hosts。
