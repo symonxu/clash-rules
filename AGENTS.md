@@ -34,5 +34,5 @@
 3. **每次修改必跑校验**：
    - 修改任何文件后必须自动运行 `ruby scripts/validate_rules.rb`。
 
-- Notion 全家（notion.so/.com/.site/.new、notion-static.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
+- Notion 全家（notion.so/.com/.site/.new/.ai、notion-static.com、notion-status.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
 - OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-OpenBot（fallback，不跟 XM-AI 测速绑定），排在 GEOIP,CN 之前，CI 校验。只有 `XM-Clash-MULTI.yaml` 里这两条域名之前包含两条 UDP REJECT（`AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run))` 和 `...openbot.site`），让客户端在极速云专线 NAT 下遇到 UDP 穿透故障时快速回退到 TCP 443。花云不加这两条。

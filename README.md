@@ -35,7 +35,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## 在小火箭（Shadowrocket）里怎么用
 
-小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket.conf`，内置九大分流策略组与全部 234 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配三文鱼（SWY）等订阅中的节点：
+小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket.conf`，内置九大分流策略组与全部 236 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配三文鱼（SWY）等订阅中的节点：
 
 配置链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket.conf
 
@@ -52,7 +52,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 配置链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-MULTI.yaml
 
-文件里 234 条规则与另外四份相同，另外多两条 OpenBot 的 UDP 拒绝规则（只有这一份有），分组直接写节点显示名。订阅地址不在文件里。Clash App 把每份配置记成「一个规则方案 + 若干代理来源」，来源由 App 自己下载和更新。
+文件里 236 条规则与另外四份相同，另外多两条 OpenBot 的 UDP 拒绝规则（只有这一份有），分组直接写节点显示名。订阅地址不在文件里。Clash App 把每份配置记成「一个规则方案 + 若干代理来源」，来源由 App 自己下载和更新。
 
 Mac 和 iPhone 步骤相同：
 
@@ -112,7 +112,7 @@ Mac 和 iPhone 步骤相同：
    - 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。
 2. **XM-Web3**：常用链上 RPC（Infura、Alchemy、Ankr、LlamaRPC、BlockPI、BlastAPI、Omnia Tech、Stackup、Arbitrum 等公链 RPC）、钱包（MetaMask、Phantom、WalletConnect 等）、DEX 与交易站（Uniswap、Jupiter、pump.fun、Bitget、PancakeSwap、Hyperliquid、Polymarket、Across、CoinGecko 等）。
 3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
-4. **XM-AI**：ChatGPT / OpenAI、Claude、Perplexity、Cursor、OpenRouter、Grok / x.ai、grokbot.com、Gemini / AI Studio（排在 Google 之前）、Notion（`notion.so` / `.com` / `.site` / `.new`、`notion-static.com`、`notionusercontent.com`、`makenotion.com`、`cron.com` 及 `prod-files-secure.s3.us-west-2.amazonaws.com`）、Slack，以及 Apple 隐私中继和 Siri 相关域名。
+4. **XM-AI**：ChatGPT / OpenAI、Claude、Perplexity、Cursor、OpenRouter、Grok / x.ai、grokbot.com、Gemini / AI Studio（排在 Google 之前）、Notion（`notion.so` / `.com` / `.site` / `.new` / `.ai`、`notion-static.com`、`notion-status.com`、`notionusercontent.com`、`makenotion.com`、`cron.com` 及 `prod-files-secure.s3.us-west-2.amazonaws.com`）、Slack，以及 Apple 隐私中继和 Siri 相关域名。
    - **XM-OpenBot**：`openbot.run`、`openbot.site`（含 api / analytics）。fallback，三家各自固定三个日本节点，失败才换，不跟 XM-AI 测速绑定。排在 `GEOIP,CN` 之前。`XM-Clash-MULTI.yaml` 里这条组是极速云日本（01→07→05→08→06→04→02→03），并且前面多两条 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.*)),REJECT`，强制走 TCP。
 5. **XM-Google**：Google、Gmail、YouTube 等，以及 `.goog` 域名和 Antigravity 自动更新服务。
 6. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai，以及 X / Twitter（`x.com`、`twitter.com`、`twimg.com`、`t.co`、`pscp.tv`、`periscope.tv`、`twittercdn.com`，排在 `GEOIP,CN` 之前，域名命中后不再按 IP 判断）。
@@ -142,5 +142,5 @@ Mac 和 iPhone 步骤相同：
    - 公开链接白名单。
 3. 开 PR。GitHub Actions 自动跑同样的校验，通过后合并到 main，App 按链接更新即可生效。
 
-- Notion 全家（notion.so/.com/.site/.new、notion-static.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
+- Notion 全家（notion.so/.com/.site/.new/.ai、notion-static.com、notion-status.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
 - OpenBot（`openbot.run` 含 api / analytics，以及 `openbot.site`）走 XM-OpenBot（fallback，三家各自三个日本节点，不跟 XM-AI 测速绑定），排在 GEOIP,CN 之前，CI 校验。MULTI 里这组是极速云日本，且这两条域名之前另有两条 UDP 拒绝规则（TURN 会先用 UDP，极速云的 UDP 转发撑不住，先拒掉让它走 TCP）；CI 只允许 MULTI 有这两条，四份单订阅配置的 rules 仍逐字节一致。

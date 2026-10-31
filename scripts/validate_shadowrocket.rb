@@ -29,9 +29,9 @@ web3_line = lines.find { |l| l.start_with?('XM-Web3 =') }
 abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香港') && web3_line&.include?('台湾') && web3_line&.include?('新加坡') && web3_line&.include?('美国')
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "XM-Shadowrocket.conf: rule count must be 234 (found #{rule_lines.size})" unless rule_lines.size == 234
+abort "XM-Shadowrocket.conf: rule count must be 236 (found #{rule_lines.size})" unless rule_lines.size == 236
 abort 'XM-Shadowrocket.conf: must end with FINAL,XM-日常上网' unless rule_lines.last == 'FINAL,XM-日常上网'
 abort 'XM-Shadowrocket.conf: must have GEOIP,CN,DIRECT before FINAL' unless rule_lines[-2] == 'GEOIP,CN,DIRECT'
 abort 'XM-Shadowrocket.conf: must have QUIC reject rule' unless rule_lines.include?('AND,((NETWORK,UDP),(DST-PORT,443)),REJECT')
 
-puts 'Validated XM-Shadowrocket.conf (9 proxy groups, 234 rules, regex filtering, correct types).'
+puts 'Validated XM-Shadowrocket.conf (9 proxy groups, 236 rules, regex filtering, correct types).'
