@@ -14,17 +14,12 @@ allowed_urls = Set.new([
   'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-HY.yaml',
-  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-MESL.yaml',
-  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-BOOST.yaml',
-  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-SWY.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket.conf',
   'https://clash.md/zh/guide/ios',
   'https://clash.md/zh/guide/macos',
   'https://github.com/ProjectClash/Clash-Client',
   'https://clash.md/zh/guide/config/apple-platforms'
 ])
-raw = 'https' + '://raw.githubusercontent.com/symonxu/clash-rules/main/'
-allowed_urls << raw + 'XM-Clash-MULTI.yaml'
 Dir.chdir(root) do
   tracked_files = IO.popen(['git', 'ls-files', '-z'], &:read).split("\0")
   tracked_files.each do |file|

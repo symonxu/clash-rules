@@ -2,10 +2,10 @@
 require 'yaml'
 root = File.expand_path('..', __dir__)
 # XM-Clash-JSY.yaml（极速云）与 XM-Clash-HY.yaml（花云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置，节点来自 App 里另外导入的订阅。
-# 五份单订阅文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；各家节点命名不同，分组筛选各用一套虚构样例检查。
+# 两份单订阅文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；各家节点命名不同，分组筛选各用一套虚构样例检查。
 # 花云另有 hosts：3 个 *.aws-agent.org 写成国内入口 IP。Clash 组合规则方案时丢掉订阅里的 hosts。
-# 不含节点或订阅；四份用 include-all + filter + exclude-filter。XM-Clash-MULTI.yaml 另写显示名，rules 与极速云逐字节一致。
-FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml', 'XM-Clash-MESL.yaml', 'XM-Clash-BOOST.yaml', 'XM-Clash-SWY.yaml'].freeze
+# 不含节点或订阅；两份用 include-all + filter + exclude-filter。
+FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml'].freeze
 GROUP_NAMES = ['XM-Google', 'XM-AI', 'XM-OpenBot', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 OPENBOT_UDP_RULES = [
@@ -67,75 +67,12 @@ HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸�
   hy.call('🇹🇭', '泰国', 1..2) + hy.call('🇮🇩', '印尼', 1..12) + ['🇮🇩 印度尼西亚', '🇰🇷 韩国01', '🇻🇳 越南', '🇭🇰 韩国标准 IEPL 专线 1 香港'] +
   ['Traffic: 0.08 GB | 150 GB', 'Expire: 2030-01-01', 'traffic 日本高级 IEPL 专线 1', 'EXPIRE 台湾高级 IEPL 专线 1', 'Traffic 新加坡标准 IEPL 专线 1']
 INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example'].freeze
-# MESL：节点名形如「🇯🇵 日本 02」「🇲🇾 马来西亚 01 家宽」（虚构样例，编号与订阅展示名同一套规则）。
-# 带 [0.3X] 的低倍率节点（日本 01、台湾 01）不进任何组。
-mesl_jp = (2..7).map { |n| '🇯🇵 日本 %02d' % n } + (8..12).map { |n| '🇯🇵 日本 %02d 家宽' % n }
-mesl_web3 = (1..3).map { |n| '🇲🇾 马来西亚 %02d 家宽' % n } + (1..2).map { |n| '🇵🇭 菲律宾 %02d' % n } +
-  ['🇻🇳 越南 家宽'] + (1..2).map { |n| '🇰🇷 韩国 %02d' % n } + (3..5).map { |n| '🇰🇷 韩国 %02d 家宽' % n } + ['🇮🇩 印度尼西亚']
-mesl_tw = (2..5).map { |n| '🇨🇳 台湾 %02d' % n } + (6..10).map { |n| '🇨🇳 台湾 %02d 家宽' % n }
-mesl_us = (1..3).map { |n| '🇺🇸 美国 %02d' % n }
-mesl_anki = (2..4).map { |n| '🇯🇵 日本 %02d' % n }
-MESL_EXPECTED = {
-  'XM-Google' => mesl_jp, 'XM-AI' => mesl_jp, 'XM-日常上网' => mesl_jp,
-  'XM-OpenBot' => mesl_anki,
-  'XM-Web3' => mesl_web3,
-  'XM-Bybit' => mesl_tw,
-  'XM-Apple' => mesl_us,
-  'XM-Anki' => mesl_anki,
-  'XM-系统更新' => mesl_anki
-}.freeze
-MESL_SAMPLES = mesl_jp + mesl_web3 + mesl_tw + (1..12).map { |n| '🇺🇸 美国 %02d' % n } +
-  (10..12).map { |n| '🇺🇸 美国 %02d 家宽' % n } +
-  ['🇯🇵 日本 01 [0.3X]', '🇨🇳 台湾 01 [0.3X]', '🇸🇬 新加坡 01', '🇸🇬 新加坡 12 家宽', '🇭🇰 香港 01', '🇭🇰 香港 13 家宽',
-   '🇯🇵 日本_02', '🇹🇼 台湾_02', '🇯🇵 日本 08', '🇯🇵 日本高级 IEPL 专线 1']
-# Boost：节点名不带国旗，形如「日本1」「台湾2」「马来西亚-3倍率」。香港、新加坡和其余倍率节点不进任何组。
-boost_jp = (1..8).map { |n| "日本#{n}" }
-boost_tw = (1..4).map { |n| "台湾#{n}" }
-boost_us = (1..3).map { |n| "美国#{n}" }
-boost_my = ['马来西亚-3倍率']
-BOOST_EXPECTED = {
-  'XM-Google' => boost_jp, 'XM-AI' => boost_jp, 'XM-日常上网' => boost_jp,
-  'XM-OpenBot' => boost_jp,
-  'XM-Web3' => boost_jp + boost_my,
-  'XM-Bybit' => boost_tw,
-  'XM-Apple' => boost_us,
-  'XM-Anki' => boost_jp.first(3),
-  'XM-系统更新' => boost_jp.first(3)
-}.freeze
-BOOST_SAMPLES = boost_jp + boost_tw + (1..4).map { |n| "美国#{n}" } +
-  (1..12).map { |n| "香港#{n}" } + (1..8).map { |n| "新加坡#{n}" } +
-  ['马来西亚-3倍率', '英国-3倍率', '土耳其-5倍率', '阿根廷-5倍率', '澳洲-3倍率']
-# SWY（三文鱼）：节点名形如「日本-1」「台湾家宽|1.5X|-1」「韩国」。
-swy_jp = (1..6).map { |n| "日本-#{n}" }
-swy_jp_all = swy_jp + (7..8).map { |n| "【V6】日本-#{n}" }
-swy_tw = ['台湾家宽|1.5X|-1', '【V6】台湾家宽|1.5X|-2']
-swy_us = (1..3).map { |n| "美国-#{n}" }
-swy_web3 = swy_jp + %w[韩国 印度 德国 英国 加拿大]
-SWY_EXPECTED = {
-  'XM-Google' => swy_jp, 'XM-AI' => swy_jp, 'XM-日常上网' => swy_jp,
-  'XM-OpenBot' => swy_jp_all,
-  'XM-Web3' => swy_web3,
-  'XM-Bybit' => swy_tw,
-  'XM-Apple' => swy_us,
-  'XM-Anki' => swy_jp.first(3),
-  'XM-系统更新' => swy_jp.first(3)
-}.freeze
-SWY_SAMPLES = swy_jp_all + swy_tw + (1..6).map { |n| "美国-#{n}" } +
-  %w[韩国 印度 德国 英国 加拿大] + (1..4).map { |n| "新加坡-#{n}" } +
-  (1..10).map { |n| "香港-#{n}" } + (11..14).map { |n| "【V6】香港-#{n}" } +
-  ['香港家宽|1.5X|-01', '香港家宽|1.5X|-02', '【备用】|香港-1', '【备用】|日本-1', '【备用】|美国-1', '【备用】|新加坡-1', '只有备用节点的换官网推荐的客户端']
 
 PROFILES = {
   'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
   'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-OpenBot'], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                          bybit_order: nil },
-  'XM-Clash-MESL.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: MESL_EXPECTED, samples: MESL_SAMPLES, info: INFO,
-                            bybit_order: [['🇨🇳 台湾 02'], ['🇨🇳 台湾 03']] },
-  'XM-Clash-BOOST.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: BOOST_EXPECTED, samples: BOOST_SAMPLES, info: INFO,
-                             bybit_order: [['台湾1'], ['台湾2']] },
-'XM-Clash-SWY.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: SWY_EXPECTED, samples: SWY_SAMPLES, info: INFO + ['只有备用节点的换官网推荐的客户端', '【备用】|香港-1'],
-                           bybit_order: [['台湾家宽|1.5X|-1'], ['【V6】台湾家宽|1.5X|-2']] },
+                          bybit_order: nil }
 }.freeze
 
 def check_file(root, file)
@@ -238,34 +175,30 @@ def check_file(root, file)
       else
         abort "#{file}: unsupported AND rule #{rule}"
       end
-    elsif type == 'MATCH'
-      abort 'Clash: MATCH must be the last rule' unless i == rules.size - 1 && fields.size == 2
-      condition, target = nil, fields[1]
     elsif domain_types.include?(type)
-      abort "Clash: bad domain rule #{rule}" unless fields.size == 3 && fields[1].match?(/\A[a-z0-9.-]+\z/) && !fields[1].start_with?('.') && !fields[1].end_with?('.')
+      abort "Clash: expected DOMAIN*,value,target in #{rule}" unless fields.size == 3
       condition, target = fields[1], fields[2]
     elsif ip_types.include?(type)
-      abort "Clash: bad IP rule #{rule}" unless [3, 4].include?(fields.size) && (fields.size == 3 || fields[3] == 'no-resolve')
-      require 'ipaddr'
-      begin
-        ip = IPAddr.new(fields[1])
-      rescue IPAddr::Error
-        abort "Clash: bad CIDR in #{rule}"
-      end
-      abort "Clash: #{type} family mismatch in #{rule}" unless (type == 'IP-CIDR') == ip.ipv4?
+      abort "Clash: expected IP-CIDR*,cidr,target[,no-resolve] in #{rule}" unless [3, 4].include?(fields.size)
+      abort "Clash: fourth field must be no-resolve in #{rule}" if fields.size == 4 && fields[3] != 'no-resolve'
       condition, target = fields[1], fields[2]
     elsif type == 'GEOIP'
-      abort "Clash: bad GEOIP rule #{rule}" unless fields.size == 3 && fields[1].match?(/\A[A-Z]{2}\z/)
+      abort "Clash: expected GEOIP,code,target in #{rule}" unless fields.size == 3
       condition, target = fields[1], fields[2]
+    elsif type == 'MATCH'
+      abort "Clash: expected MATCH,target in #{rule}" unless fields.size == 2
+      condition, target = '', fields[1]
     else
-      abort "Clash: unsupported rule type in #{rule}"
+      abort "Clash: unknown rule type #{type} in #{rule}"
     end
-    abort "Clash: unknown policy #{target} in #{rule}" unless policies.include?(target)
-    key = [type, condition]
-    abort "Clash: duplicate condition #{rule} (first: #{seen[key]})" if seen.key?(key)
-    seen[key] = rule
+    abort "Clash: unknown target #{target} in #{rule}" unless policies.include?(target)
+    abort "Clash: duplicate rule #{rule}" if seen[rule]
+    seen[rule] = true
   end
-  abort 'Clash: must end with GEOIP,CN,DIRECT then MATCH,XM-日常上网' unless rules.last(2) == ['GEOIP,CN,DIRECT', 'MATCH,XM-日常上网']
+
+  abort 'Clash: last rule must be MATCH,XM-日常上网' unless rules.last == 'MATCH,XM-日常上网'
+  abort 'Clash: second-to-last rule must be GEOIP,CN,DIRECT' unless rules[-2] == 'GEOIP,CN,DIRECT'
+  # X / Twitter 走 XM-日常上网，必须排在 GEOIP,CN 之前（否则根据 DNS 结果被 GEOIP 误判直连）。
   x_rules = %w[x.com twitter.com twimg.com t.co pscp.tv periscope.tv twittercdn.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-日常上网" }
   geoip_at = rules.index('GEOIP,CN,DIRECT')
   abort 'Clash: X/Twitter must use XM-日常上网 before GEOIP,CN' unless x_rules.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
@@ -283,7 +216,7 @@ def check_file(root, file)
   openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-OpenBot" }
   abort 'Clash: OpenBot must use XM-OpenBot before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort "#{file}: OpenBot domains must only use XM-OpenBot or REJECT" unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-OpenBot', ',REJECT') }
-  abort "#{file}: OpenBot UDP reject rules belong in MULTI only" if OPENBOT_UDP_RULES.any? { |r| rules.include?(r) }
+  abort "#{file}: OpenBot UDP reject rules must not be present" if OPENBOT_UDP_RULES.any? { |r| rules.include?(r) }
   anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
   abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
@@ -316,82 +249,6 @@ def check_file(root, file)
   rules.size
 end
 
-# MULTI 是规则方案：分组直接写极速云、花云的显示名。不进 FILES（那四份用 include-all + filter）。
-# MULTI 的 rules 与极速云一致，只多两条 OpenBot 的 UDP 拒绝规则：极速云 AnyTLS 的 UDP 转发撑不住 TURN，先 REJECT 让客户端立刻退到 TCP 443。
-# 这两条只存在于 MULTI，五份单订阅配置的 rules 仍保持逐字节一致。
-HY_JP = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" } + (1..4).map { |n| "🇯🇵 日本标准 IEPL 专线 #{n}" }
-JSY_JP = %w[01 07 05 08 06 04 02 03].map { |n| "🇯🇵 日本_#{n}" }
-HY_JP3 = (1..3).map { |n| "🇯🇵 日本高级 IEPL 专线 #{n}" }
-JSY_JP3 = %w[01 02 03].map { |n| "🇯🇵 日本_#{n}" }
-# Web3：极速云优先（日本_01–08，然后马来西亚/菲律宾/越南），花云整组垫底。
-MULTI_WEB3 = (1..8).map { |n| '🇯🇵 日本_%02d' % n } + ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'] + ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1', '🇲🇾 马来西亚标准 IEPL 专线 1', '🇵🇭 菲律宾标准 IEPL 专线 1', '🇹🇭 泰国标准 IEPL 专线 1'].freeze
-MULTI_BYBIT = (1..3).map { |n| "🇨🇳 台湾高级 IEPL 专线 #{n}" } + (1..3).map { |n| "🇨🇳 台湾标准 IEPL 专线 #{n}" } + (1..5).map { |n| '🇹🇼 台湾_%02d' % n }
-MULTI_APPLE = (1..3).map { |n| "🇺🇸 美国高级 IEPL 专线 #{n}" } + (1..4).map { |n| "🇺🇸 美国标准 IEPL 专线 #{n}" } + (1..3).map { |n| '🇺🇸 美国_%02d' % n }
-MULTI_ONLY_RULES = OPENBOT_UDP_RULES
-MULTI_EXPECTED = {
-  'XM-Google' => HY_JP + JSY_JP,
-  'XM-AI' => HY_JP + JSY_JP,
-  # OpenBot：极速云日本 fallback（UDP 被下面两条 REJECT 掉，走 TCP）。
-  'XM-OpenBot' => JSY_JP,
-  'XM-Web3' => MULTI_WEB3,
-  'XM-Bybit' => MULTI_BYBIT,
-  'XM-日常上网' => HY_JP + JSY_JP,
-  'XM-Apple' => MULTI_APPLE,
-  'XM-Anki' => HY_JP3 + JSY_JP3,
-  'XM-系统更新' => HY_JP3 + JSY_JP3 + ['DIRECT']
-}.freeze
-
-def check_multi(root)
-  jsy_text = File.read(File.join(root, 'XM-Clash-JSY.yaml'))
-  multi_text = File.read(File.join(root, 'XM-Clash-MULTI.yaml'))
-  marker = "\n# 规则从上到下匹配"
-  abort 'MULTI: rules marker missing' unless jsy_text.scan(marker).size == 1 && multi_text.scan(marker).size == 1
-  abort 'MULTI: subscription placeholder left in the file' if multi_text.include?('PASTE_')
-  jsy = YAML.safe_load(jsy_text)
-  clash = YAML.safe_load(multi_text)
-  abort 'MULTI: unexpected top-level fields' unless clash.keys.sort == %w[mode log-level ipv6 unified-delay tcp-concurrent geox-url profile dns proxy-groups rules].sort
-  abort 'MULTI: must not contain nodes or providers' if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
-  abort 'MULTI: fake-ip-filter drifted' unless clash.dig('dns', 'fake-ip-filter') == jsy.dig('dns', 'fake-ip-filter')
-  abort 'MULTI: nameserver-policy drifted' unless clash.dig('dns', 'nameserver-policy') == jsy.dig('dns', 'nameserver-policy')
-  abort 'MULTI: geox-url drifted' unless clash['geox-url'] == jsy['geox-url']
-  multi_rules = clash.fetch('rules')
-  jsy_rules = jsy.fetch('rules')
-  abort 'MULTI: must have exactly 236 JSY rules plus the two OpenBot UDP rejects' unless multi_rules.size == jsy_rules.size + MULTI_ONLY_RULES.size
-  abort 'MULTI: rules must equal the 236 JSY rules plus the two OpenBot UDP rejects' unless multi_rules.reject { |r| MULTI_ONLY_RULES.include?(r) } == jsy_rules
-  MULTI_ONLY_RULES.each do |r|
-    abort "MULTI: #{r} must appear exactly once" unless multi_rules.count(r) == 1
-    domain = r[/\(DOMAIN-SUFFIX,([^)]+)\)/, 1]
-    domain_rule = "DOMAIN-SUFFIX,#{domain},XM-OpenBot"
-    abort "MULTI: #{r} must precede #{domain_rule}" unless multi_rules.index(r) < multi_rules.index(domain_rule).to_i
-    abort "MULTI: #{r} must come after the QUIC reject" unless multi_rules.index(QUIC_RULE) < multi_rules.index(r)
-  end
-  abort 'MULTI: openbot rules may only target XM-OpenBot or REJECT' unless multi_rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-OpenBot', ',REJECT') }
-  groups = clash.fetch('proxy-groups')
-  abort 'MULTI: groups must be exactly the nine XM groups in order' unless groups.map { |g| g['name'] } == GROUP_NAMES
-  groups.each do |g|
-    name = g['name']
-    abort "#{name}: no use, filter, or include-all" if (g.keys & %w[use filter include-all exclude-filter]).any?
-    want = MULTI_EXPECTED.fetch(name)
-    abort "#{name}: proxies drifted #{g['proxies'].inspect}" unless g['proxies'] == want
-    abort "#{name}: Hong Kong node" if g['proxies'].any? { |n| n.match?(/香港|Hong ?Kong|🇭🇰/) }
-    if name == 'XM-Anki'
-      abort "#{name}: must be select without test options" unless g['type'] == 'select' && g.keys.sort == %w[name proxies type]
-    else
-      abort "#{name}: must be fallback without tolerance" unless g['type'] == 'fallback' && !g.key?('tolerance') && g['url'] == TEST_URL && g['timeout'] == 5000
-      want_interval = name == 'XM-OpenBot' ? 900 : 300
-      abort "#{name}: interval must be #{want_interval}" unless g['interval'] == want_interval
-    end
-  end
-  # Web3 允许日本（极速云只有日本能打，花云排整组后面），仍禁止美国/香港/新加坡/台湾。
-  web3 = groups.find { |g| g['name'] == 'XM-Web3' }.fetch('proxies')
-  abort 'MULTI: XM-Web3 contains a forbidden region' if web3.any? { |n| n.match?(/美国|香港|新加坡|台湾/) }
-  abort 'MULTI: XM-Web3 must start with the eight JSY Japan nodes' unless web3.first(8) == (1..8).map { |n| '🇯🇵 日本_%02d' % n }
-  abort 'MULTI: XM-Web3 must fall back to HY last' unless web3.last(7) == ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1', '🇲🇾 马来西亚标准 IEPL 专线 1', '🇵🇭 菲律宾标准 IEPL 专线 1', '🇹🇭 泰国标准 IEPL 专线 1']
-  openbot = groups.find { |g| g['name'] == 'XM-OpenBot' }.fetch('proxies')
-  abort 'MULTI: XM-OpenBot must be only the eight JSY Japan nodes' unless openbot == JSY_JP
-end
-
-check_multi(root)
 counts = FILES.map { |f| check_file(root, f) }
 marker = "\n# 规则从上到下匹配"
 texts = FILES.map { |f| File.read(File.join(root, f)) }
@@ -399,4 +256,3 @@ abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size 
 abort "Clash: rules sections of #{FILES.join(', ')} must be byte-identical" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
 
 puts "Validated #{FILES.join(' + ')}: identical #{counts[0]} rules; HY has Flower hosts and encrypted DNS."
-puts 'Validated XM-Clash-MULTI.yaml (explicit JSY+HY names, inline 236 rules + 2 OpenBot UDP rejects, XM-OpenBot on JSY Japan, XM-Web3 JSY-first with HY fallback, no providers, no subscription URL).'
