@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-10-31**：在 XM-AI 分组中补齐 Notion 官方 AI 域名与状态服务（`notion.ai`、`notion-status.com`），规则由 234 条扩增至 236 条。六份配置文件（JSY / HY / MESL / BOOST / SWY / MULTI）与小火箭配置同步更新并通过 CI 全量校验。
 - [x] **2026-10-30**：上一版 hosts 写成 `*.apt-agent.org` 之后，家庭 Wi-Fi 上节点仍全部超时。实测 `147.90.*` 的节点端口超时，对应国内入口 `116.242.224.8` / `180.188.20.131` / `119.147.195.213` 同端口能连上；`tls://119.29.29.29`（853）在这条宽带上超时，会吃掉 5 秒健康检查。`hosts` 改为这三个 IP，`nameserver` 去掉挂死的 DoT，`proxy-server-nameserver` 用明文 223.5.5.5 / 119.29.29.29。
 - [x] **2026-10-30**：花云个人规则在家庭 Wi-Fi 上不通、蜂窝上正常。对照花云订阅自带配置：节点域名是 `*.aws-agent.org`，hosts 改写到 `*.apt-agent.org`，并用 DoT/DoH 解析。Clash 组合规则方案时丢掉订阅里的 hosts，个人规则又用明文 DNS，所以家庭宽带解析到公网地址、连不上国内入口。`XM-Clash-HY.yaml` 写入这 3 条 hosts，`nameserver` 改成 `tls://119.29.29.29`、`tls://223.5.5.5`、`https://dns.pub/dns-query`、`https://dns.alidns.com/dns-query`，fake-ip-filter 加 `+.apt-agent.org`，并删掉花云上那两条 OpenBot UDP REJECT（MULTI 保留）。分组和 234 条 rules 没动。订阅轮换这 3 个入口域名时要一起改 hosts。
 - [x] **2026-10-30**：修复 `XM-Clash-HY.yaml` 在家庭 Wi-Fi 下 OpenBot 连接超时。① `XM-OpenBot` 分组候选节点过滤正则扩充为日本高级 1–3 + 日本标准 1–4（共 7 个节点，按高级在前标准在后 fallback）；② rules 在 `DOMAIN-SUFFIX,openbot.run,XM-OpenBot` 之前插入两条 UDP 拒绝规则（`AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT` 和 `...openbot.site,REJECT`），强制客户端立刻回退到 TCP 443，防止 UDP WebRTC/TURN 报文在专线 NAT 穿透丢包超时。校验脚本 `scripts/validate_clash.rb` 同步更新断言（HY rules 允许这两条 UDP REJECT，单订阅 JSY/MESL/BOOST/SWY 仍保持逐字节一致）。回滚：把 `XM-Clash-HY.yaml` 的 filter 还原为高级 1–3，删去两条 UDP REJECT 规则，并将 `scripts/validate_clash.rb` 校验还原。

@@ -277,7 +277,7 @@ def check_file(root, file)
   tv = ['DOMAIN-SUFFIX,tv.apple.com', 'DOMAIN-SUFFIX,pancake.apple.com'] + %w[play-edge hls np-edge uts-api].map { |h| "DOMAIN,#{h}.itunes.apple.com" }
   abort 'Clash: Apple TV must use XM-Apple' unless tv.all? { |d| rules.include?("#{d},XM-Apple") }
   abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless tv.all? { |d| rules.index("#{d},XM-Apple") < rules.index('DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网').to_i }
-  notion = %w[notion.so notion.com notion.site notion.new notion-static.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI']
+  notion = %w[notion.so notion.com notion.site notion.new notion.ai notion-static.com notion-status.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI']
   abort 'Clash: Notion must use XM-AI before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: Notion domains must only use XM-AI' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI') }
   openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-OpenBot" }
@@ -356,8 +356,8 @@ def check_multi(root)
   abort 'MULTI: geox-url drifted' unless clash['geox-url'] == jsy['geox-url']
   multi_rules = clash.fetch('rules')
   jsy_rules = jsy.fetch('rules')
-  abort 'MULTI: must have exactly 234 JSY rules plus the two OpenBot UDP rejects' unless multi_rules.size == jsy_rules.size + MULTI_ONLY_RULES.size
-  abort 'MULTI: rules must equal the 234 JSY rules plus the two OpenBot UDP rejects' unless multi_rules.reject { |r| MULTI_ONLY_RULES.include?(r) } == jsy_rules
+  abort 'MULTI: must have exactly 236 JSY rules plus the two OpenBot UDP rejects' unless multi_rules.size == jsy_rules.size + MULTI_ONLY_RULES.size
+  abort 'MULTI: rules must equal the 236 JSY rules plus the two OpenBot UDP rejects' unless multi_rules.reject { |r| MULTI_ONLY_RULES.include?(r) } == jsy_rules
   MULTI_ONLY_RULES.each do |r|
     abort "MULTI: #{r} must appear exactly once" unless multi_rules.count(r) == 1
     domain = r[/\(DOMAIN-SUFFIX,([^)]+)\)/, 1]
@@ -399,4 +399,4 @@ abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size 
 abort "Clash: rules sections of #{FILES.join(', ')} must be byte-identical" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
 
 puts "Validated #{FILES.join(' + ')}: identical #{counts[0]} rules; HY has Flower hosts and encrypted DNS."
-puts 'Validated XM-Clash-MULTI.yaml (explicit JSY+HY names, inline 234 rules + 2 OpenBot UDP rejects, XM-OpenBot on JSY Japan, XM-Web3 JSY-first with HY fallback, no providers, no subscription URL).'
+puts 'Validated XM-Clash-MULTI.yaml (explicit JSY+HY names, inline 236 rules + 2 OpenBot UDP rejects, XM-OpenBot on JSY Japan, XM-Web3 JSY-first with HY fallback, no providers, no subscription URL).'
