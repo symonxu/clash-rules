@@ -358,6 +358,7 @@ rules:
   - DOMAIN,sps-media.apple.com,DIRECT
   - DOMAIN-SUFFIX,ocsp.apple.com,DIRECT
   - DOMAIN,ocsp2.apple.com,XM-系统更新
+  - DOMAIN-SUFFIX,apple.com,DIRECT
   - DOMAIN-SUFFIX,qq.com,DIRECT
   - DOMAIN-SUFFIX,weixin.com,DIRECT
   - DOMAIN-SUFFIX,wechat.com,DIRECT
