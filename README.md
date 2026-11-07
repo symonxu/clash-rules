@@ -6,9 +6,9 @@
 | --- | --- | --- | --- |
 | 极速云 | 极速云订阅 | `XM-Clash-JSY` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml |
 | 花云 | 花云订阅 | `XM-Clash-HY` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-HY.yaml |
-| 小火箭（Shadowrocket） | 任意订阅 | `XM-Shadowrocket` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket.conf |
+| 小火箭（Shadowrocket） | 任意订阅 | `XM-Shadowrocket` | https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-HY.conf |
 
-两个 Clash 方案可以同时存在，哪家出问题就切到另一个组合；小火箭用户可直接使用 `XM-Shadowrocket.conf`。
+两个 Clash 方案可以同时存在，哪家出问题就切到另一个组合；小火箭用户可直接使用 `XM-Shadowrocket-HY.conf`。
 
 **仓库里绝不能出现订阅地址、节点信息或任何凭据。** 文件只有分组、规则和 DNS；CI 会拦截白名单以外的链接。
 
@@ -30,15 +30,15 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## 在小火箭（Shadowrocket）里怎么用
 
-小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket.conf`，内置九大分流策略组与全部 236 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配机场订阅中的节点：
+小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket-HY.conf`，内置九大分流策略组与全部 236 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配机场订阅中的节点：
 
-配置链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket.conf
+配置链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-HY.conf
 
 使用步骤：
 1. **添加节点订阅**：在小火箭主界面点击右上角 `+`，类型选择 `Subscribe`（订阅），粘贴花云、极速云或其他机场的订阅地址，保存并更新出节点列表。
 2. **添加配置**：点击底部「配置」标签页，右上角点击 `+`。
 3. **输入配置链接**：在 URL 框中粘贴上面的规则链接，点击「下载」。
-4. **启用配置**：在「远程文件」中点击刚刚下载的 `XM-Shadowrocket.conf`，选择「使用配置」使其变为勾选状态。
+4. **启用配置**：在「远程文件」中点击刚刚下载的 `XM-Shadowrocket-HY.conf`，选择「使用配置」使其变为勾选状态。
 5. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
 
 ## 分组
