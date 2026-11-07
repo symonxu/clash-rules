@@ -14,7 +14,7 @@ allowed_urls = Set.new([
   'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-HY.yaml',
-  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket.conf',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-HY.conf',
   'https://clash.md/zh/guide/ios',
   'https://clash.md/zh/guide/macos',
   'https://github.com/ProjectClash/Clash-Client',
