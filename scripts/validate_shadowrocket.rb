@@ -5,8 +5,18 @@ abort 'XM-Shadowrocket.conf missing' unless File.exist?(conf_path)
 
 content = File.read(conf_path)
 abort 'XM-Shadowrocket.conf: [General] section missing' unless content.include?('[General]')
+abort 'XM-Shadowrocket.conf: [Host] section missing' unless content.include?('[Host]')
 abort 'XM-Shadowrocket.conf: [Proxy Group] section missing' unless content.include?('[Proxy Group]')
 abort 'XM-Shadowrocket.conf: [Rule] section missing' unless content.include?('[Rule]')
+abort 'XM-Shadowrocket.conf: OpenBot domains must use always-real-ip' unless content.include?('always-real-ip = *.openbot.run, *.openbot.site')
+
+hy_path = File.join(root, 'XM-Clash-HY.yaml')
+abort 'XM-Clash-HY.yaml missing' unless File.exist?(hy_path)
+hy_hosts = File.read(hy_path).scan(/^\s+([0-9a-z.-]+\.aws-agent\.org):\s+(\d+\.\d+\.\d+\.\d+)\s*$/)
+abort "XM-Clash-HY.yaml: expected 3 aws-agent.org hosts, found #{hy_hosts.size}" unless hy_hosts.size == 3
+hy_hosts.each do |name, ip|
+  abort "XM-Shadowrocket.conf: host #{name} must match HY (#{ip})" unless content.include?("#{name} = #{ip}")
+end
 
 expected_groups = ['XM-Google', 'XM-AI', 'XM-OpenBot', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 groups = content.scan(/^([A-Za-z0-9\u4e00-\u9fa5-]+)\s*=\s*(select|url-test|fallback)/).map(&:first)
@@ -15,6 +25,7 @@ abort "XM-Shadowrocket.conf: groups must match expected 9 groups (found #{groups
 lines = content.lines.map(&:strip)
 openbot_line = lines.find { |l| l.start_with?('XM-OpenBot =') }
 abort 'XM-OpenBot must be fallback' unless openbot_line&.include?('= fallback,')
+abort 'XM-OpenBot regex must keep 花云 IEPL and 极速云 日本_ nodes' unless openbot_line&.include?('日本高级 IEPL 专线 [1-3]') && openbot_line&.include?('日本标准 IEPL 专线 [1-4]') && openbot_line&.include?('日本_[0-9]+')
 
 bybit_line = lines.find { |l| l.start_with?('XM-Bybit =') }
 abort 'XM-Bybit must be fallback' unless bybit_line&.include?('= fallback,')
