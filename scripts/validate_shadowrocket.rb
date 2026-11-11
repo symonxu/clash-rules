@@ -13,7 +13,7 @@ abort 'XM-Shadowrocket-HY.conf: OpenBot domains must use always-real-ip' unless 
 hy_path = File.join(root, 'XM-Clash-HY.yaml')
 abort 'XM-Clash-HY.yaml missing' unless File.exist?(hy_path)
 hy_hosts = File.read(hy_path).scan(/^\s+([0-9a-z.-]+\.aws-agent\.org):\s+(\d+\.\d+\.\d+\.\d+)\s*$/)
-abort "XM-Clash-HY.yaml: expected 3 aws-agent.org hosts, found #{hy_hosts.size}" unless hy_hosts.size == 3
+abort "XM-Clash-HY.yaml: expected the two current Flower hosts, found #{hy_hosts.size}" unless hy_hosts.size == 2
 hy_hosts.each do |name, ip|
   abort "XM-Shadowrocket-HY.conf: host #{name} must match HY (#{ip})" unless content.include?("#{name} = #{ip}")
 end
@@ -25,7 +25,7 @@ abort "XM-Shadowrocket-HY.conf: groups must match expected 9 groups (found #{gro
 lines = content.lines.map(&:strip)
 openbot_line = lines.find { |l| l.start_with?('XM-OpenBot =') }
 abort 'XM-OpenBot must be fallback' unless openbot_line&.include?('= fallback,')
-abort 'XM-OpenBot regex must keep 花云日本 IEPL nodes' unless openbot_line&.include?('日本(高级 IEPL 专线 [1-3]|标准 IEPL 专线 [1-4])')
+abort 'XM-OpenBot must list 高级 before 标准' unless openbot_line&.index('日本高级 IEPL 专线 1')&.< openbot_line.index('日本标准 IEPL 专线 1').to_i
 
 bybit_line = lines.find { |l| l.start_with?('XM-Bybit =') }
 abort 'XM-Bybit must be fallback' unless bybit_line&.include?('= fallback,')

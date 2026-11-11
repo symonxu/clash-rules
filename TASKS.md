@@ -11,7 +11,7 @@
 
 - **最近更新端**：`OpenBot` (2026-11-11)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：两份 Clash 配置（`XM-Clash-HY.yaml` / `XM-Clash-JSY.yaml`）的 rules 逐字节一致。花云 `XM-Clash-HY.yaml` 用 hosts 把 3 个 `*.aws-agent.org` 写成国内入口 IP（`116.242.224.8`、`180.188.20.131`、`119.147.195.213`），`nameserver` 为 `tls://223.5.5.5` 与 `https://dns.alidns.com/dns-query`，`proxy-server-nameserver` 为明文 223.5.5.5 / 119.29.29.29，fake-ip 保留。其余四份和 MULTI 仍是明文国内 DNS。`XM-Clash-MULTI.yaml` 的 `XM-OpenBot` 走极速云日本（01→07→05→08→06→04→02→03，UDP 被规则拒掉走 TCP），`XM-Web3` 极速云优先、花云整组垫底。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`；Notion 全家域名在 `GEOIP,CN` 之前走 `XM-AI`；X / Twitter 在 `GEOIP,CN` 之前走 `XM-日常上网`。Apple OTA 域名走 `XM-系统更新`（默认 DIRECT，可切日本）。
+- **当前运行状态**：两份 Clash 配置（`XM-Clash-HY.yaml` / `XM-Clash-JSY.yaml`）的 rules 逐字节一致。花云 hosts 当前是 `e3585sh2-3ad5.aws-agent.org` → `180.188.20.131`、`fd025gz0-c617.aws-agent.org` → `119.147.195.213`。`XM-OpenBot` 用 proxies 写死顺序。OpenBot（`openbot.run`、`openbot.site`）走 `XM-OpenBot`。
 
 ---
 
@@ -23,7 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
-- [x] **2026-11-11**：小火箭连不上 OpenBot。配置文件已是 `XM-Shadowrocket-HY.conf`，花云国内入口和日本 IEPL 分组已在 main。这次补上 `always-real-ip = *.openbot.run, *.openbot.site`，假 IP 下 TURN / WebRTC 仍拿真地址。237 条规则未改。回滚：删掉这一行 `always-real-ip`，并去掉 `scripts/validate_shadowrocket.rb` 里的对应断言。
+- [x] **2026-11-11**：花云订阅入口换成 `e3585sh2-3ad5.aws-agent.org`、`fd025gz0-c617.aws-agent.org`，分别写到 `180.188.20.131`、`119.147.195.213`。北京 `116.242.224.8` 已拒绝连接，从 hosts 删除。`XM-OpenBot` 改为按节点名写死顺序，因为这款 Clash 会把 filter 结果按名字重排，高级线路排不到前面。Clash 与小火箭一起改。回滚：把 hosts 和 `XM-OpenBot` 换回上一版，并还原校验脚本里的对应断言。
 - [x] **2026-10-31**：按用户指令清理未在使用的机场订阅配置，删掉 `XM-Clash-BOOST.yaml`、`XM-Clash-MESL.yaml`、`XM-Clash-SWY.yaml` 及 `XM-Clash-MULTI.yaml`，仅保留核心在用的两份配置 `XM-Clash-HY.yaml`（花云）与 `XM-Clash-JSY.yaml`（极速云），以及 `XM-Shadowrocket.conf`（小火箭）。校验脚本及文档同步精简。
 - [x] **2026-10-31**：在 XM-AI 分组中补齐 Notion 官方 AI 域名与状态服务（`notion.ai`、`notion-status.com`），规则由 234 条扩增至 236 条。六份配置文件（JSY / HY / MESL / BOOST / SWY / MULTI）与小火箭配置同步更新并通过 CI 全量校验。
 - [x] **2026-10-30**：上一版 hosts 写成 `*.apt-agent.org` 之后，家庭 Wi-Fi 上节点仍全部超时。实测 `147.90.*` 的节点端口超时，对应国内入口 `116.242.224.8` / `180.188.20.131` / `119.147.195.213` 同端口能连上；`tls://119.29.29.29`（853）在这条宽带上超时，会吃掉 5 秒健康检查。`hosts` 改为这三个 IP，`nameserver` 去掉挂死的 DoT，`proxy-server-nameserver` 用明文 223.5.5.5 / 119.29.29.29。
