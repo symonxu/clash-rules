@@ -23,7 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
-- [x] **2026-11-11**：修复小火箭连不上 OpenBot。`XM-Shadowrocket.conf` 增加 `always-real-ip = *.openbot.run, *.openbot.site`（假 IP 下 TURN / WebRTC 仍拿真地址），`[Host]` 与花云 Clash 的 3 条国内入口保持一致，`XM-OpenBot` 改为只匹配花云日本 IEPL（高级 1–3、标准 1–4）和极速云 `日本_` 编号。236 条规则未改。回滚：删掉 `always-real-ip` 与 `[Host]`，把 `XM-OpenBot` 的正则改回「名字里带日本」，并还原 `scripts/validate_shadowrocket.rb` 的对应断言。
+- [x] **2026-11-11**：小火箭连不上 OpenBot。配置文件已是 `XM-Shadowrocket-HY.conf`，花云国内入口和日本 IEPL 分组已在 main。这次补上 `always-real-ip = *.openbot.run, *.openbot.site`，假 IP 下 TURN / WebRTC 仍拿真地址。237 条规则未改。回滚：删掉这一行 `always-real-ip`，并去掉 `scripts/validate_shadowrocket.rb` 里的对应断言。
 - [x] **2026-10-31**：按用户指令清理未在使用的机场订阅配置，删掉 `XM-Clash-BOOST.yaml`、`XM-Clash-MESL.yaml`、`XM-Clash-SWY.yaml` 及 `XM-Clash-MULTI.yaml`，仅保留核心在用的两份配置 `XM-Clash-HY.yaml`（花云）与 `XM-Clash-JSY.yaml`（极速云），以及 `XM-Shadowrocket.conf`（小火箭）。校验脚本及文档同步精简。
 - [x] **2026-10-31**：在 XM-AI 分组中补齐 Notion 官方 AI 域名与状态服务（`notion.ai`、`notion-status.com`），规则由 234 条扩增至 236 条。六份配置文件（JSY / HY / MESL / BOOST / SWY / MULTI）与小火箭配置同步更新并通过 CI 全量校验。
 - [x] **2026-10-30**：上一版 hosts 写成 `*.apt-agent.org` 之后，家庭 Wi-Fi 上节点仍全部超时。实测 `147.90.*` 的节点端口超时，对应国内入口 `116.242.224.8` / `180.188.20.131` / `119.147.195.213` 同端口能连上；`tls://119.29.29.29`（853）在这条宽带上超时，会吃掉 5 秒健康检查。`hosts` 改为这三个 IP，`nameserver` 去掉挂死的 DoT，`proxy-server-nameserver` 用明文 223.5.5.5 / 119.29.29.29。
