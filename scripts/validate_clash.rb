@@ -92,11 +92,11 @@ def check_file(root, file)
     abort "#{file}: proxy-server-nameserver must be UDP 223.5.5.5 / 119.29.29.29" unless dns['proxy-server-nameserver'] == %w[223.5.5.5 119.29.29.29]
     abort "#{file}: fake-ip-filter missing +.apt-agent.org" unless dns.fetch('fake-ip-filter').include?('+.apt-agent.org')
     expected_hosts = {
-      '0bc52bj2-10e0.aws-agent.org' => '116.242.224.8',
-      'e3585sh0-3ad5.aws-agent.org' => '180.188.20.131',
-      'fd025gz8-c617.aws-agent.org' => '119.147.195.213'
+      'e3585sh2-3ad5.aws-agent.org' => '180.188.20.131',
+      'fd025gz0-c617.aws-agent.org' => '119.147.195.213'
     }
-    abort "#{file}: hosts must map the three Flower entrances" unless clash['hosts'] == expected_hosts
+    abort "#{file}: hosts must map the current Flower entrances" unless clash['hosts'] == expected_hosts
+    abort "#{file}: dead Beijing entrance must not be pinned" if clash['hosts'].value?('116.242.224.8')
   else
     abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
   end
@@ -111,6 +111,11 @@ def check_file(root, file)
   hk_direct = HK_SAMPLES + (1..15).flat_map { |n| ['🇭🇰 香港 %02d' % n, '🇭🇰 香港_%02d' % n, '🇭🇰 香港HKT家宽%d' % n] + TIERS.map { |t| "🇭🇰 香港#{t} IEPL 专线 #{n}" } }
   groups.each do |g|
     name = g['name']
+    if name == 'XM-OpenBot'
+      want = prof[:expected][name]
+      abort "#{file}: XM-OpenBot must be an ordered fallback list" unless (g.keys - %w[name type proxies url interval timeout]).empty? && g['type'] == 'fallback' && !g.key?('tolerance') && g['url'] == TEST_URL && g['interval'] == prof[:interval] && g['timeout'] == 5000 && g['proxies'] == want
+      next
+    end
     keys_ok = name == 'XM-系统更新' ? allowed_keys + ['proxies'] : allowed_keys
     abort "#{file}: #{name} has unexpected keys #{(g.keys - keys_ok).inspect}" unless (g.keys - keys_ok).empty?
     # XM-系统更新：proxies 只能是 DIRECT（默认第一项），不得写任何节点。
