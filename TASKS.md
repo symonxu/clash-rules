@@ -11,7 +11,7 @@
 
 - **最近更新端**：`OpenBot` (2026-11-11)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：两份 Clash 配置（`XM-Clash-HY.yaml` / `XM-Clash-JSY.yaml`）的 rules 逐字节一致。花云 hosts 当前是 `e3585sh2-3ad5.aws-agent.org` → `180.188.20.131`、`fd025gz0-c617.aws-agent.org` → `119.147.195.213`。Google、AI、OpenBot 走 `XM-日本`。花云该组是 select，5 条日本线路；极速云该组是 url-test。
+- **当前运行状态**：两份 Clash 配置（`XM-Clash-HY.yaml` / `XM-Clash-JSY.yaml`）的 rules 逐字节一致。花云 hosts 当前是 `e3585sh2-3ad5.aws-agent.org` → `180.188.20.131`、`fd025gz0-c617.aws-agent.org` → `119.147.195.213`。Google、AI、OpenBot 走 `XM-AI工具`。花云该组是 select，5 条日本线路；极速云该组是 url-test。
 
 ---
 

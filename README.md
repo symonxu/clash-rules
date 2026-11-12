@@ -41,7 +41,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 4. **启用配置**：在「远程文件」中点击刚刚下载的 `XM-Shadowrocket-HY.conf`，选择「使用配置」使其变为勾选状态。
 5. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
 
-`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同。`XM-日本` 是 select，含 5 条日本线路，Google、AI、OpenBot 都走这一组。
+`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同。`XM-AI工具` 是 select，含 5 条日本线路，Google、AI、OpenBot 都走这一组。
 
 ## 分组
 
@@ -49,7 +49,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 | 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | 类型 |
 | --- | --- | --- | --- |
-| XM-日本 | 日本_*（自动测速） | 日本高级 2、标准 1、标准 3、高级 3、标准 2（手动选） | 极速云 url-test；花云 select |
+| XM-AI工具 | 日本_*（自动测速） | 日本高级 2、标准 1、标准 3、高级 3、标准 2（手动选） | 极速云 url-test；花云 select |
 | XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | url-test |
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 极速云 fallback；花云 url-test |
 | XM-日常上网 | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | url-test |
@@ -62,14 +62,14 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 - url-test：用 `https://www.gstatic.com/generate_204` 测速，超时 5 秒。极速云每 900 秒测速、快超过 20ms 才切换；花云每 300 秒测速、快超过 10ms 就切换。
 - XM-Anki（两份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
 - 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳
-- **XM-日本**：Google、AI、OpenBot 合成这一组。花云 Clash 和小火箭是 select，5 条日本线路按 2026-11-12 测速从快到慢排列，由你手动选。极速云同名组仍是 url-test，自动选 `日本_*`。
+- **XM-AI工具**：Google、AI、OpenBot 合成这一组。花云 Clash 和小火箭是 select，5 条日本线路按 2026-11-12 测速从快到慢排列，由你手动选。极速云同名组仍是 url-test，自动选 `日本_*`。
 - **MULTI 的 XM-OpenBot 例外**：用极速云日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03，并且 rules 里比另外四份多两条 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run|openbot.site)),REJECT`。原因是极速云 AnyTLS 的 UDP 转发撑不住 TURN（连续 15 次 STUN 掉了 6 次），把 UDP 拒掉后客户端改走 TURN 的 TCP 443，只借用极速云的 TCP 线路。花云故障期间 OpenBot 和 Web3 曾经全废（花云节点健康检查全挂），所以 MULTI 的两个组都以极速云为主、花云垫底。
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。
 
 ## DNS
 
-`223.5.5.5`、`119.29.29.29`，极速云与花云两份配置全部采用标准 fake-ip 方案（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则走 XM-日本。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。不写 TUN、端口和控制器，由 App 自己管理。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
+`223.5.5.5`、`119.29.29.29`，极速云与花云两份配置全部采用标准 fake-ip 方案（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则走 XM-AI工具。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。不写 TUN、端口和控制器，由 App 自己管理。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
 
 ## 主要分流
 
@@ -79,7 +79,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
    - 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。
 2. **XM-Web3**：常用链上 RPC（Infura、Alchemy、Ankr、LlamaRPC、BlockPI、BlastAPI、Omnia Tech、Stackup、Arbitrum 等公链 RPC）、钱包（MetaMask、Phantom、WalletConnect 等）、DEX 与交易站（Uniswap、Jupiter、pump.fun、Bitget、PancakeSwap、Hyperliquid、Polymarket、Across、CoinGecko 等）。
 3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
-4. **XM-日本**：Google、Gmail、YouTube、Gemini、Cursor、ChatGPT、Claude、Notion、Slack、Apple 隐私中继，以及 `openbot.run`、`openbot.site`。花云这一组手动选节点。排在 `GEOIP,CN` 之前。
+4. **XM-AI工具**：Google、Gmail、YouTube、Gemini、Cursor、ChatGPT、Claude、Notion、Slack、Apple 隐私中继，以及 `openbot.run`、`openbot.site`。花云这一组手动选节点。排在 `GEOIP,CN` 之前。
 5. **XM-日常上网**（显式规则）：Facebook、Instagram、Threads、Messenger、WhatsApp、Meta AI、muse.ai，以及 X / Twitter（`x.com`、`twitter.com`、`twimg.com`、`t.co`、`pscp.tv`、`periscope.tv`、`twittercdn.com`，排在 `GEOIP,CN` 之前，域名命中后不再按 IP 判断）。
    - **XM-Anki**：`ankiweb.net`、`ankiuser.net`（Anki 同步，固定日本节点，排在 `GEOIP,CN` 之前；CI 校验只有这两条走 XM-Anki）。
 7. **直连**：App Store 商店页（apps.apple.com）、iCloud、Apple 地图、Game Center、Apple 推送、Apple TV 视频（tv.apple.com、sps-media.apple.com）、微信、QQ。
@@ -108,4 +108,4 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 3. 开 PR。GitHub Actions 自动跑同样的校验，通过后合并到 main，App 按链接更新即可生效。
 
 - Notion 全家（notion.so/.com/.site/.new/.ai、notion-static.com、notion-status.com、notionusercontent.com、makenotion.com、Notion Calendar 旧域 cron.com，以及文件存储 `prod-files-secure.s3.us-west-2.amazonaws.com` 精确匹配）走 XM-AI，排在 GEOIP,CN 之前，CI 校验。
-- OpenBot（`openbot.run` 含 api / analytics，以及 `openbot.site`）和 Google、AI 域名走 XM-日本，排在 GEOIP,CN 之前，CI 校验。
+- OpenBot（`openbot.run` 含 api / analytics，以及 `openbot.site`）和 Google、AI 域名走 XM-AI工具，排在 GEOIP,CN 之前，CI 校验。
