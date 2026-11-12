@@ -124,6 +124,12 @@ rules:
   - IP-CIDR6,fe80::/10,DIRECT,no-resolve
   # 屏蔽 QUIC（UDP 443），迫使 App 回落到 TCP，让域名规则生效（无嗅探时 UDP 只能按 IP 匹配）。放在局域网直连之后、域名规则之前。
   - AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
+  # Tailscale 必须直连：控制面、DERP 中转走默认规则会被送进机场，握手要 1 秒以上，登录和连接设备都会卡。
+  # 100.64.0.0/10 是 tailnet 网段（含 MagicDNS 的 100.100.100.100），任何时候都不能代理。
+  - DOMAIN-SUFFIX,tailscale.com,DIRECT
+  - DOMAIN-SUFFIX,tailscale.io,DIRECT
+  - DOMAIN-SUFFIX,ts.net,DIRECT
+  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
   - DOMAIN-SUFFIX,infura.io,XM-Web3
   - DOMAIN-SUFFIX,alchemy.com,XM-Web3
   - DOMAIN-SUFFIX,alchemyapi.io,XM-Web3

@@ -93,7 +93,8 @@ def check_file(root, file)
     abort "#{file}: fake-ip-filter missing +.apt-agent.org" unless dns.fetch('fake-ip-filter').include?('+.apt-agent.org')
     expected_hosts = {
       'e3585sh2-3ad5.aws-agent.org' => '180.188.20.131',
-      'fd025gz0-c617.aws-agent.org' => '119.147.195.213'
+      'fd025gz0-c617.aws-agent.org' => '119.147.195.213',
+      '0bc52bj8-10e0.aws-agent.org' => '58.247.187.127'
     }
     abort "#{file}: hosts must map the current Flower entrances" unless clash['hosts'] == expected_hosts
     abort "#{file}: dead Beijing entrance must not be pinned" if clash['hosts'].value?('116.242.224.8')
@@ -207,6 +208,12 @@ def check_file(root, file)
   geoip_at = rules.index('GEOIP,CN,DIRECT')
   abort 'Clash: X/Twitter must use XM-日常上网 before GEOIP,CN' unless x_rules.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: QUIC (UDP 443) must be rejected right after the LAN rules, before any domain rule' unless rules[11] == QUIC_RULE && rules.count(QUIC_RULE) == 1
+  # Tailscale 的控制面、DERP 和 MagicDNS 必须直连，并且排在第一条走策略组的域名规则之前。
+  # 不直连时 DERP 会被送进机场（握手 1 秒以上），tailnet 名称还会被假 IP 接管。
+  tailscale = ['DOMAIN-SUFFIX,tailscale.com,DIRECT', 'DOMAIN-SUFFIX,tailscale.io,DIRECT',
+               'DOMAIN-SUFFIX,ts.net,DIRECT', 'IP-CIDR,100.64.0.0/10,DIRECT,no-resolve']
+  first_group_rule = rules.index('DOMAIN-SUFFIX,infura.io,XM-Web3')
+  abort 'Clash: Tailscale must be DIRECT before the first proxied domain rule' unless tailscale.all? { |r| rules.include?(r) && rules.index(r) < first_group_rule }
   abort 'Clash: LAN ranges must be direct first' unless rules.first(11).all? { |r| r.match?(/\A(DOMAIN(-SUFFIX)?,(localhost|local|lan)|IP-CIDR6?,.*),DIRECT(,no-resolve)?\z/) }
   abort 'Clash: Bybit must use XM-Bybit' unless %w[bybit.com bybit.biz byabcde.com bycsi.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-Bybit") } && rules.none? { |r| r.match?(/by(bit|abcde|csi)/) && !r.end_with?(',XM-Bybit') }
   abort 'Clash: AI Google domains must precede Google' unless rules.index('DOMAIN-SUFFIX,gemini.google.com,XM-AI工具') < rules.index('DOMAIN-SUFFIX,google.com,XM-AI工具')
