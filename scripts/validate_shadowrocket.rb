@@ -9,14 +9,15 @@ abort 'XM-Shadowrocket-HY.conf: [Host] section missing' unless content.include?(
 abort 'XM-Shadowrocket-HY.conf: [Proxy Group] section missing' unless content.include?('[Proxy Group]')
 abort 'XM-Shadowrocket-HY.conf: [Rule] section missing' unless content.include?('[Rule]')
 abort 'XM-Shadowrocket-HY.conf: OpenBot and node domains must use always-real-ip' unless content.include?('always-real-ip = *.openbot.run, *.openbot.site, *.aws-agent.org')
-%w[180.188.20.131 119.147.195.213 223.5.5.5 119.29.29.29].each do |ip|
+abort 'XM-Shadowrocket-HY.conf: [Host] must be used for proxy connections (use-local-host-item-for-proxy = true)' unless content.match?(/^use-local-host-item-for-proxy = true$/)
+%w[180.188.20.131 119.147.195.213 58.247.187.127 223.5.5.5 119.29.29.29].each do |ip|
   abort "XM-Shadowrocket-HY.conf: #{ip} must bypass the tunnel" unless content.include?(ip) && content.match?(/^tun-excluded-routes = .*#{Regexp.escape(ip)}/)
 end
 
 hy_path = File.join(root, 'XM-Clash-HY.yaml')
 abort 'XM-Clash-HY.yaml missing' unless File.exist?(hy_path)
 hy_hosts = File.read(hy_path).scan(/^\s+([0-9a-z.-]+\.aws-agent\.org):\s+(\d+\.\d+\.\d+\.\d+)\s*$/)
-abort "XM-Clash-HY.yaml: expected the two current Flower hosts, found #{hy_hosts.size}" unless hy_hosts.size == 2
+abort "XM-Clash-HY.yaml: expected the three current Flower hosts, found #{hy_hosts.size}" unless hy_hosts.size == 3
 hy_hosts.each do |name, ip|
   abort "XM-Shadowrocket-HY.conf: host #{name} must match HY (#{ip})" unless content.include?("#{name} = #{ip}")
 end

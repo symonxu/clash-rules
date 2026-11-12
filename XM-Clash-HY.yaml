@@ -61,11 +61,12 @@ dns:
   nameserver-policy:
     '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
 # 花云节点域名 *.aws-agent.org 走加密 DNS 会解析到 147.90.*，家里到这些地址要 400ms 以上。
-# 2026-11-11 订阅实际用的是下面两个域名。写成国内入口后，到入口大约 60ms。
-# 北京 116.242.224.8 已拒绝连接，不要再写。订阅换域名要一起改。
+# 2026-11-11 订阅实际用的是下面两个域名，2026-11-12 订阅又多了 0bc52bj8-10e0（欧洲节点在用，公网已经解析到国内 58.247.187.127）。
+# 写成国内入口后，到入口大约 60ms。北京 116.242.224.8 已拒绝连接，不要再写。订阅换域名要一起改。
 hosts:
   e3585sh2-3ad5.aws-agent.org: 180.188.20.131
   fd025gz0-c617.aws-agent.org: 119.147.195.213
+  0bc52bj8-10e0.aws-agent.org: 58.247.187.127
 proxy-groups:
   # Google、AI、OpenBot 合成一组，手动从 5 条日本线路里选。顺序按 2026-11-12 08:47 测速，最快的在前。
   - name: XM-AI工具
@@ -140,6 +141,12 @@ rules:
   - IP-CIDR6,fe80::/10,DIRECT,no-resolve
   # 屏蔽 QUIC（UDP 443），迫使 App 回落到 TCP，让域名规则生效（无嗅探时 UDP 只能按 IP 匹配）。放在局域网直连之后、域名规则之前。
   - AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
+  # Tailscale 必须直连：控制面、DERP 中转走默认规则会被送进机场，握手要 1 秒以上，登录和连接设备都会卡。
+  # 100.64.0.0/10 是 tailnet 网段（含 MagicDNS 的 100.100.100.100），任何时候都不能代理。
+  - DOMAIN-SUFFIX,tailscale.com,DIRECT
+  - DOMAIN-SUFFIX,tailscale.io,DIRECT
+  - DOMAIN-SUFFIX,ts.net,DIRECT
+  - IP-CIDR,100.64.0.0/10,DIRECT,no-resolve
   - DOMAIN-SUFFIX,infura.io,XM-Web3
   - DOMAIN-SUFFIX,alchemy.com,XM-Web3
   - DOMAIN-SUFFIX,alchemyapi.io,XM-Web3
