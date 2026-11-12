@@ -18,16 +18,13 @@ hy_hosts.each do |name, ip|
   abort "XM-Shadowrocket-HY.conf: host #{name} must match HY (#{ip})" unless content.include?("#{name} = #{ip}")
 end
 
-expected_groups = ['XM-Google', 'XM-AI', 'XM-OpenBot', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
+expected_groups = ['XM-日本', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 groups = content.scan(/^([A-Za-z0-9\u4e00-\u9fa5-]+)\s*=\s*(select|url-test|fallback)/).map(&:first)
 abort "XM-Shadowrocket-HY.conf: groups must match expected 9 groups (found #{groups.inspect})" unless groups == expected_groups
 
 lines = content.lines.map(&:strip)
-pinned = '🇯🇵 日本高级 IEPL 专线 2'
-%w[XM-Google XM-AI XM-OpenBot].each do |name|
-  line = lines.find { |l| l.start_with?("#{name} =") }
-  abort "#{name} must be select pinned to 日本高级 2" unless line == "#{name} = select, #{pinned}"
-end
+japan = lines.find { |l| l.start_with?('XM-日本 =') }
+abort 'XM-日本 must be a manual select of the five Japan lines' unless japan == 'XM-日本 = select, 🇯🇵 日本高级 IEPL 专线 2, 🇯🇵 日本标准 IEPL 专线 1, 🇯🇵 日本标准 IEPL 专线 3, 🇯🇵 日本高级 IEPL 专线 3, 🇯🇵 日本标准 IEPL 专线 2'
 
 bybit_line = lines.find { |l| l.start_with?('XM-Bybit =') }
 abort 'XM-Bybit must be fallback' unless bybit_line&.include?('= fallback,')
@@ -47,4 +44,4 @@ abort 'XM-Shadowrocket-HY.conf: must end with FINAL,XM-日常上网' unless rule
 abort 'XM-Shadowrocket-HY.conf: must have GEOIP,CN,DIRECT before FINAL' unless rule_lines[-2] == 'GEOIP,CN,DIRECT'
 abort 'XM-Shadowrocket-HY.conf: must have QUIC reject rule' unless rule_lines.include?('AND,((NETWORK,UDP),(DST-PORT,443)),REJECT')
 
-puts 'Validated XM-Shadowrocket-HY.conf (9 proxy groups, 237 rules, regex filtering, correct types).'
+puts 'Validated XM-Shadowrocket-HY.conf (7 proxy groups, 237 rules, regex filtering, correct types).'
