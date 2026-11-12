@@ -9,9 +9,9 @@
 
 ## 🤝 双端 AI 交接上下文 (Antigravity ⇄ Cursor)
 
-- **最近更新端**：`OpenBot` (2026-11-11)
+- **最近更新端**：`OpenBot` (2026-11-12)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
-- **当前运行状态**：两份 Clash 配置（`XM-Clash-HY.yaml` / `XM-Clash-JSY.yaml`）的 rules 逐字节一致。花云 hosts 当前是 `e3585sh2-3ad5.aws-agent.org` → `180.188.20.131`、`fd025gz0-c617.aws-agent.org` → `119.147.195.213`。Google、AI、OpenBot 走 `XM-AI工具`。花云该组是 select，5 条日本线路；极速云该组是 url-test。
+- **当前运行状态**：两份 Clash 配置（`XM-Clash-HY.yaml` / `XM-Clash-JSY.yaml`）的 rules 逐字节一致。花云 hosts 当前是 `e3585sh2-3ad5.aws-agent.org` → `180.188.20.131`、`fd025gz0-c617.aws-agent.org` → `119.147.195.213`。花云全局 TCP 保活是闲置 30 秒、间隔 15 秒。Google、AI、OpenBot 走 `XM-AI工具`。花云该组是 select，5 条日本线路；极速云该组是 url-test。
 
 ---
 
@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-11-12**：花云 `XM-Clash-HY.yaml` 增加全局 TCP 保活：`keep-alive-idle: 30`、`keep-alive-interval: 15`、`disable-keep-alive: false`。不进规则和策略组。极速云与小火箭未改。刷新花云规则方案后生效。
 - [x] **2026-11-11**：花云订阅入口换成 `e3585sh2-3ad5.aws-agent.org`、`fd025gz0-c617.aws-agent.org`，分别写到 `180.188.20.131`、`119.147.195.213`。北京 `116.242.224.8` 已拒绝连接，从 hosts 删除。`XM-OpenBot` 改为按节点名写死顺序，因为这款 Clash 会把 filter 结果按名字重排，高级线路排不到前面。Clash 与小火箭一起改。回滚：把 hosts 和 `XM-OpenBot` 换回上一版，并还原校验脚本里的对应断言。
 - [x] **2026-10-31**：按用户指令清理未在使用的机场订阅配置，删掉 `XM-Clash-BOOST.yaml`、`XM-Clash-MESL.yaml`、`XM-Clash-SWY.yaml` 及 `XM-Clash-MULTI.yaml`，仅保留核心在用的两份配置 `XM-Clash-HY.yaml`（花云）与 `XM-Clash-JSY.yaml`（极速云），以及 `XM-Shadowrocket.conf`（小火箭）。校验脚本及文档同步精简。
 - [x] **2026-10-31**：在 XM-AI 分组中补齐 Notion 官方 AI 域名与状态服务（`notion.ai`、`notion-status.com`），规则由 234 条扩增至 236 条。六份配置文件（JSY / HY / MESL / BOOST / SWY / MULTI）与小火箭配置同步更新并通过 CI 全量校验。

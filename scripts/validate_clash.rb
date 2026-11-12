@@ -76,7 +76,10 @@ def check_file(root, file)
   prof = PROFILES.fetch(file)
   clash = YAML.safe_load(File.read(File.join(root, file)))
   expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent geox-url profile dns proxy-groups rules]
-  expected_keys << 'hosts' if file == 'XM-Clash-HY.yaml'
+  if file == 'XM-Clash-HY.yaml'
+    expected_keys += %w[hosts keep-alive-idle keep-alive-interval disable-keep-alive]
+    abort "#{file}: TCP keepalive must be idle 30s, interval 15s, and enabled" unless clash['keep-alive-idle'] == 30 && clash['keep-alive-interval'] == 15 && clash['disable-keep-alive'] == false
+  end
   abort "#{file}: unexpected top-level fields" unless clash.keys.sort == expected_keys.sort
   abort "#{file}: must not contain nodes or subscriptions" if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
   abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
