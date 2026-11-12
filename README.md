@@ -41,7 +41,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 4. **启用配置**：在「远程文件」中点击刚刚下载的 `XM-Shadowrocket-HY.conf`，选择「使用配置」使其变为勾选状态。
 5. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
 
-`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同。`XM-OpenBot` 按名字固定为日本高级 1 → 2 → 3，再标准 1 → 2 → 3 → 4。
+`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同。`XM-Google`、`XM-AI`、`XM-OpenBot` 都是 select，只含日本高级 IEPL 专线 2。
 
 ## 分组
 
@@ -49,12 +49,12 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 | 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | 类型 |
 | --- | --- | --- | --- |
-| XM-Google | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | url-test |
-| XM-AI | 日本_* | 同上 | url-test |
-| XM-OpenBot | 日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（02/03/04 家里宽带刚测是死的，放备份） | 日本高级 IEPL 专线 1–3 → 日本标准 1–4（7 个 fallback） | fallback（失败才换，不跟 XM-AI 测速绑定） |
+| XM-Google | 日本_* | 日本高级 IEPL 专线 2 | 极速云 url-test；花云 select |
+| XM-AI | 日本_* | 日本高级 IEPL 专线 2 | 极速云 url-test；花云 select |
+| XM-OpenBot | 日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（02/03/04 家里宽带刚测是死的，放备份） | 日本高级 IEPL 专线 2 | 极速云 fallback；花云 select |
 | XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | url-test |
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 极速云 fallback；花云 url-test |
-| XM-日常上网 | 日本_* | 同 XM-Google | url-test |
+| XM-日常上网 | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | url-test |
 | XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | url-test |
 | XM-Anki | 日本_01 / 日本_02 / 日本_03 | 日本高级 IEPL 专线 1 / 2 / 3 | select（手动选一个固定节点，避免同步中途切换） |
 | XM-系统更新 | DIRECT（默认）+ 日本_01–03 | DIRECT（默认）+ 日本高级 IEPL 专线 1–3 | select（系统更新默认直连走大陆 CDN，失败可手动切日本） |
@@ -64,7 +64,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 - url-test：用 `https://www.gstatic.com/generate_204` 测速，超时 5 秒。极速云每 900 秒测速、快超过 20ms 才切换；花云每 300 秒测速、快超过 10ms 就切换。
 - XM-Anki（两份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
 - 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳
-- **XM-OpenBot**：fallback。极速云顺序是日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（02/03/04 在家里宽带上刚测是死的，所以放在备份位；回滚时把 filter 和校验期望改回 02 → 03 → 04）。花云仍是日本高级 1 → 2 → 3 → 日本标准 1 → 2 → 3 → 4。排第一的节点可用就一直用它，失败才换，不跟 XM-AI 的 url-test 绑定。只用于 `openbot.run`、`openbot.site`。
+- **XM-OpenBot**：极速云仍是 fallback，顺序是日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03（02/03/04 在家里宽带上刚测是死的，所以放在备份位；回滚时把 filter 和校验期望改回 02 → 03 → 04）。花云 Clash 和小火箭的 `XM-Google`、`XM-AI`、`XM-OpenBot` 都是 select，只有日本高级 IEPL 专线 2，不再自动换节点。只用于 `openbot.run`、`openbot.site` 的是 `XM-OpenBot`。
 - **MULTI 的 XM-OpenBot 例外**：用极速云日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03，并且 rules 里比另外四份多两条 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run|openbot.site)),REJECT`。原因是极速云 AnyTLS 的 UDP 转发撑不住 TURN（连续 15 次 STUN 掉了 6 次），把 UDP 拒掉后客户端改走 TURN 的 TCP 443，只借用极速云的 TCP 线路。花云故障期间 OpenBot 和 Web3 曾经全废（花云节点健康检查全挂），所以 MULTI 的两个组都以极速云为主、花云垫底。
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。

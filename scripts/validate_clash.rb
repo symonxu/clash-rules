@@ -71,8 +71,8 @@ INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：exa
 PROFILES = {
   'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit', 'XM-OpenBot'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
-  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: ['XM-OpenBot'], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                          bybit_order: nil }
+  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
+                          bybit_order: nil, pinned: ['XM-Google', 'XM-AI', 'XM-OpenBot'] }
 }.freeze
 
 def check_file(root, file)
@@ -107,10 +107,16 @@ def check_file(root, file)
   abort "#{file}: groups must be exactly the nine XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
   manual = %w[XM-Anki XM-系统更新]
+  pinned = prof[:pinned] || []
+  pinned_node = '🇯🇵 日本高级 IEPL 专线 2'
   samples = prof[:samples] + HK_SAMPLES + prof[:expected].values.flatten.uniq.flat_map { |n| hk_variants(n) }
   hk_direct = HK_SAMPLES + (1..15).flat_map { |n| ['🇭🇰 香港 %02d' % n, '🇭🇰 香港_%02d' % n, '🇭🇰 香港HKT家宽%d' % n] + TIERS.map { |t| "🇭🇰 香港#{t} IEPL 专线 #{n}" } }
   groups.each do |g|
     name = g['name']
+    if pinned.include?(name)
+      abort "#{file}: #{name} must be a select pinned to #{pinned_node}" unless g['type'] == 'select' && g['proxies'] == [pinned_node] && (g.keys - %w[name type proxies]).empty?
+      next
+    end
     if name == 'XM-OpenBot'
       want = prof[:expected][name]
       abort "#{file}: XM-OpenBot must be an ordered fallback list" unless (g.keys - %w[name type proxies url interval timeout]).empty? && g['type'] == 'fallback' && !g.key?('tolerance') && g['url'] == TEST_URL && g['interval'] == prof[:interval] && g['timeout'] == 5000 && g['proxies'] == want

@@ -23,9 +23,11 @@ groups = content.scan(/^([A-Za-z0-9\u4e00-\u9fa5-]+)\s*=\s*(select|url-test|fall
 abort "XM-Shadowrocket-HY.conf: groups must match expected 9 groups (found #{groups.inspect})" unless groups == expected_groups
 
 lines = content.lines.map(&:strip)
-openbot_line = lines.find { |l| l.start_with?('XM-OpenBot =') }
-abort 'XM-OpenBot must be fallback' unless openbot_line&.include?('= fallback,')
-abort 'XM-OpenBot must list 高级 before 标准' unless openbot_line&.index('日本高级 IEPL 专线 1')&.< openbot_line.index('日本标准 IEPL 专线 1').to_i
+pinned = '🇯🇵 日本高级 IEPL 专线 2'
+%w[XM-Google XM-AI XM-OpenBot].each do |name|
+  line = lines.find { |l| l.start_with?("#{name} =") }
+  abort "#{name} must be select pinned to 日本高级 2" unless line == "#{name} = select, #{pinned}"
+end
 
 bybit_line = lines.find { |l| l.start_with?('XM-Bybit =') }
 abort 'XM-Bybit must be fallback' unless bybit_line&.include?('= fallback,')
