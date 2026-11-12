@@ -8,7 +8,10 @@ abort 'XM-Shadowrocket-HY.conf: [General] section missing' unless content.includ
 abort 'XM-Shadowrocket-HY.conf: [Host] section missing' unless content.include?('[Host]')
 abort 'XM-Shadowrocket-HY.conf: [Proxy Group] section missing' unless content.include?('[Proxy Group]')
 abort 'XM-Shadowrocket-HY.conf: [Rule] section missing' unless content.include?('[Rule]')
-abort 'XM-Shadowrocket-HY.conf: OpenBot domains must use always-real-ip' unless content.include?('always-real-ip = *.openbot.run, *.openbot.site')
+abort 'XM-Shadowrocket-HY.conf: OpenBot and node domains must use always-real-ip' unless content.include?('always-real-ip = *.openbot.run, *.openbot.site, *.aws-agent.org')
+%w[180.188.20.131 119.147.195.213 223.5.5.5 119.29.29.29].each do |ip|
+  abort "XM-Shadowrocket-HY.conf: #{ip} must bypass the tunnel" unless content.include?(ip) && content.match?(/^tun-excluded-routes = .*#{Regexp.escape(ip)}/)
+end
 
 hy_path = File.join(root, 'XM-Clash-HY.yaml')
 abort 'XM-Clash-HY.yaml missing' unless File.exist?(hy_path)

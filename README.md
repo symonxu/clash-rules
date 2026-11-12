@@ -41,7 +41,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 4. **启用配置**：在「远程文件」中点击刚刚下载的 `XM-Shadowrocket-HY.conf`，选择「使用配置」使其变为勾选状态。
 5. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
 
-`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同。`XM-AI工具` 是 select，含 5 条日本线路，Google、AI、OpenBot 都走这一组。
+`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同。节点入口和国内 DNS 写在 `skip-proxy`、`tun-excluded-routes` 里，避免手机把节点连接吸进隧道后全部超时。`XM-AI工具` 是 select，含 5 条日本线路，Google、AI、OpenBot 都走这一组。
 
 ## 分组
 
