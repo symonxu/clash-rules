@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-11-12**：小火箭 `XM-AI工具` 改回按节点名正则手动选择那 5 条日本线路，不再把带国旗的节点名写死。写死后小火箭对不上花云订阅，更新配置会整份连不上。规则段里的注释也删了。Mac 上的 Clash 仍是写死的 5 个节点，那边连接正常。
 - [x] **2026-11-12**：`XM-AI工具` 增加 OpenCode（`opencode.ai`、`models.dev`）和 OpenCode 文档里的第三方模型接口，共 39 条。`openrouter.ai` 原来就在这组。国内端点（`.cn`、阿里云、火山）和客户自建的 Azure、Bedrock 地址没写。Clash 两份规则和小火箭一起改，规则从 237 条增到 276 条。
 - [x] **2026-11-12**：花云 `XM-Clash-HY.yaml` 增加全局 TCP 保活：`keep-alive-idle: 30`、`keep-alive-interval: 15`、`disable-keep-alive: false`。不进规则和策略组。极速云与小火箭未改。刷新花云规则方案后生效。
 - [x] **2026-11-11**：花云订阅入口换成 `e3585sh2-3ad5.aws-agent.org`、`fd025gz0-c617.aws-agent.org`，分别写到 `180.188.20.131`、`119.147.195.213`。北京 `116.242.224.8` 已拒绝连接，从 hosts 删除。`XM-OpenBot` 改为按节点名写死顺序，因为这款 Clash 会把 filter 结果按名字重排，高级线路排不到前面。Clash 与小火箭一起改。回滚：把 hosts 和 `XM-OpenBot` 换回上一版，并还原校验脚本里的对应断言。

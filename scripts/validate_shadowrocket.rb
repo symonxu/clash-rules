@@ -24,7 +24,7 @@ abort "XM-Shadowrocket-HY.conf: groups must match expected 9 groups (found #{gro
 
 lines = content.lines.map(&:strip)
 japan = lines.find { |l| l.start_with?('XM-AI工具 =') }
-abort 'XM-AI工具 must be a manual select of the five Japan lines' unless japan == 'XM-AI工具 = select, 🇯🇵 日本高级 IEPL 专线 2, 🇯🇵 日本标准 IEPL 专线 1, 🇯🇵 日本标准 IEPL 专线 3, 🇯🇵 日本高级 IEPL 专线 3, 🇯🇵 日本标准 IEPL 专线 2'
+abort 'XM-AI工具 must be a manual select filtered to the five Japan lines, without hardcoded emoji names' unless japan == 'XM-AI工具 = select, policy-regex-filter=^(?!.*(香港|HK|Hong ?Kong|🇭🇰|实验性|备用|只有备用|剩余|流量|套餐|到期|官网)).*日本(高级 IEPL 专线 2|标准 IEPL 专线 1|标准 IEPL 专线 3|高级 IEPL 专线 3|标准 IEPL 专线 2)$'
 
 bybit_line = lines.find { |l| l.start_with?('XM-Bybit =') }
 abort 'XM-Bybit must be fallback' unless bybit_line&.include?('= fallback,')
