@@ -30,7 +30,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## 在小火箭（Shadowrocket）里怎么用
 
-小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket-HY.conf`，内置九大分流策略组与全部 237 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配花云订阅中的节点：
+小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket-HY.conf`，内置九大分流策略组与全部 276 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配花云订阅中的节点：
 
 配置链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-HY.conf
 
