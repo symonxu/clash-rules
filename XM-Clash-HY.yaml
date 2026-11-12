@@ -9,6 +9,10 @@ log-level: warning
 ipv6: false
 unified-delay: true
 tcp-concurrent: true
+# TCP 保活，作用于全部连接：闲置 30 秒后开始探测，之后每 15 秒一次。
+keep-alive-idle: 30
+keep-alive-interval: 15
+disable-keep-alive: false
 # GEOIP 数据库用 jsDelivr 国内可达镜像（默认 GitHub 地址在大陆常下载失败）。
 geox-url:
   geoip: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat'
