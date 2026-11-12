@@ -50,7 +50,8 @@ dns:
   nameserver-policy:
     '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
 proxy-groups:
-  - name: XM-Google
+  # 与花云同一组名。极速云仍自动测速全部日本_*，不改成花云那 5 条专线。
+  - name: XM-日本
     type: url-test
     include-all: true
     filter: '(^| )日本_[0-9]+$'
@@ -58,30 +59,6 @@ proxy-groups:
     url: https://www.gstatic.com/generate_204
     interval: 900
     tolerance: 20
-    timeout: 5000
-  - name: XM-AI
-    type: url-test
-    include-all: true
-    filter: '(^| )日本_[0-9]+$'
-    exclude-filter: '(?i)剩余|流量|套餐|到期|过期|官网|重置|订阅|香港|HK|Hong ?Kong|🇭🇰'
-    url: https://www.gstatic.com/generate_204
-    interval: 900
-    tolerance: 20
-    timeout: 5000
-  # OpenBot：fallback。用 proxies 写死顺序（01 → 07 → 05 → 08 → 06 → 04 → 02 → 03）。02/03/04 放最后。
-  - name: XM-OpenBot
-    type: fallback
-    proxies:
-      - 🇯🇵 日本_01
-      - 🇯🇵 日本_07
-      - 🇯🇵 日本_05
-      - 🇯🇵 日本_08
-      - 🇯🇵 日本_06
-      - 🇯🇵 日本_04
-      - 🇯🇵 日本_02
-      - 🇯🇵 日本_03
-    url: https://www.gstatic.com/generate_204
-    interval: 900
     timeout: 5000
   - name: XM-Web3
     type: url-test
@@ -203,90 +180,90 @@ rules:
   - DOMAIN-SUFFIX,polymarket.com,XM-Web3
   - DOMAIN-SUFFIX,across.to,XM-Web3
   - DOMAIN-SUFFIX,coingecko.com,XM-Web3
-  - DOMAIN-SUFFIX,apple-relay.apple.com,XM-AI
-  - DOMAIN-SUFFIX,apple-relay.cloudflare.com,XM-AI
-  - DOMAIN-SUFFIX,apple-relay.fastly-edge.com,XM-AI
-  - DOMAIN-KEYWORD,apple-relay,XM-AI
-  - DOMAIN,smoot.apple.com,XM-AI
-  - DOMAIN,guzzoni.apple.com,XM-AI
-  - DOMAIN-SUFFIX,chatgpt.com,XM-AI
-  - DOMAIN-SUFFIX,openai.com,XM-AI
-  - DOMAIN-SUFFIX,oaistatic.com,XM-AI
-  - DOMAIN-SUFFIX,oaiusercontent.com,XM-AI
-  - DOMAIN-SUFFIX,sora.com,XM-AI
-  - DOMAIN-SUFFIX,chatgpt.livekit.cloud,XM-AI
-  - DOMAIN-SUFFIX,host.livekit.cloud,XM-AI
-  - DOMAIN-SUFFIX,turn.livekit.cloud,XM-AI
-  - DOMAIN,openai-api.arkoselabs.com,XM-AI
-  - DOMAIN-SUFFIX,anthropic.com,XM-AI
-  - DOMAIN-SUFFIX,claude.ai,XM-AI
-  - DOMAIN-SUFFIX,claude.com,XM-AI
-  - DOMAIN-SUFFIX,claudeusercontent.com,XM-AI
-  - DOMAIN-SUFFIX,perplexity.ai,XM-AI
-  - DOMAIN-SUFFIX,perplexity.com,XM-AI
-  - DOMAIN-SUFFIX,pplx.ai,XM-AI
-  - DOMAIN-SUFFIX,cursor.com,XM-AI
-  - DOMAIN-SUFFIX,cursor.sh,XM-AI
-  - DOMAIN-SUFFIX,cursor-cdn.com,XM-AI
-  - DOMAIN-SUFFIX,cursorapi.com,XM-AI
-  - DOMAIN-SUFFIX,cursorvm.com,XM-AI
-  - DOMAIN-SUFFIX,openrouter.ai,XM-AI
-  - DOMAIN-SUFFIX,x.ai,XM-AI
-  - DOMAIN-SUFFIX,grokbot.com,XM-AI
-  - DOMAIN-SUFFIX,grok.com,XM-AI
-  - DOMAIN-SUFFIX,grokusercontent.com,XM-AI
-  - DOMAIN-SUFFIX,grokipedia.com,XM-AI
-  - DOMAIN-SUFFIX,gemini.google.com,XM-AI
-  - DOMAIN-SUFFIX,gemini.google,XM-AI
-  - DOMAIN-SUFFIX,aistudio.google.com,XM-AI
-  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,XM-AI
-  - DOMAIN-SUFFIX,ai.google.dev,XM-AI
-  - DOMAIN,proactivebackend-pa.googleapis.com,XM-AI
-  # Notion（含 Notion Calendar / Mail）走 XM-AI。
-  - DOMAIN-SUFFIX,notion.so,XM-AI
-  - DOMAIN-SUFFIX,notion.com,XM-AI
-  - DOMAIN-SUFFIX,notion.site,XM-AI
-  - DOMAIN-SUFFIX,notion.new,XM-AI
-  - DOMAIN-SUFFIX,notion.ai,XM-AI
-  - DOMAIN-SUFFIX,notion-static.com,XM-AI
-  - DOMAIN-SUFFIX,notion-status.com,XM-AI
-  - DOMAIN-SUFFIX,notionusercontent.com,XM-AI
-  - DOMAIN-SUFFIX,makenotion.com,XM-AI
-  - DOMAIN-SUFFIX,cron.com,XM-AI
-  - DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI
-  - DOMAIN,geller-pa.googleapis.com,XM-AI
-  - DOMAIN-SUFFIX,slack.com,XM-AI
-  - DOMAIN-SUFFIX,slack-core.com,XM-AI
-  - DOMAIN-SUFFIX,slack-edge.com,XM-AI
-  - DOMAIN-SUFFIX,slack-files.com,XM-AI
-  - DOMAIN-SUFFIX,slack-imgs.com,XM-AI
-  - DOMAIN-SUFFIX,slack-msgs.com,XM-AI
-  - DOMAIN-SUFFIX,slack-redir.net,XM-AI
-  - DOMAIN-SUFFIX,slackb.com,XM-AI
-  - DOMAIN-SUFFIX,slackhq.com,XM-AI
-  # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-OpenBot。fallback，不跟 XM-AI 测速绑定。
-  - DOMAIN-SUFFIX,openbot.run,XM-OpenBot
-  - DOMAIN-SUFFIX,openbot.site,XM-OpenBot
-  - DOMAIN-SUFFIX,google.com,XM-Google
-  - DOMAIN-SUFFIX,google.com.hk,XM-Google
-  - DOMAIN-SUFFIX,googleapis.com,XM-Google
-  - DOMAIN-SUFFIX,googleapis.cn,XM-Google
-  - DOMAIN-SUFFIX,gstatic.com,XM-Google
-  - DOMAIN-SUFFIX,googleusercontent.com,XM-Google
-  - DOMAIN-SUFFIX,gmail.com,XM-Google
-  - DOMAIN-SUFFIX,googlemail.com,XM-Google
-  - DOMAIN-SUFFIX,ggpht.com,XM-Google
-  - DOMAIN-SUFFIX,gvt1.com,XM-Google
-  - DOMAIN-SUFFIX,gvt2.com,XM-Google
-  - DOMAIN-SUFFIX,gvt3.com,XM-Google
-  - DOMAIN-SUFFIX,youtube.com,XM-Google
-  - DOMAIN-SUFFIX,youtube-nocookie.com,XM-Google
-  - DOMAIN-SUFFIX,youtu.be,XM-Google
-  - DOMAIN-SUFFIX,ytimg.com,XM-Google
-  - DOMAIN-SUFFIX,googlevideo.com,XM-Google
-  - DOMAIN-SUFFIX,goog,XM-Google
-  - DOMAIN-SUFFIX,google-analytics.com,XM-Google
-  - DOMAIN,antigravity-hub-auto-updater-974169037036.us-central1.run.app,XM-Google
+  - DOMAIN-SUFFIX,apple-relay.apple.com,XM-日本
+  - DOMAIN-SUFFIX,apple-relay.cloudflare.com,XM-日本
+  - DOMAIN-SUFFIX,apple-relay.fastly-edge.com,XM-日本
+  - DOMAIN-KEYWORD,apple-relay,XM-日本
+  - DOMAIN,smoot.apple.com,XM-日本
+  - DOMAIN,guzzoni.apple.com,XM-日本
+  - DOMAIN-SUFFIX,chatgpt.com,XM-日本
+  - DOMAIN-SUFFIX,openai.com,XM-日本
+  - DOMAIN-SUFFIX,oaistatic.com,XM-日本
+  - DOMAIN-SUFFIX,oaiusercontent.com,XM-日本
+  - DOMAIN-SUFFIX,sora.com,XM-日本
+  - DOMAIN-SUFFIX,chatgpt.livekit.cloud,XM-日本
+  - DOMAIN-SUFFIX,host.livekit.cloud,XM-日本
+  - DOMAIN-SUFFIX,turn.livekit.cloud,XM-日本
+  - DOMAIN,openai-api.arkoselabs.com,XM-日本
+  - DOMAIN-SUFFIX,anthropic.com,XM-日本
+  - DOMAIN-SUFFIX,claude.ai,XM-日本
+  - DOMAIN-SUFFIX,claude.com,XM-日本
+  - DOMAIN-SUFFIX,claudeusercontent.com,XM-日本
+  - DOMAIN-SUFFIX,perplexity.ai,XM-日本
+  - DOMAIN-SUFFIX,perplexity.com,XM-日本
+  - DOMAIN-SUFFIX,pplx.ai,XM-日本
+  - DOMAIN-SUFFIX,cursor.com,XM-日本
+  - DOMAIN-SUFFIX,cursor.sh,XM-日本
+  - DOMAIN-SUFFIX,cursor-cdn.com,XM-日本
+  - DOMAIN-SUFFIX,cursorapi.com,XM-日本
+  - DOMAIN-SUFFIX,cursorvm.com,XM-日本
+  - DOMAIN-SUFFIX,openrouter.ai,XM-日本
+  - DOMAIN-SUFFIX,x.ai,XM-日本
+  - DOMAIN-SUFFIX,grokbot.com,XM-日本
+  - DOMAIN-SUFFIX,grok.com,XM-日本
+  - DOMAIN-SUFFIX,grokusercontent.com,XM-日本
+  - DOMAIN-SUFFIX,grokipedia.com,XM-日本
+  - DOMAIN-SUFFIX,gemini.google.com,XM-日本
+  - DOMAIN-SUFFIX,gemini.google,XM-日本
+  - DOMAIN-SUFFIX,aistudio.google.com,XM-日本
+  - DOMAIN-SUFFIX,generativelanguage.googleapis.com,XM-日本
+  - DOMAIN-SUFFIX,ai.google.dev,XM-日本
+  - DOMAIN,proactivebackend-pa.googleapis.com,XM-日本
+  # Notion（含 Notion Calendar / Mail）走 XM-日本。
+  - DOMAIN-SUFFIX,notion.so,XM-日本
+  - DOMAIN-SUFFIX,notion.com,XM-日本
+  - DOMAIN-SUFFIX,notion.site,XM-日本
+  - DOMAIN-SUFFIX,notion.new,XM-日本
+  - DOMAIN-SUFFIX,notion.ai,XM-日本
+  - DOMAIN-SUFFIX,notion-static.com,XM-日本
+  - DOMAIN-SUFFIX,notion-status.com,XM-日本
+  - DOMAIN-SUFFIX,notionusercontent.com,XM-日本
+  - DOMAIN-SUFFIX,makenotion.com,XM-日本
+  - DOMAIN-SUFFIX,cron.com,XM-日本
+  - DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-日本
+  - DOMAIN,geller-pa.googleapis.com,XM-日本
+  - DOMAIN-SUFFIX,slack.com,XM-日本
+  - DOMAIN-SUFFIX,slack-core.com,XM-日本
+  - DOMAIN-SUFFIX,slack-edge.com,XM-日本
+  - DOMAIN-SUFFIX,slack-files.com,XM-日本
+  - DOMAIN-SUFFIX,slack-imgs.com,XM-日本
+  - DOMAIN-SUFFIX,slack-msgs.com,XM-日本
+  - DOMAIN-SUFFIX,slack-redir.net,XM-日本
+  - DOMAIN-SUFFIX,slackb.com,XM-日本
+  - DOMAIN-SUFFIX,slackhq.com,XM-日本
+  # OpenBot（openbot.run 含 api / analytics，以及 openbot.site）走 XM-日本。
+  - DOMAIN-SUFFIX,openbot.run,XM-日本
+  - DOMAIN-SUFFIX,openbot.site,XM-日本
+  - DOMAIN-SUFFIX,google.com,XM-日本
+  - DOMAIN-SUFFIX,google.com.hk,XM-日本
+  - DOMAIN-SUFFIX,googleapis.com,XM-日本
+  - DOMAIN-SUFFIX,googleapis.cn,XM-日本
+  - DOMAIN-SUFFIX,gstatic.com,XM-日本
+  - DOMAIN-SUFFIX,googleusercontent.com,XM-日本
+  - DOMAIN-SUFFIX,gmail.com,XM-日本
+  - DOMAIN-SUFFIX,googlemail.com,XM-日本
+  - DOMAIN-SUFFIX,ggpht.com,XM-日本
+  - DOMAIN-SUFFIX,gvt1.com,XM-日本
+  - DOMAIN-SUFFIX,gvt2.com,XM-日本
+  - DOMAIN-SUFFIX,gvt3.com,XM-日本
+  - DOMAIN-SUFFIX,youtube.com,XM-日本
+  - DOMAIN-SUFFIX,youtube-nocookie.com,XM-日本
+  - DOMAIN-SUFFIX,youtu.be,XM-日本
+  - DOMAIN-SUFFIX,ytimg.com,XM-日本
+  - DOMAIN-SUFFIX,googlevideo.com,XM-日本
+  - DOMAIN-SUFFIX,goog,XM-日本
+  - DOMAIN-SUFFIX,google-analytics.com,XM-日本
+  - DOMAIN,antigravity-hub-auto-updater-974169037036.us-central1.run.app,XM-日本
   - DOMAIN-SUFFIX,meta.com,XM-日常上网
   - DOMAIN-SUFFIX,meta.ai,XM-日常上网
   - DOMAIN-SUFFIX,facebook.com,XM-日常上网
