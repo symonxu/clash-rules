@@ -6,7 +6,7 @@ root = File.expand_path('..', __dir__)
 # 花云另有 hosts：3 个 *.aws-agent.org 写成国内入口 IP。Clash 组合规则方案时丢掉订阅里的 hosts。
 # 不含节点或订阅；两份用 include-all + filter + exclude-filter。
 FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml'].freeze
-GROUP_NAMES = ['XM-日本', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
+GROUP_NAMES = ['XM-AI工具', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 OPENBOT_UDP_RULES = [
   'AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run)),REJECT',
@@ -25,7 +25,7 @@ end
 # 节点名形如「🇯🇵 日本_05」「🇸🇬 新加坡_02」（以下全是虚构样例，不是真实节点）；另有「剩余流量」「套餐到期」等信息条目，必须被排除。
 jp = (1..12).map { |n| '🇯🇵 日本_%02d' % n }
 JSY_EXPECTED = {
-  'XM-日本' => jp, 'XM-日常上网' => jp,
+  'XM-AI工具' => jp, 'XM-日常上网' => jp,
   'XM-Web3' => ['🇲🇾 马来西亚', '🇵🇭 菲律宾', '🇻🇳 越南'],
   'XM-Bybit' => (1..12).map { |n| '🇹🇼 台湾_%02d' % n },
   'XM-Apple' => (1..3).map { |n| '🇺🇸 美国_%02d' % n },
@@ -69,7 +69,7 @@ PROFILES = {
   'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
                            bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
   'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                          bybit_order: nil, pinned: { 'XM-日本' => ['🇯🇵 日本高级 IEPL 专线 2', '🇯🇵 日本标准 IEPL 专线 1', '🇯🇵 日本标准 IEPL 专线 3', '🇯🇵 日本高级 IEPL 专线 3', '🇯🇵 日本标准 IEPL 专线 2'] } }
+                          bybit_order: nil, pinned: { 'XM-AI工具' => ['🇯🇵 日本高级 IEPL 专线 2', '🇯🇵 日本标准 IEPL 专线 1', '🇯🇵 日本标准 IEPL 专线 3', '🇯🇵 日本高级 IEPL 专线 3', '🇯🇵 日本标准 IEPL 专线 2'] } }
 }.freeze
 
 def check_file(root, file)
@@ -206,17 +206,17 @@ def check_file(root, file)
   abort 'Clash: QUIC (UDP 443) must be rejected right after the LAN rules, before any domain rule' unless rules[11] == QUIC_RULE && rules.count(QUIC_RULE) == 1
   abort 'Clash: LAN ranges must be direct first' unless rules.first(11).all? { |r| r.match?(/\A(DOMAIN(-SUFFIX)?,(localhost|local|lan)|IP-CIDR6?,.*),DIRECT(,no-resolve)?\z/) }
   abort 'Clash: Bybit must use XM-Bybit' unless %w[bybit.com bybit.biz byabcde.com bycsi.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-Bybit") } && rules.none? { |r| r.match?(/by(bit|abcde|csi)/) && !r.end_with?(',XM-Bybit') }
-  abort 'Clash: AI Google domains must precede Google' unless rules.index('DOMAIN-SUFFIX,gemini.google.com,XM-日本') < rules.index('DOMAIN-SUFFIX,google.com,XM-日本')
+  abort 'Clash: AI Google domains must precede Google' unless rules.index('DOMAIN-SUFFIX,gemini.google.com,XM-AI工具') < rules.index('DOMAIN-SUFFIX,google.com,XM-AI工具')
   # Apple TV 走 XM-Apple；App Store 不得走 XM-Apple（美国节点）；iCloud、推送、系统更新必须保持直连。
   tv = ['DOMAIN-SUFFIX,tv.apple.com', 'DOMAIN-SUFFIX,pancake.apple.com'] + %w[play-edge hls np-edge uts-api].map { |h| "DOMAIN,#{h}.itunes.apple.com" }
   abort 'Clash: Apple TV must use XM-Apple' unless tv.all? { |d| rules.include?("#{d},XM-Apple") }
   abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless tv.all? { |d| rules.index("#{d},XM-Apple") < rules.index('DOMAIN-SUFFIX,itunes.apple.com,XM-日常上网').to_i }
-  notion = %w[notion.so notion.com notion.site notion.new notion.ai notion-static.com notion-status.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-日本" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-日本']
-  abort 'Clash: Notion must use XM-日本 before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
-  abort 'Clash: Notion domains must only use XM-日本' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-日本') }
-  openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-日本" }
-  abort 'Clash: OpenBot must use XM-日本 before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
-  abort "#{file}: OpenBot domains must only use XM-日本 or REJECT" unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-日本', ',REJECT') }
+  notion = %w[notion.so notion.com notion.site notion.new notion.ai notion-static.com notion-status.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI工具" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI工具']
+  abort 'Clash: Notion must use XM-AI工具 before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
+  abort 'Clash: Notion domains must only use XM-AI工具' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI工具') }
+  openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI工具" }
+  abort 'Clash: OpenBot must use XM-AI工具 before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
+  abort "#{file}: OpenBot domains must only use XM-AI工具 or REJECT" unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-AI工具', ',REJECT') }
   abort "#{file}: OpenBot UDP reject rules must not be present" if OPENBOT_UDP_RULES.any? { |r| rules.include?(r) }
   anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
   abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
