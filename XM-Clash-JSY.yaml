@@ -208,6 +208,46 @@ rules:
   - DOMAIN-SUFFIX,cursorapi.com,XM-AI工具
   - DOMAIN-SUFFIX,cursorvm.com,XM-AI工具
   - DOMAIN-SUFFIX,openrouter.ai,XM-AI工具
+  # OpenCode 与 OpenRouter 的第三方模型接口。openrouter.ai 已在上面。国内端点和客户自建云地址不写这里。
+  - DOMAIN-SUFFIX,opencode.ai,XM-AI工具
+  - DOMAIN-SUFFIX,models.dev,XM-AI工具
+  - DOMAIN-SUFFIX,302.ai,XM-AI工具
+  - DOMAIN-SUFFIX,ai21.com,XM-AI工具
+  - DOMAIN-SUFFIX,baseten.co,XM-AI工具
+  - DOMAIN-SUFFIX,cerebras.ai,XM-AI工具
+  - DOMAIN-SUFFIX,chutes.ai,XM-AI工具
+  - DOMAIN-SUFFIX,cohere.com,XM-AI工具
+  - DOMAIN-SUFFIX,cortecs.ai,XM-AI工具
+  - DOMAIN-SUFFIX,deepinfra.com,XM-AI工具
+  - DOMAIN-SUFFIX,deepseek.com,XM-AI工具
+  - DOMAIN-SUFFIX,do-ai.run,XM-AI工具
+  - DOMAIN-SUFFIX,edenai.run,XM-AI工具
+  - DOMAIN-SUFFIX,fireworks.ai,XM-AI工具
+  - DOMAIN-SUFFIX,frogbot.ai,XM-AI工具
+  - DOMAIN-SUFFIX,githubcopilot.com,XM-AI工具
+  - DOMAIN-SUFFIX,gmi-serving.com,XM-AI工具
+  - DOMAIN-SUFFIX,groq.com,XM-AI工具
+  - DOMAIN-SUFFIX,helicone.ai,XM-AI工具
+  - DOMAIN-SUFFIX,huggingface.co,XM-AI工具
+  - DOMAIN-SUFFIX,intelligence.io.solutions,XM-AI工具
+  - DOMAIN-SUFFIX,kilo.ai,XM-AI工具
+  - DOMAIN-SUFFIX,minimax.io,XM-AI工具
+  - DOMAIN-SUFFIX,mistral.ai,XM-AI工具
+  - DOMAIN-SUFFIX,modal.direct,XM-AI工具
+  - DOMAIN-SUFFIX,moonshot.ai,XM-AI工具
+  - DOMAIN-SUFFIX,novita.ai,XM-AI工具
+  - DOMAIN-SUFFIX,ollama.com,XM-AI工具
+  - DOMAIN-SUFFIX,poe.com,XM-AI工具
+  - DOMAIN-SUFFIX,sambanova.ai,XM-AI工具
+  - DOMAIN-SUFFIX,scaleway.ai,XM-AI工具
+  - DOMAIN-SUFFIX,together.ai,XM-AI工具
+  - DOMAIN-SUFFIX,together.xyz,XM-AI工具
+  - DOMAIN-SUFFIX,venice.ai,XM-AI工具
+  - DOMAIN-SUFFIX,z.ai,XM-AI工具
+  - DOMAIN-SUFFIX,zenmux.ai,XM-AI工具
+  - DOMAIN,integrate.api.nvidia.com,XM-AI工具
+  - DOMAIN,api.tokenfactory.nebius.com,XM-AI工具
+  - DOMAIN,ai-gateway.vercel.sh,XM-AI工具
   - DOMAIN-SUFFIX,x.ai,XM-AI工具
   - DOMAIN-SUFFIX,grokbot.com,XM-AI工具
   - DOMAIN-SUFFIX,grok.com,XM-AI工具

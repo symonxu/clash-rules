@@ -217,6 +217,10 @@ def check_file(root, file)
   notion = %w[notion.so notion.com notion.site notion.new notion.ai notion-static.com notion-status.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI工具" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI工具']
   abort 'Clash: Notion must use XM-AI工具 before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: Notion domains must only use XM-AI工具' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI工具') }
+  model_suffixes = %w[opencode.ai models.dev 302.ai ai21.com baseten.co cerebras.ai chutes.ai cohere.com cortecs.ai deepinfra.com deepseek.com do-ai.run edenai.run fireworks.ai frogbot.ai githubcopilot.com gmi-serving.com groq.com helicone.ai huggingface.co intelligence.io.solutions kilo.ai minimax.io mistral.ai modal.direct moonshot.ai novita.ai ollama.com poe.com sambanova.ai scaleway.ai together.ai together.xyz venice.ai z.ai zenmux.ai]
+  model_hosts = %w[integrate.api.nvidia.com api.tokenfactory.nebius.com ai-gateway.vercel.sh]
+  model_apis = model_suffixes.map { |d| "DOMAIN-SUFFIX,#{d},XM-AI工具" } + model_hosts.map { |d| "DOMAIN,#{d},XM-AI工具" }
+  abort 'Clash: OpenCode and third-party model APIs must use XM-AI工具 before GEOIP,CN' unless model_apis.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   openbot = %w[openbot.run openbot.site].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI工具" }
   abort 'Clash: OpenBot must use XM-AI工具 before GEOIP,CN' unless openbot.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort "#{file}: OpenBot domains must only use XM-AI工具 or REJECT" unless rules.select { |r| r.include?('openbot') }.all? { |r| r.end_with?(',XM-AI工具', ',REJECT') }
