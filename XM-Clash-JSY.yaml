@@ -41,6 +41,7 @@ dns:
     - '+.akamaiedge.net'
     - '+.openbot.run'
     - '+.openbot.site'
+    - '+.ts.net'
   default-nameserver:
     - 223.5.5.5
     - 119.29.29.29
@@ -49,6 +50,11 @@ dns:
     - 119.29.29.29
   nameserver-policy:
     '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
+    '+.ts.net': ['100.100.100.100']
+# 放行 Tailscale CGNAT 网段（含 MagicDNS 100.100.100.100）出 TUN，由官方 Tailscale 客户端直接接管。
+tun:
+  route-exclude-address:
+    - 100.64.0.0/10
 proxy-groups:
   # 与花云同一组名。极速云仍自动测速全部日本_*，不改成花云那 5 条专线。
   - name: XM-AI工具

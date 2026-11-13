@@ -9,7 +9,7 @@
 
 ## 🤝 双端 AI 交接上下文 (Antigravity ⇄ Cursor)
 
-- **最近更新端**：`OpenBot` (2026-11-12)
+- **最近更新端**：`OpenBot` (2026-11-13)
 - **GitHub 仓库**：`https://github.com/symonxu/clash-rules` (Public, 分支 `main`)
 - **当前运行状态**：两份 Clash 配置（`XM-Clash-HY.yaml` / `XM-Clash-JSY.yaml`）的 rules 逐字节一致。花云 hosts 当前是 `e3585sh2-3ad5.aws-agent.org` → `180.188.20.131`、`fd025gz0-c617.aws-agent.org` → `119.147.195.213`、`0bc52bj8-10e0.aws-agent.org` → `58.247.187.127`。花云全局 TCP 保活是闲置 30 秒、间隔 15 秒。Google、AI、OpenBot、OpenCode 和文档里的第三方模型接口走 `XM-AI工具`。花云该组是 select，5 条日本线路；极速云该组是 url-test。
 
@@ -23,6 +23,7 @@
 
 ## ✅ 最近已完成 (Recently Completed)
 
+- [x] **2026-11-13**：彻底解决 Clash TUN 与官方 Tailscale App 共存时的 MagicDNS 劫持与路由问题（`XM-Clash-HY.yaml`、`XM-Clash-JSY.yaml`、`scripts/validate_clash.rb`）。实测 Mac 本机官方 Tailscale 已能直连 iPhone（`100.110.9.29`），但 Clash TUN 把 `*.ts.net` 劫持为 fake-ip（`198.18.*`），且默认接管路由表需要排除 `100.64.0.0/10`。本次在两份 Clash 配置中同步：① `dns.fake-ip-filter` 新增 `+.ts.net`；② `dns.nameserver-policy` 新增 `'+.ts.net': ['100.100.100.100']`（交回 Tailscale MagicDNS 解析真 IP）；③ 新增 `tun.route-exclude-address: [100.64.0.0/10]`，在组合规则方案时自动排除 Tailscale CGNAT 网段（含 `100.100.100.100`）出 TUN，保留官方 Tailscale App 双向互通，无需手动改 App UI 设置。`rules` 部分 280 条保持逐字节一致。回滚：从两份 YAML 删除 `+.ts.net` 的 `fake-ip-filter` / `nameserver-policy` 与 `tun` 段，并还原 `scripts/validate_clash.rb` 对应断言。
 - [x] **2026-11-12**：Mac 上 Tailscale 连不上设备。两个原因：一是 Mac 的 Clash TUN 把 `tailscale.com` / `*.ts.net` 全部解析成假 IP（`198.18.*`），又没有任何 Tailscale 规则，控制面和 DERP 落到默认组绕日本节点出去（netcheck 实测出口是东京 IIJ `202.214.238.55`，各区域 DERP 延迟 1.3 秒以上），MagicDNS 的 `100.100.100.100` 也被劫持，`node-1.tailb7ef7f.ts.net` 解析成 `198.18.9.140`；二是 iPhone `node-1` 本身离线（Tailscale 显示 last seen 18m ago）。两份 Clash 配置在 QUIC 规则之后补 4 条 Tailscale 直连规则（`tailscale.com`、`tailscale.io`、`ts.net`、`100.64.0.0/10`），规则从 276 条增到 280 条，validator 加断言。小火箭原本已有 `skip-proxy` / `tun-excluded-routes`，未改。MagicDNS 名称要完全恢复，还需在 Clash App 的 TUN 设置里把 `100.64.0.0/10` 排除出隧道（`100.100.100.100` 在 macOS 上被 Clash 加了主机路由）。回滚：删掉这 4 条规则和 validator 断言。
 - [x] **2026-11-12**：小火箭花云配置节点修复。`[Host]` 默认只用于 DNS 解析，不用于节点连接，所以补上 `use-local-host-item-for-proxy = true`；不开这一项，节点会去连 `147.90.*` 的公网解析，手机上延迟测试全部超时。花云订阅新增第三个节点域名 `0bc52bj8-10e0.aws-agent.org`（欧洲 17 条在用，公网已解析到国内 `58.247.187.127`），Clash hosts 和小火箭 `[Host]` 一起补齐，并把该 IP 写进 `skip-proxy`、`tun-excluded-routes`。规则和分组没动。回滚：删掉这一项、该域名和 IP，校验脚本恢复两条 hosts 的断言。
 - [x] **2026-11-12**：小火箭默认规则正常、新规则方案节点全部超时。原因是节点域名在假 IP 模式下会变成 `198.18.*.*`，入口 IP 又被隧道吸回去。`always-real-ip` 加上 `*.aws-agent.org`，并把 `180.188.20.131`、`119.147.195.213`、`223.5.5.5`、`119.29.29.29` 排除出隧道。

@@ -75,7 +75,7 @@ PROFILES = {
 def check_file(root, file)
   prof = PROFILES.fetch(file)
   clash = YAML.safe_load(File.read(File.join(root, file)))
-  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent geox-url profile dns proxy-groups rules]
+  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent geox-url profile dns tun proxy-groups rules]
   if file == 'XM-Clash-HY.yaml'
     expected_keys += %w[hosts keep-alive-idle keep-alive-interval disable-keep-alive]
     abort "#{file}: TCP keepalive must be idle 30s, interval 15s, and enabled" unless clash['keep-alive-idle'] == 30 && clash['keep-alive-interval'] == 15 && clash['disable-keep-alive'] == false
@@ -102,8 +102,14 @@ def check_file(root, file)
     abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
   end
   apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
-  abort "#{file}: nameserver-policy must only send Apple update domains to DoH 223.5.5.5 / doh.pub" unless dns['nameserver-policy'] == { apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query] }
-  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net +.openbot.run +.openbot.site].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
+  expected_policy = {
+    apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query],
+    '+.ts.net' => %w[100.100.100.100]
+  }
+  abort "#{file}: nameserver-policy must match Apple DoH and Tailscale MagicDNS" unless dns['nameserver-policy'] == expected_policy
+  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net +.openbot.run +.openbot.site +.ts.net].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
+  tun = clash.fetch('tun')
+  abort "#{file}: tun must only set route-exclude-address to [100.64.0.0/10]" unless tun == { 'route-exclude-address' => ['100.64.0.0/10'] }
   groups = clash.fetch('proxy-groups')
   abort "#{file}: groups must be exactly the seven XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
