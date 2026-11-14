@@ -272,6 +272,8 @@ rules:
   - DOMAIN-SUFFIX,gemini.google,XM-AI工具
   - DOMAIN-SUFFIX,aistudio.google.com,XM-AI工具
   - DOMAIN-SUFFIX,generativelanguage.googleapis.com,XM-AI工具
+  - DOMAIN,oauth2.googleapis.com,XM-AI工具
+  - DOMAIN,daily-cloudcode-pa.googleapis.com,XM-AI工具
   - DOMAIN-SUFFIX,ai.google.dev,XM-AI工具
   - DOMAIN,proactivebackend-pa.googleapis.com,XM-AI工具
   # Notion（含 Notion Calendar / Mail）走 XM-AI工具。

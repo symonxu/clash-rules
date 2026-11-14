@@ -49,7 +49,7 @@ web3_line = lines.find { |l| l.start_with?('XM-Web3 =') }
 abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香港') && web3_line&.include?('台湾') && web3_line&.include?('新加坡') && web3_line&.include?('美国')
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "XM-Shadowrocket-HY.conf: rule count must be 280 (found #{rule_lines.size})" unless rule_lines.size == 280
+abort "XM-Shadowrocket-HY.conf: rule count must be 282 (found #{rule_lines.size})" unless rule_lines.size == 282
 tailscale_rules = [
   'DOMAIN-SUFFIX,tailscale.com,DIRECT',
   'DOMAIN-SUFFIX,tailscale.io,DIRECT',
@@ -68,4 +68,4 @@ abort 'XM-Shadowrocket-HY.conf: must end with FINAL,XM-日常上网' unless rule
 abort 'XM-Shadowrocket-HY.conf: must have GEOIP,CN,DIRECT before FINAL' unless rule_lines[-2] == 'GEOIP,CN,DIRECT'
 abort 'XM-Shadowrocket-HY.conf: must have QUIC reject rule' unless quic_index
 
-puts 'Validated XM-Shadowrocket-HY.conf (7 proxy groups, 280 rules, built-in Tailscale routing, regex filtering, correct types).'
+puts 'Validated XM-Shadowrocket-HY.conf (7 proxy groups, 282 rules, built-in Tailscale routing, regex filtering, correct types).'
