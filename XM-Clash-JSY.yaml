@@ -130,8 +130,11 @@ rules:
   - IP-CIDR6,fe80::/10,DIRECT,no-resolve
   # 屏蔽 QUIC（UDP 443），迫使 App 回落到 TCP，让域名规则生效（无嗅探时 UDP 只能按 IP 匹配）。放在局域网直连之后、域名规则之前。
   - AND,((NETWORK,UDP),(DST-PORT,443)),REJECT
-  # Tailscale 必须直连：控制面、DERP 中转走默认规则会被送进机场，握手要 1 秒以上，登录和连接设备都会卡。
+  # Tailscale 必须直连：控制面、DERP/STUN 探测和 tailnet 流量走默认规则会被送进机场，导致握手 1 秒以上且只能走 DERP 中转。
+  # 两条 PROCESS-NAME 分别对应 macOS 官方 Tailscale 守护进程与 App/CLI（STUN 3478 探针）；iOS 端 Clash 会安全跳过精确 PROCESS-NAME 规则。
   # 100.64.0.0/10 是 tailnet 网段（含 MagicDNS 的 100.100.100.100），任何时候都不能代理。
+  - PROCESS-NAME,io.tailscale.ipn.macsys.network-extension,DIRECT
+  - PROCESS-NAME,Tailscale,DIRECT
   - DOMAIN-SUFFIX,tailscale.com,DIRECT
   - DOMAIN-SUFFIX,tailscale.io,DIRECT
   - DOMAIN-SUFFIX,ts.net,DIRECT

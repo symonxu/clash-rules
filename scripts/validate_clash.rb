@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
 require 'yaml'
 root = File.expand_path('..', __dir__)
 # XM-Clash-JSY.yaml（极速云）与 XM-Clash-HY.yaml（花云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置，节点来自 App 里另外导入的订阅。
@@ -196,6 +198,10 @@ def check_file(root, file)
     elsif type == 'GEOIP'
       abort "Clash: expected GEOIP,code,target in #{rule}" unless fields.size == 3
       condition, target = fields[1], fields[2]
+    elsif type == 'PROCESS-NAME'
+      abort "Clash: expected PROCESS-NAME,name,target in #{rule}" unless fields.size == 3
+      abort "Clash: wildcard not allowed in PROCESS-NAME #{rule}" if fields[1].match?(/[*?]/)
+      condition, target = fields[1], fields[2]
     elsif type == 'MATCH'
       abort "Clash: expected MATCH,target in #{rule}" unless fields.size == 2
       condition, target = '', fields[1]
@@ -214,9 +220,10 @@ def check_file(root, file)
   geoip_at = rules.index('GEOIP,CN,DIRECT')
   abort 'Clash: X/Twitter must use XM-日常上网 before GEOIP,CN' unless x_rules.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: QUIC (UDP 443) must be rejected right after the LAN rules, before any domain rule' unless rules[11] == QUIC_RULE && rules.count(QUIC_RULE) == 1
-  # Tailscale 的控制面、DERP 和 MagicDNS 必须直连，并且排在第一条走策略组的域名规则之前。
-  # 不直连时 DERP 会被送进机场（握手 1 秒以上），tailnet 名称还会被假 IP 接管。
-  tailscale = ['DOMAIN-SUFFIX,tailscale.com,DIRECT', 'DOMAIN-SUFFIX,tailscale.io,DIRECT',
+  # Tailscale 的控制面、DERP/STUN 探针和 MagicDNS 必须直连，并且排在第一条走策略组的域名规则之前。
+  # 不直连时 DERP 与 UDP 3478 STUN 会被送进机场（握手 1 秒以上且只能走中转），tailnet 名称还会被假 IP 接管。
+  tailscale = ['PROCESS-NAME,io.tailscale.ipn.macsys.network-extension,DIRECT', 'PROCESS-NAME,Tailscale,DIRECT',
+               'DOMAIN-SUFFIX,tailscale.com,DIRECT', 'DOMAIN-SUFFIX,tailscale.io,DIRECT',
                'DOMAIN-SUFFIX,ts.net,DIRECT', 'IP-CIDR,100.64.0.0/10,DIRECT,no-resolve']
   first_group_rule = rules.index('DOMAIN-SUFFIX,infura.io,XM-Web3')
   abort 'Clash: Tailscale must be DIRECT before the first proxied domain rule' unless tailscale.all? { |r| rules.include?(r) && rules.index(r) < first_group_rule }
