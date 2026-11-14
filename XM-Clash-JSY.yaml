@@ -7,6 +7,10 @@ log-level: warning
 ipv6: false
 unified-delay: true
 tcp-concurrent: true
+# TCP 保活，作用于全部连接：闲置 30 秒后开始探测，之后每 15 秒一次。
+keep-alive-idle: 30
+keep-alive-interval: 15
+disable-keep-alive: false
 # GEOIP 数据库用 jsDelivr 国内可达镜像（默认 GitHub 地址在大陆常下载失败）。
 geox-url:
   geoip: 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat'
@@ -52,7 +56,9 @@ dns:
     '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com': ['https://223.5.5.5/dns-query', 'https://doh.pub/dns-query']
     '+.ts.net': ['100.100.100.100']
 # 放行 Tailscale CGNAT 网段（含 MagicDNS 100.100.100.100）出 TUN，由官方 Tailscale 客户端直接接管。
+# 收紧 TUN MTU 到 1360，避免移动 SIM 路由 + 隧道叠加封包导致大请求分片丢包 / Gemini EOF。
 tun:
+  mtu: 1360
   route-exclude-address:
     - 100.64.0.0/10
 proxy-groups:
