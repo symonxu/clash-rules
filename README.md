@@ -30,7 +30,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## 在小火箭（Shadowrocket）里怎么用
 
-小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket-HY.conf`，内置九大分流策略组与全部 276 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配花云订阅中的节点：
+小火箭支持标准的 `.conf` 远程规则配置文件。本仓库提供 `XM-Shadowrocket-HY.conf`，内置七大分流策略组与全部 280 条分流规则。各策略组使用 `policy-regex-filter` 自动匹配花云订阅中的节点：
 
 配置链接：https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-HY.conf
 
@@ -39,9 +39,10 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 2. **添加配置**：点击底部「配置」标签页，右上角点击 `+`。
 3. **输入配置链接**：在 URL 框中粘贴上面的规则链接，点击「下载」。
 4. **启用配置**：在「远程文件」中点击刚刚下载的 `XM-Shadowrocket-HY.conf`，选择「使用配置」使其变为勾选状态。
-5. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
+5. **启用 Tailscale 模块**：进入「设置 → Tailscale」，填入 Tailscale Auth Key 并启用模块；控制服务器保持默认，出口节点留空。不要同时开启独立的官方 Tailscale App。
+6. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
 
-`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同；小火箭默认不拿 `[Host]` 去连节点，必须配上 `use-local-host-item-for-proxy = true`，节点才会连到国内入口而不是 `147.90.*`。节点入口和国内 DNS 写在 `skip-proxy`、`tun-excluded-routes` 里，避免手机把节点连接吸进隧道后全部超时。`XM-AI工具` 是 select，含 5 条日本线路，Google、AI、OpenBot 都走这一组。
+`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同；小火箭默认不拿 `[Host]` 去连节点，必须配上 `use-local-host-item-for-proxy = true`，节点才会连到国内入口而不是 `147.90.*`。节点入口和国内 DNS 写在 `skip-proxy`、`tun-excluded-routes` 里，避免手机把节点连接吸进隧道后全部超时。TUN 模式下，`100.64.0.0/10` 和 `*.ts.net` 必须留在隧道中，分别由 `TAILSCALE` 规则交给内置模块；不要把它们加入 `skip-proxy` 或 `tun-excluded-routes`。控制面域名 `tailscale.com` / `tailscale.io` 直连。此配置关闭 IPv6，因此按 IPv4 Tailnet 地址连接。`XM-AI工具` 是 select，含 5 条日本线路，Google、AI、OpenBot 都走这一组。
 
 ## 分组
 
@@ -69,7 +70,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## DNS
 
-`223.5.5.5`、`119.29.29.29`，极速云与花云两份配置全部采用标准 fake-ip 方案（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则走 XM-AI工具。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。`+.ts.net` 跳过 fake-ip 并通过 `nameserver-policy` 交给 Tailscale MagicDNS（`100.100.100.100`）；`tun.route-exclude-address` 排除 `100.64.0.0/10`（放行 Tailscale 流量出隧道，实现与官方 Tailscale App 共存和双向互通），端口、控制器和其余 TUN 参数仍由 App 自己管理。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
+`223.5.5.5`、`119.29.29.29`，极速云与花云两份 Clash 配置全部采用标准 fake-ip 方案（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则走 XM-AI工具。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。Clash YAML 中 `+.ts.net` 跳过 fake-ip 并通过 `nameserver-policy` 交给 Tailscale MagicDNS（`100.100.100.100`），`tun.route-exclude-address` 排除 `100.64.0.0/10`，用于与官方 Tailscale App 共存；这些排除仅适用于 Clash YAML。小火箭使用内置 Tailscale 模块，应将 tailnet 流量留在 TUN 并交给 `TAILSCALE` 策略，不能沿用上述旁路设置。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），规则只用域名和 IP。
 
 ## 主要分流
 
