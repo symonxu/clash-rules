@@ -77,10 +77,10 @@ PROFILES = {
 def check_file(root, file)
   prof = PROFILES.fetch(file)
   clash = YAML.safe_load(File.read(File.join(root, file)))
-  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent geox-url profile dns tun proxy-groups rules]
+  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent keep-alive-idle keep-alive-interval disable-keep-alive geox-url profile dns tun proxy-groups rules]
+  abort "#{file}: TCP keepalive must be idle 30s, interval 15s, and enabled" unless clash['keep-alive-idle'] == 30 && clash['keep-alive-interval'] == 15 && clash['disable-keep-alive'] == false
   if file == 'XM-Clash-HY.yaml'
-    expected_keys += %w[hosts keep-alive-idle keep-alive-interval disable-keep-alive]
-    abort "#{file}: TCP keepalive must be idle 30s, interval 15s, and enabled" unless clash['keep-alive-idle'] == 30 && clash['keep-alive-interval'] == 15 && clash['disable-keep-alive'] == false
+    expected_keys += %w[hosts]
   end
   abort "#{file}: unexpected top-level fields" unless clash.keys.sort == expected_keys.sort
   abort "#{file}: must not contain nodes or subscriptions" if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
@@ -111,7 +111,7 @@ def check_file(root, file)
   abort "#{file}: nameserver-policy must match Apple DoH and Tailscale MagicDNS" unless dns['nameserver-policy'] == expected_policy
   %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net +.openbot.run +.openbot.site +.ts.net].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
   tun = clash.fetch('tun')
-  abort "#{file}: tun must only set route-exclude-address to [100.64.0.0/10]" unless tun == { 'route-exclude-address' => ['100.64.0.0/10'] }
+  abort "#{file}: tun must set mtu 1360 and route-exclude-address [100.64.0.0/10]" unless tun == { 'mtu' => 1360, 'route-exclude-address' => ['100.64.0.0/10'] }
   groups = clash.fetch('proxy-groups')
   abort "#{file}: groups must be exactly the seven XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
