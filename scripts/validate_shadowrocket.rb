@@ -1,4 +1,6 @@
 #!/usr/bin/env ruby
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
 root = File.expand_path('..', __dir__)
 conf_path = File.join(root, 'XM-Shadowrocket-HY.conf')
 abort 'XM-Shadowrocket-HY.conf missing' unless File.exist?(conf_path)
