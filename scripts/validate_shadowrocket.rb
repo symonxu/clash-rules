@@ -2,39 +2,39 @@
 Encoding.default_external = Encoding::UTF_8
 Encoding.default_internal = Encoding::UTF_8
 root = File.expand_path('..', __dir__)
-conf_path = File.join(root, 'XM-Shadowrocket-HY.conf')
-abort 'XM-Shadowrocket-HY.conf missing' unless File.exist?(conf_path)
+away_path = File.join(root, 'shadowrocket-away.conf')
+abort 'shadowrocket-away.conf missing' unless File.exist?(away_path)
 
-content = File.read(conf_path)
-abort 'XM-Shadowrocket-HY.conf: [General] section missing' unless content.include?('[General]')
-abort 'XM-Shadowrocket-HY.conf: [Host] section missing' unless content.include?('[Host]')
-abort 'XM-Shadowrocket-HY.conf: [Proxy Group] section missing' unless content.include?('[Proxy Group]')
-abort 'XM-Shadowrocket-HY.conf: [Rule] section missing' unless content.include?('[Rule]')
-abort 'XM-Shadowrocket-HY.conf: OpenBot and node domains must use always-real-ip' unless content.include?('always-real-ip = *.openbot.run, *.openbot.site, *.aws-agent.org')
-abort 'XM-Shadowrocket-HY.conf: [Host] must be used for proxy connections (use-local-host-item-for-proxy = true)' unless content.match?(/^use-local-host-item-for-proxy = true$/)
+content = File.read(away_path)
+abort 'shadowrocket-away.conf: [General] section missing' unless content.include?('[General]')
+abort 'shadowrocket-away.conf: [Host] section missing' unless content.include?('[Host]')
+abort 'shadowrocket-away.conf: [Proxy Group] section missing' unless content.include?('[Proxy Group]')
+abort 'shadowrocket-away.conf: [Rule] section missing' unless content.include?('[Rule]')
+abort 'shadowrocket-away.conf: OpenBot and node domains must use always-real-ip' unless content.include?('always-real-ip = *.openbot.run, *.openbot.site, *.aws-agent.org')
+abort 'shadowrocket-away.conf: [Host] must be used for proxy connections (use-local-host-item-for-proxy = true)' unless content.match?(/^use-local-host-item-for-proxy = true$/)
 general = content.split('[General]', 2).last.split('[Host]', 2).first
 skip_proxy = general.lines.find { |line| line.start_with?('skip-proxy =') }.to_s
 tun_excluded_routes = general.lines.find { |line| line.start_with?('tun-excluded-routes =') }.to_s
-abort 'XM-Shadowrocket-HY.conf: tailnet routes must not bypass the built-in Tailscale module' if skip_proxy.include?('100.64.0.0/10') || skip_proxy.include?('*.ts.net') || tun_excluded_routes.include?('100.64.0.0/10')
+abort 'shadowrocket-away.conf: tailnet routes must not bypass the built-in Tailscale module' if skip_proxy.include?('100.64.0.0/10') || skip_proxy.include?('*.ts.net') || tun_excluded_routes.include?('100.64.0.0/10')
 %w[180.188.20.131 119.147.195.213 58.247.187.127 223.5.5.5 119.29.29.29].each do |ip|
-  abort "XM-Shadowrocket-HY.conf: #{ip} must bypass the tunnel" unless content.include?(ip) && content.match?(/^tun-excluded-routes = .*#{Regexp.escape(ip)}/)
+  abort "shadowrocket-away.conf: #{ip} must bypass the tunnel" unless content.include?(ip) && content.match?(/^tun-excluded-routes = .*#{Regexp.escape(ip)}/)
 end
 
-hy_path = File.join(root, 'XM-Clash-HY.yaml')
-abort 'XM-Clash-HY.yaml missing' unless File.exist?(hy_path)
+hy_path = File.join(root, 'XM-Clash-Verge-HY.yaml')
+abort 'XM-Clash-Verge-HY.yaml missing' unless File.exist?(hy_path)
 hy_hosts = File.read(hy_path).scan(/^\s+([0-9a-z.-]+\.aws-agent\.org):\s+(\d+\.\d+\.\d+\.\d+)\s*$/)
-abort "XM-Clash-HY.yaml: expected the three current Flower hosts, found #{hy_hosts.size}" unless hy_hosts.size == 3
+abort "XM-Clash-Verge-HY.yaml: expected the three current Flower hosts, found #{hy_hosts.size}" unless hy_hosts.size == 3
 hy_hosts.each do |name, ip|
-  abort "XM-Shadowrocket-HY.conf: host #{name} must match HY (#{ip})" unless content.include?("#{name} = #{ip}")
+  abort "shadowrocket-away.conf: host #{name} must match HY (#{ip})" unless content.include?("#{name} = #{ip}")
 end
 
 expected_groups = ['XM-AI工具', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 groups = content.scan(/^([A-Za-z0-9\u4e00-\u9fa5-]+)\s*=\s*(select|url-test|fallback)/).map(&:first)
-abort "XM-Shadowrocket-HY.conf: groups must match expected 7 groups (found #{groups.inspect})" unless groups == expected_groups
+abort "shadowrocket-away.conf: groups must match expected 7 groups (found #{groups.inspect})" unless groups == expected_groups
 
 lines = content.lines.map(&:strip)
 japan = lines.find { |l| l.start_with?('XM-AI工具 =') }
-abort 'XM-AI工具 must be a manual select filtered to the five Japan lines, without hardcoded emoji names' unless japan == 'XM-AI工具 = select, policy-regex-filter=^(?!.*(香港|HK|Hong ?Kong|🇭🇰|实验性|备用|只有备用|剩余|流量|套餐|到期|官网)).*日本(高级 IEPL 专线 2|标准 IEPL 专线 1|标准 IEPL 专线 3|高级 IEPL 专线 3|标准 IEPL 专线 2)$'
+abort 'XM-AI工具 must be a manual select filtered to the five Japan lines and three Taiwan lines, without hardcoded emoji names' unless japan == 'XM-AI工具 = select, policy-regex-filter=^(?!.*(香港|HK|Hong ?Kong|🇭🇰|实验性|备用|只有备用|剩余|流量|套餐|到期|官网)).*(日本(高级 IEPL 专线 2|标准 IEPL 专线 1|标准 IEPL 专线 3|高级 IEPL 专线 3|标准 IEPL 专线 2)|台湾(高级 IEPL 专线 2|标准 IEPL 专线 3|高级 IEPL 专线 3))$'
 
 bybit_line = lines.find { |l| l.start_with?('XM-Bybit =') }
 abort 'XM-Bybit must be fallback' unless bybit_line&.include?('= fallback,')
@@ -49,7 +49,7 @@ web3_line = lines.find { |l| l.start_with?('XM-Web3 =') }
 abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香港') && web3_line&.include?('台湾') && web3_line&.include?('新加坡') && web3_line&.include?('美国')
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "XM-Shadowrocket-HY.conf: rule count must be 282 (found #{rule_lines.size})" unless rule_lines.size == 282
+abort "shadowrocket-away.conf: rule count must be 282 (found #{rule_lines.size})" unless rule_lines.size == 282
 tailscale_rules = [
   'DOMAIN-SUFFIX,tailscale.com,DIRECT',
   'DOMAIN-SUFFIX,tailscale.io,DIRECT',
@@ -57,25 +57,19 @@ tailscale_rules = [
   'DOMAIN-SUFFIX,ts.net,TAILSCALE'
 ].freeze
 tailscale_rules.each do |rule|
-  abort "XM-Shadowrocket-HY.conf: missing built-in Tailscale rule #{rule}" unless rule_lines.include?(rule)
+  abort "shadowrocket-away.conf: missing built-in Tailscale rule #{rule}" unless rule_lines.include?(rule)
 end
 quic_rule = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'
 quic_index = rule_lines.index(quic_rule)
-abort 'XM-Shadowrocket-HY.conf: Tailscale rules must precede the QUIC reject rule' unless tailscale_rules.all? { |rule| rule_lines.index(rule) < quic_index }
+abort 'shadowrocket-away.conf: Tailscale rules must precede the QUIC reject rule' unless tailscale_rules.all? { |rule| rule_lines.index(rule) < quic_index }
 first_service_rule_index = rule_lines.index('DOMAIN-SUFFIX,infura.io,XM-Web3')
-abort 'XM-Shadowrocket-HY.conf: QUIC reject rule must precede service-domain rules' unless quic_index < first_service_rule_index
-abort 'XM-Shadowrocket-HY.conf: must end with FINAL,XM-日常上网' unless rule_lines.last == 'FINAL,XM-日常上网'
-abort 'XM-Shadowrocket-HY.conf: must have GEOIP,CN,DIRECT before FINAL' unless rule_lines[-2] == 'GEOIP,CN,DIRECT'
-abort 'XM-Shadowrocket-HY.conf: must have QUIC reject rule' unless quic_index
+abort 'shadowrocket-away.conf: QUIC reject rule must precede service-domain rules' unless quic_index < first_service_rule_index
+abort 'shadowrocket-away.conf: must end with FINAL,XM-日常上网' unless rule_lines.last == 'FINAL,XM-日常上网'
+abort 'shadowrocket-away.conf: must have GEOIP,CN,DIRECT before FINAL' unless rule_lines[-2] == 'GEOIP,CN,DIRECT'
+abort 'shadowrocket-away.conf: must have QUIC reject rule' unless quic_index
 
-puts 'Validated XM-Shadowrocket-HY.conf (7 proxy groups, 282 rules, built-in Tailscale routing, regex filtering, correct types).'
-
-away_path = File.join(root, 'shadowrocket-away.conf')
 home_path = File.join(root, 'shadowrocket-home.conf')
-abort 'shadowrocket-away.conf missing' unless File.exist?(away_path)
 abort 'shadowrocket-home.conf missing' unless File.exist?(home_path)
-abort 'shadowrocket-away.conf must match XM-Shadowrocket-HY.conf' unless File.read(away_path) == content
-
 home_content = File.read(home_path)
 home_active_lines = home_content.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 abort 'shadowrocket-home.conf must not reference TAILSCALE policy or [Tailscale] section' if home_active_lines.any? { |l| l.match?(/,TAILSCALE(?:\b|$)/) || l.match?(/^\[Tailscale\]/i) }
@@ -83,4 +77,5 @@ home_rules = home_content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.e
 abort "shadowrocket-home.conf: rule count must be 281 (found #{home_rules.size})" unless home_rules.size == 281
 abort 'shadowrocket-home.conf: must route 100.64.0.0/10 to DIRECT' unless home_rules.include?('IP-CIDR,100.64.0.0/10,DIRECT,no-resolve')
 abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_rules.last == 'FINAL,XM-日常上网'
-puts 'Validated shadowrocket-away.conf and shadowrocket-home.conf.'
+
+puts 'Validated shadowrocket-away.conf (7 proxy groups, 282 rules, built-in Tailscale routing) and shadowrocket-home.conf (281 rules).'
