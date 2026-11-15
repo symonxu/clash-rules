@@ -278,9 +278,15 @@ def check_file(root, file)
 end
 
 counts = FILES.map { |f| check_file(root, f) }
-marker = "\n# 规则从上到下匹配"
-texts = FILES.map { |f| File.read(File.join(root, f)) }
-abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
-abort "Clash: rules sections of #{FILES.join(', ')} must be byte-identical" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
+verge_file = 'XM-Clash-Verge-HY.yaml'
+verge_clash = YAML.safe_load(File.read(File.join(root, verge_file)))
+hy_clash = YAML.safe_load(File.read(File.join(root, 'XM-Clash-HY.yaml')))
+abort "#{verge_file}: must equal XM-Clash-HY.yaml plus empty proxy-providers: {}" unless verge_clash == hy_clash.merge('proxy-providers' => {})
 
-puts "Validated #{FILES.join(' + ')}: identical #{counts[0]} rules; HY has Flower hosts and encrypted DNS."
+marker = "\n# 规则从上到下匹配"
+all_files = FILES + [verge_file]
+texts = all_files.map { |f| File.read(File.join(root, f)) }
+abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
+abort "Clash: rules sections of #{all_files.join(', ')} must be byte-identical" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
+
+puts "Validated #{all_files.join(' + ')}: identical #{counts[0]} rules; HY has Flower hosts and encrypted DNS."
