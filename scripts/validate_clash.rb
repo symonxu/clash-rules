@@ -7,7 +7,7 @@ root = File.expand_path('..', __dir__)
 # 两份单订阅文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；各家节点命名不同，分组筛选各用一套虚构样例检查。
 # 花云另有 hosts：3 个 *.aws-agent.org 写成国内入口 IP。Clash 组合规则方案时丢掉订阅里的 hosts。
 # 不含节点或订阅；两份用 include-all + filter + exclude-filter。
-FILES = ['XM-Clash-JSY.yaml', 'XM-Clash-HY.yaml'].freeze
+FILES = ['XM-Clash-Verge-HY.yaml'].freeze
 GROUP_NAMES = ['XM-AI工具', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 OPENBOT_UDP_RULES = [
@@ -68,41 +68,33 @@ HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸�
 INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example'].freeze
 
 PROFILES = {
-  'XM-Clash-JSY.yaml' => { interval: 900, tolerance: 20, fallback: ['XM-Bybit'], expected: JSY_EXPECTED, samples: JSY_SAMPLES, info: INFO,
-                           bybit_order: [['🇹🇼 台湾_01'], ['🇹🇼 台湾_02']] },
-  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                          bybit_order: nil, pinned: { 'XM-AI工具' => ['🇯🇵 日本高级 IEPL 专线 2', '🇯🇵 日本标准 IEPL 专线 1', '🇯🇵 日本标准 IEPL 专线 3', '🇯🇵 日本高级 IEPL 专线 3', '🇯🇵 日本标准 IEPL 专线 2'] } }
+  'XM-Clash-Verge-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
+                                bybit_order: nil, pinned: { 'XM-AI工具' => ['🇯🇵 日本高级 IEPL 专线 2', '🇯🇵 日本标准 IEPL 专线 1', '🇯🇵 日本标准 IEPL 专线 3', '🇯🇵 日本高级 IEPL 专线 3', '🇯🇵 日本标准 IEPL 专线 2', '🇨🇳 台湾高级 IEPL 专线 2', '🇨🇳 台湾标准 IEPL 专线 3', '🇨🇳 台湾高级 IEPL 专线 3'] } }
 }.freeze
 
 def check_file(root, file)
   prof = PROFILES.fetch(file)
   clash = YAML.safe_load(File.read(File.join(root, file)))
-  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent keep-alive-idle keep-alive-interval disable-keep-alive geox-url profile dns tun proxy-groups rules]
+  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent keep-alive-idle keep-alive-interval disable-keep-alive geox-url profile dns tun hosts proxy-providers proxy-groups rules]
   abort "#{file}: TCP keepalive must be idle 30s, interval 15s, and enabled" unless clash['keep-alive-idle'] == 30 && clash['keep-alive-interval'] == 15 && clash['disable-keep-alive'] == false
-  if file == 'XM-Clash-HY.yaml'
-    expected_keys += %w[hosts]
-  end
   abort "#{file}: unexpected top-level fields" unless clash.keys.sort == expected_keys.sort
-  abort "#{file}: must not contain nodes or subscriptions" if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
+  abort "#{file}: must not contain nodes or rule-providers" if %w[proxies rule-providers].any? { |k| clash.key?(k) }
+  abort "#{file}: proxy-providers must be empty hash" unless clash['proxy-providers'] == {}
   abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
   abort "#{file}: geox-url must be exactly the jsDelivr MetaCubeX mirror" unless clash['geox-url'] == { 'geoip' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat', 'geosite' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat', 'mmdb' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb' }
   dns = clash.fetch('dns')
   abort "#{file}: DNS must be fake-ip" unless dns['enhanced-mode'] == 'fake-ip'
-  if file == 'XM-Clash-HY.yaml'
-    hy_ns = %w[tls://223.5.5.5 https://dns.alidns.com/dns-query]
-    abort "#{file}: DNS must use the Wi-Fi-reachable encrypted nameservers, with plaintext 223/119 only as default-nameserver" unless dns['enable'] == true && dns['ipv6'] == false && dns['use-hosts'] == true && dns['nameserver'] == hy_ns && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
-    abort "#{file}: proxy-server-nameserver must be UDP 223.5.5.5 / 119.29.29.29" unless dns['proxy-server-nameserver'] == %w[223.5.5.5 119.29.29.29]
-    abort "#{file}: fake-ip-filter missing +.apt-agent.org" unless dns.fetch('fake-ip-filter').include?('+.apt-agent.org')
-    expected_hosts = {
-      'e3585sh2-3ad5.aws-agent.org' => '180.188.20.131',
-      'fd025gz0-c617.aws-agent.org' => '119.147.195.213',
-      '0bc52bj8-10e0.aws-agent.org' => '58.247.187.127'
-    }
-    abort "#{file}: hosts must map the current Flower entrances" unless clash['hosts'] == expected_hosts
-    abort "#{file}: dead Beijing entrance must not be pinned" if clash['hosts'].value?('116.242.224.8')
-  else
-    abort "#{file}: DNS must be 223.5.5.5 / 119.29.29.29 with IPv6 off" unless dns['enable'] == true && dns['ipv6'] == false && dns['nameserver'] == %w[223.5.5.5 119.29.29.29] && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
-  end
+  hy_ns = %w[tls://223.5.5.5 https://dns.alidns.com/dns-query]
+  abort "#{file}: DNS must use the Wi-Fi-reachable encrypted nameservers, with plaintext 223/119 only as default-nameserver" unless dns['enable'] == true && dns['ipv6'] == false && dns['use-hosts'] == true && dns['nameserver'] == hy_ns && dns['default-nameserver'] == %w[223.5.5.5 119.29.29.29]
+  abort "#{file}: proxy-server-nameserver must be UDP 223.5.5.5 / 119.29.29.29" unless dns['proxy-server-nameserver'] == %w[223.5.5.5 119.29.29.29]
+  abort "#{file}: fake-ip-filter missing +.apt-agent.org" unless dns.fetch('fake-ip-filter').include?('+.apt-agent.org')
+  expected_hosts = {
+    'e3585sh2-3ad5.aws-agent.org' => '180.188.20.131',
+    'fd025gz0-c617.aws-agent.org' => '119.147.195.213',
+    '0bc52bj8-10e0.aws-agent.org' => '58.247.187.127'
+  }
+  abort "#{file}: hosts must map the current Flower entrances" unless clash['hosts'] == expected_hosts
+  abort "#{file}: dead Beijing entrance must not be pinned" if clash['hosts'].value?('116.242.224.8')
   apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
   expected_policy = {
     apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query],
@@ -278,15 +270,8 @@ def check_file(root, file)
 end
 
 counts = FILES.map { |f| check_file(root, f) }
-verge_file = 'XM-Clash-Verge-HY.yaml'
-verge_clash = YAML.safe_load(File.read(File.join(root, verge_file)))
-hy_clash = YAML.safe_load(File.read(File.join(root, 'XM-Clash-HY.yaml')))
-abort "#{verge_file}: must equal XM-Clash-HY.yaml plus empty proxy-providers: {}" unless verge_clash == hy_clash.merge('proxy-providers' => {})
-
 marker = "\n# 规则从上到下匹配"
-all_files = FILES + [verge_file]
-texts = all_files.map { |f| File.read(File.join(root, f)) }
+texts = FILES.map { |f| File.read(File.join(root, f)) }
 abort 'Clash: rules marker missing' unless texts.all? { |t| t.scan(marker).size == 1 }
-abort "Clash: rules sections of #{all_files.join(', ')} must be byte-identical" unless texts.map { |t| t.split(marker, 2)[1] }.uniq.size == 1
 
-puts "Validated #{all_files.join(' + ')}: identical #{counts[0]} rules; HY has Flower hosts and encrypted DNS."
+puts "Validated #{FILES.join(' + ')}: #{counts[0]} rules; Flower hosts and encrypted DNS."
