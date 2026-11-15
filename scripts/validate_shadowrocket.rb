@@ -69,3 +69,18 @@ abort 'XM-Shadowrocket-HY.conf: must have GEOIP,CN,DIRECT before FINAL' unless r
 abort 'XM-Shadowrocket-HY.conf: must have QUIC reject rule' unless quic_index
 
 puts 'Validated XM-Shadowrocket-HY.conf (7 proxy groups, 282 rules, built-in Tailscale routing, regex filtering, correct types).'
+
+away_path = File.join(root, 'shadowrocket-away.conf')
+home_path = File.join(root, 'shadowrocket-home.conf')
+abort 'shadowrocket-away.conf missing' unless File.exist?(away_path)
+abort 'shadowrocket-home.conf missing' unless File.exist?(home_path)
+abort 'shadowrocket-away.conf must match XM-Shadowrocket-HY.conf' unless File.read(away_path) == content
+
+home_content = File.read(home_path)
+home_active_lines = home_content.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
+abort 'shadowrocket-home.conf must not reference TAILSCALE policy or [Tailscale] section' if home_active_lines.any? { |l| l.match?(/,TAILSCALE(?:\b|$)/) || l.match?(/^\[Tailscale\]/i) }
+home_rules = home_content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
+abort "shadowrocket-home.conf: rule count must be 281 (found #{home_rules.size})" unless home_rules.size == 281
+abort 'shadowrocket-home.conf: must route 100.64.0.0/10 to DIRECT' unless home_rules.include?('IP-CIDR,100.64.0.0/10,DIRECT,no-resolve')
+abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_rules.last == 'FINAL,XM-日常上网'
+puts 'Validated shadowrocket-away.conf and shadowrocket-home.conf.'
