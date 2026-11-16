@@ -95,13 +95,13 @@ def check_file(root, file)
   }
   abort "#{file}: hosts must map the current Flower entrances" unless clash['hosts'] == expected_hosts
   abort "#{file}: dead Beijing entrance must not be pinned" if clash['hosts'].value?('116.242.224.8')
-  apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.mzstatic.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
+  apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.mzstatic.com,+.tv.apple.com,play-edge.itunes.apple.com,hls.itunes.apple.com,np-edge.itunes.apple.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
   expected_policy = {
     apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query],
     '+.ts.net' => %w[100.100.100.100]
   }
   abort "#{file}: nameserver-policy must match Apple DoH and Tailscale MagicDNS" unless dns['nameserver-policy'] == expected_policy
-  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.mzstatic.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net +.openbot.run +.openbot.site +.ts.net].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
+  %w[+.cdn-apple.com swcdn.apple.com swdist.apple.com swscan.apple.com +.aaplimg.com +.mzstatic.com +.tv.apple.com play-edge.itunes.apple.com hls.itunes.apple.com np-edge.itunes.apple.com +.ks-cdn.com +.ksyuncdn.com +.alikunlun.com ocsp2.apple.com +.akadns.net +.akamaiedge.net +.openbot.run +.openbot.site +.ts.net].each { |d| abort "#{file}: fake-ip-filter missing #{d}" unless dns.fetch('fake-ip-filter').include?(d) }
   tun = clash.fetch('tun')
   abort "#{file}: tun must set mtu 1360 and route-exclude-address [100.64.0.0/10]" unless tun == { 'mtu' => 1360, 'route-exclude-address' => ['100.64.0.0/10'] }
   groups = clash.fetch('proxy-groups')
