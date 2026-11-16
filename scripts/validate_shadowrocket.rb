@@ -50,6 +50,31 @@ abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香�
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 abort "shadowrocket-away.conf: rule count must be 282 (found #{rule_lines.size})" unless rule_lines.size == 282
+apple_tv_rules = [
+  'DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,XM-Apple',
+  'DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,XM-Apple',
+  'DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,XM-Apple',
+  'DOMAIN-SUFFIX,tv.apple.com,XM-Apple',
+  'DOMAIN-SUFFIX,pancake.apple.com,XM-Apple',
+  'DOMAIN,play-edge.itunes.apple.com,XM-Apple',
+  'DOMAIN,hls.itunes.apple.com,XM-Apple',
+  'DOMAIN,np-edge.itunes.apple.com,XM-Apple',
+  'DOMAIN,uts-api.itunes.apple.com,XM-Apple'
+].freeze
+app_store_rules = [
+  'DOMAIN-SUFFIX,apps.apple.com,DIRECT',
+  'DOMAIN-SUFFIX,itunes.apple.com,DIRECT',
+  'DOMAIN-SUFFIX,mzstatic.com,DIRECT'
+].freeze
+validate_apple_routes = lambda do |file, rules|
+  apple_tv_rules.each do |rule|
+    abort "#{file}: Apple TV media must use XM-Apple (missing #{rule})" unless rules.include?(rule)
+    abort "#{file}: Apple TV media must precede App Store iTunes direct" unless rules.index(rule) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i
+  end
+  abort "#{file}: App Store must use DIRECT" unless app_store_rules.all? { |rule| rules.include?(rule) }
+  abort "#{file}: only Apple TV domains may use XM-Apple" unless rules.select { |rule| rule.end_with?(',XM-Apple') }.sort == apple_tv_rules.sort
+end
+validate_apple_routes.call('shadowrocket-away.conf', rule_lines)
 tailscale_rules = [
   'DOMAIN-SUFFIX,tailscale.com,DIRECT',
   'DOMAIN-SUFFIX,tailscale.io,DIRECT',
@@ -75,6 +100,7 @@ home_active_lines = home_content.lines.map(&:strip).reject { |l| l.empty? || l.s
 abort 'shadowrocket-home.conf must not reference TAILSCALE policy or [Tailscale] section' if home_active_lines.any? { |l| l.match?(/,TAILSCALE(?:\b|$)/) || l.match?(/^\[Tailscale\]/i) }
 home_rules = home_content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 abort "shadowrocket-home.conf: rule count must be 281 (found #{home_rules.size})" unless home_rules.size == 281
+validate_apple_routes.call('shadowrocket-home.conf', home_rules)
 abort 'shadowrocket-home.conf: must route 100.64.0.0/10 to DIRECT' unless home_rules.include?('IP-CIDR,100.64.0.0/10,DIRECT,no-resolve')
 abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_rules.last == 'FINAL,XM-日常上网'
 
