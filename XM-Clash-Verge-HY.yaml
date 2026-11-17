@@ -363,15 +363,15 @@ rules:
   - DOMAIN-SUFFIX,whatsapp.net,XM-日常上网
   - DOMAIN-SUFFIX,wa.me,XM-日常上网
   - DOMAIN-SUFFIX,muse.ai,XM-日常上网
-  # Apple TV 目录、鉴权与视频流统一走 XM-Apple（美国节点），避免直连与代理混用造成卡顿。
-  - DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,XM-Apple
-  - DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,XM-Apple
-  - DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,XM-Apple
+  # Apple TV 视频流 CDN 走 DIRECT（省花云流量，代价是播放可能卡顿）；目录与鉴权域名走 XM-Apple，保证片库加载与起播。
+  - DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,DIRECT
   - DOMAIN-SUFFIX,tv.apple.com,XM-Apple
   - DOMAIN-SUFFIX,pancake.apple.com,XM-Apple
-  - DOMAIN,play-edge.itunes.apple.com,XM-Apple
-  - DOMAIN,hls.itunes.apple.com,XM-Apple
-  - DOMAIN,np-edge.itunes.apple.com,XM-Apple
+  - DOMAIN,play-edge.itunes.apple.com,DIRECT
+  - DOMAIN,hls.itunes.apple.com,DIRECT
+  - DOMAIN,np-edge.itunes.apple.com,DIRECT
   - DOMAIN,uts-api.itunes.apple.com,XM-Apple
   # App Store 下载与更新走 DIRECT（配合 fake-ip-filter + 国内 DNS 解析到苹果国内 CDN 提速）。
   # cdn-apple.com 已并入 XM-系统更新（整站同出口，避免更新校验一半直连一半代理卡住）。
