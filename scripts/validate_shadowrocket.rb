@@ -50,17 +50,20 @@ abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('é¦™æ¸
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 abort "shadowrocket-away.conf: rule count must be 282 (found #{rule_lines.size})" unless rule_lines.size == 282
-apple_tv_rules = [
-  'DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,XM-Apple',
-  'DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,XM-Apple',
-  'DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,XM-Apple',
+apple_tv_api_rules = [
   'DOMAIN-SUFFIX,tv.apple.com,XM-Apple',
   'DOMAIN-SUFFIX,pancake.apple.com,XM-Apple',
-  'DOMAIN,play-edge.itunes.apple.com,XM-Apple',
-  'DOMAIN,hls.itunes.apple.com,XM-Apple',
-  'DOMAIN,np-edge.itunes.apple.com,XM-Apple',
   'DOMAIN,uts-api.itunes.apple.com,XM-Apple'
 ].freeze
+apple_tv_vod_rules = [
+  'DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,DIRECT',
+  'DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,DIRECT',
+  'DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,DIRECT',
+  'DOMAIN,play-edge.itunes.apple.com,DIRECT',
+  'DOMAIN,hls.itunes.apple.com,DIRECT',
+  'DOMAIN,np-edge.itunes.apple.com,DIRECT'
+].freeze
+apple_tv_rules = apple_tv_api_rules + apple_tv_vod_rules
 app_store_rules = [
   'DOMAIN-SUFFIX,apps.apple.com,DIRECT',
   'DOMAIN-SUFFIX,itunes.apple.com,DIRECT',
@@ -68,11 +71,11 @@ app_store_rules = [
 ].freeze
 validate_apple_routes = lambda do |file, rules|
   apple_tv_rules.each do |rule|
-    abort "#{file}: Apple TV media must use XM-Apple (missing #{rule})" unless rules.include?(rule)
-    abort "#{file}: Apple TV media must precede App Store iTunes direct" unless rules.index(rule) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i
+    abort "#{file}: Apple TV route missing #{rule}" unless rules.include?(rule)
+    abort "#{file}: Apple TV route must precede App Store iTunes direct" unless rules.index(rule) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i
   end
   abort "#{file}: App Store must use DIRECT" unless app_store_rules.all? { |rule| rules.include?(rule) }
-  abort "#{file}: only Apple TV domains may use XM-Apple" unless rules.select { |rule| rule.end_with?(',XM-Apple') }.sort == apple_tv_rules.sort
+  abort "#{file}: only Apple TV catalog/auth domains may use XM-Apple" unless rules.select { |rule| rule.end_with?(',XM-Apple') }.sort == apple_tv_api_rules.sort
 end
 validate_apple_routes.call('shadowrocket-away.conf', rule_lines)
 tailscale_rules = [
