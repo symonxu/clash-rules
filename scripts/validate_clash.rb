@@ -223,12 +223,12 @@ def check_file(root, file)
   abort 'Clash: LAN ranges must be direct first' unless rules.first(11).all? { |r| r.match?(/\A(DOMAIN(-SUFFIX)?,(localhost|local|lan)|IP-CIDR6?,.*),DIRECT(,no-resolve)?\z/) }
   abort 'Clash: Bybit must use XM-Bybit' unless %w[bybit.com bybit.biz byabcde.com bycsi.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},XM-Bybit") } && rules.none? { |r| r.match?(/by(bit|abcde|csi)/) && !r.end_with?(',XM-Bybit') }
   abort 'Clash: AI Google domains must precede Google' unless rules.index('DOMAIN-SUFFIX,gemini.google.com,XM-AI工具') < rules.index('DOMAIN-SUFFIX,google.com,XM-AI工具')
-  # Apple TV 视频流 CDN 走 DIRECT 省流量；目录、鉴权域名走 XM-Apple；App Store 下载更新走 DIRECT。
+  # Apple TV 目录、鉴权与视频流 CDN 统一走 XM-Apple 保流畅；App Store 下载更新走 DIRECT。
   tv_api = ['DOMAIN-SUFFIX,tv.apple.com', 'DOMAIN-SUFFIX,pancake.apple.com', 'DOMAIN,uts-api.itunes.apple.com']
   tv_vod = %w[play-edge hls np-edge].map { |h| "DOMAIN,#{h}.itunes.apple.com" } + %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc vod-fa-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com" } + ['DOMAIN-KEYWORD,-aoc.tv.apple.com']
-  abort 'Clash: Apple TV API must use XM-Apple' unless tv_api.all? { |d| rules.include?("#{d},XM-Apple") }
-  abort 'Clash: Apple TV video CDN must use DIRECT' unless tv_vod.all? { |d| rules.include?("#{d},DIRECT") }
-  abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless (tv_api.map { |d| "#{d},XM-Apple" } + tv_vod.map { |d| "#{d},DIRECT" }).all? { |r| rules.index(r) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i }
+  tv_all = tv_api + tv_vod
+  abort 'Clash: Apple TV catalog/auth and video CDN must use XM-Apple' unless tv_all.all? { |d| rules.include?("#{d},XM-Apple") }
+  abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless tv_all.map { |d| "#{d},XM-Apple" }.all? { |r| rules.index(r) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i }
   notion = %w[notion.so notion.com notion.site notion.new notion.ai notion-static.com notion-status.com notionusercontent.com makenotion.com cron.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-AI工具" } + ['DOMAIN,prod-files-secure.s3.us-west-2.amazonaws.com,XM-AI工具']
   abort 'Clash: Notion must use XM-AI工具 before GEOIP,CN' unless notion.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: Notion domains must only use XM-AI工具' unless rules.select { |r| r.match?(/notion|cron\.com/) }.all? { |r| r.end_with?(',XM-AI工具') }
@@ -243,10 +243,10 @@ def check_file(root, file)
   anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
   abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
-  vod = %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc vod-fa-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com,DIRECT" } + ['DOMAIN-KEYWORD,-aoc.tv.apple.com,DIRECT']
-  abort 'Clash: Apple TV VOD CDN must be DIRECT before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
+  vod = %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc vod-fa-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com,XM-Apple" } + ['DOMAIN-KEYWORD,-aoc.tv.apple.com,XM-Apple']
+  abort 'Clash: Apple TV VOD CDN must use XM-Apple before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
   abort 'Clash: App Store must use DIRECT' unless %w[apps.apple.com itunes.apple.com mzstatic.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},DIRECT") }
-  abort 'Clash: only Apple TV catalog/auth domains may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv_api.map { |d| "#{d},XM-Apple" }.sort
+  abort 'Clash: only Apple TV domains may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv_all.map { |d| "#{d},XM-Apple" }.sort
   # OTA：cdn-apple.com 整站 + Apple 官方 Software updates 域名走 XM-系统更新（同出口，避免混合校验卡住）。
   direct = %w[DOMAIN-SUFFIX,icloud.com DOMAIN-SUFFIX,icloud-content.com DOMAIN-SUFFIX,push.apple.com DOMAIN-SUFFIX,aaplimg.com DOMAIN-SUFFIX,apple-cloudkit.com DOMAIN-SUFFIX,apple-livephotoskit.com]
   ota_hosts = %w[
