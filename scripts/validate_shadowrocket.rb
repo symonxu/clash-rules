@@ -20,10 +20,10 @@ abort 'shadowrocket-away.conf: tailnet routes must not bypass the built-in Tails
   abort "shadowrocket-away.conf: #{ip} must bypass the tunnel" unless content.include?(ip) && content.match?(/^tun-excluded-routes = .*#{Regexp.escape(ip)}/)
 end
 
-hy_path = File.join(root, 'XM-Clash-Verge-HY.yaml')
-abort 'XM-Clash-Verge-HY.yaml missing' unless File.exist?(hy_path)
+hy_path = File.join(root, 'XM-Clash-HY.yaml')
+abort 'XM-Clash-HY.yaml missing' unless File.exist?(hy_path)
 hy_hosts = File.read(hy_path).scan(/^\s+([0-9a-z.-]+\.aws-agent\.org):\s+(\d+\.\d+\.\d+\.\d+)\s*$/)
-abort "XM-Clash-Verge-HY.yaml: expected the three current Flower hosts, found #{hy_hosts.size}" unless hy_hosts.size == 3
+abort "XM-Clash-HY.yaml: expected the three current Flower hosts, found #{hy_hosts.size}" unless hy_hosts.size == 3
 hy_hosts.each do |name, ip|
   abort "shadowrocket-away.conf: host #{name} must match HY (#{ip})" unless content.include?("#{name} = #{ip}")
 end
