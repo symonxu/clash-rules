@@ -225,7 +225,7 @@ def check_file(root, file)
   abort 'Clash: AI Google domains must precede Google' unless rules.index('DOMAIN-SUFFIX,gemini.google.com,XM-AI工具') < rules.index('DOMAIN-SUFFIX,google.com,XM-AI工具')
   # Apple TV 视频流 CDN 走 DIRECT 省流量；目录、鉴权域名走 XM-Apple；App Store 下载更新走 DIRECT。
   tv_api = ['DOMAIN-SUFFIX,tv.apple.com', 'DOMAIN-SUFFIX,pancake.apple.com', 'DOMAIN,uts-api.itunes.apple.com']
-  tv_vod = %w[play-edge hls np-edge].map { |h| "DOMAIN,#{h}.itunes.apple.com" } + %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com" }
+  tv_vod = %w[play-edge hls np-edge].map { |h| "DOMAIN,#{h}.itunes.apple.com" } + %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc vod-fa-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com" } + ['DOMAIN-KEYWORD,-aoc.tv.apple.com']
   abort 'Clash: Apple TV API must use XM-Apple' unless tv_api.all? { |d| rules.include?("#{d},XM-Apple") }
   abort 'Clash: Apple TV video CDN must use DIRECT' unless tv_vod.all? { |d| rules.include?("#{d},DIRECT") }
   abort 'Clash: Apple TV hosts must precede itunes.apple.com' unless (tv_api.map { |d| "#{d},XM-Apple" } + tv_vod.map { |d| "#{d},DIRECT" }).all? { |r| rules.index(r) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i }
@@ -243,7 +243,7 @@ def check_file(root, file)
   anki = %w[ankiweb.net ankiuser.net].map { |d| "DOMAIN-SUFFIX,#{d},XM-Anki" }
   abort 'Clash: AnkiWeb must use XM-Anki before GEOIP,CN' unless anki.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: only AnkiWeb may use XM-Anki' unless rules.select { |r| r.end_with?(',XM-Anki') }.sort == anki.sort
-  vod = %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com,DIRECT" }
+  vod = %w[vod-ap-aoc vod-ap2-aoc vod-ak-aoc vod-fa-aoc].map { |h| "DOMAIN-SUFFIX,#{h}.tv.apple.com,DIRECT" } + ['DOMAIN-KEYWORD,-aoc.tv.apple.com,DIRECT']
   abort 'Clash: Apple TV VOD CDN must be DIRECT before tv.apple.com' unless vod.all? { |r| rules.include?(r) && rules.index(r) < rules.index('DOMAIN-SUFFIX,tv.apple.com,XM-Apple') }
   abort 'Clash: App Store must use DIRECT' unless %w[apps.apple.com itunes.apple.com mzstatic.com].all? { |d| rules.include?("DOMAIN-SUFFIX,#{d},DIRECT") }
   abort 'Clash: only Apple TV catalog/auth domains may use XM-Apple' unless rules.select { |r| r.end_with?(',XM-Apple') }.sort == tv_api.map { |d| "#{d},XM-Apple" }.sort

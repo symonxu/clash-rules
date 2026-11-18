@@ -365,6 +365,8 @@ rules:
   - DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,DIRECT
   - DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,DIRECT
   - DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,DIRECT
+  - DOMAIN-SUFFIX,vod-fa-aoc.tv.apple.com,DIRECT
+  - DOMAIN-KEYWORD,-aoc.tv.apple.com,DIRECT
   - DOMAIN-SUFFIX,tv.apple.com,XM-Apple
   - DOMAIN-SUFFIX,pancake.apple.com,XM-Apple
   - DOMAIN,play-edge.itunes.apple.com,DIRECT

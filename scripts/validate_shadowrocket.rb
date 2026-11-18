@@ -49,7 +49,7 @@ web3_line = lines.find { |l| l.start_with?('XM-Web3 =') }
 abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香港') && web3_line&.include?('台湾') && web3_line&.include?('新加坡') && web3_line&.include?('美国')
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "shadowrocket-away.conf: rule count must be 282 (found #{rule_lines.size})" unless rule_lines.size == 282
+abort "shadowrocket-away.conf: rule count must be 284 (found #{rule_lines.size})" unless rule_lines.size == 284
 apple_tv_api_rules = [
   'DOMAIN-SUFFIX,tv.apple.com,XM-Apple',
   'DOMAIN-SUFFIX,pancake.apple.com,XM-Apple',
@@ -59,6 +59,8 @@ apple_tv_vod_rules = [
   'DOMAIN-SUFFIX,vod-ap-aoc.tv.apple.com,DIRECT',
   'DOMAIN-SUFFIX,vod-ap2-aoc.tv.apple.com,DIRECT',
   'DOMAIN-SUFFIX,vod-ak-aoc.tv.apple.com,DIRECT',
+  'DOMAIN-SUFFIX,vod-fa-aoc.tv.apple.com,DIRECT',
+  'DOMAIN-KEYWORD,-aoc.tv.apple.com,DIRECT',
   'DOMAIN,play-edge.itunes.apple.com,DIRECT',
   'DOMAIN,hls.itunes.apple.com,DIRECT',
   'DOMAIN,np-edge.itunes.apple.com,DIRECT'
@@ -102,9 +104,9 @@ home_content = File.read(home_path)
 home_active_lines = home_content.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 abort 'shadowrocket-home.conf must not reference TAILSCALE policy or [Tailscale] section' if home_active_lines.any? { |l| l.match?(/,TAILSCALE(?:\b|$)/) || l.match?(/^\[Tailscale\]/i) }
 home_rules = home_content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "shadowrocket-home.conf: rule count must be 281 (found #{home_rules.size})" unless home_rules.size == 281
+abort "shadowrocket-home.conf: rule count must be 283 (found #{home_rules.size})" unless home_rules.size == 283
 validate_apple_routes.call('shadowrocket-home.conf', home_rules)
 abort 'shadowrocket-home.conf: must route 100.64.0.0/10 to DIRECT' unless home_rules.include?('IP-CIDR,100.64.0.0/10,DIRECT,no-resolve')
 abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_rules.last == 'FINAL,XM-日常上网'
 
-puts 'Validated shadowrocket-away.conf (7 proxy groups, 282 rules, built-in Tailscale routing) and shadowrocket-home.conf (281 rules).'
+puts 'Validated shadowrocket-away.conf (7 proxy groups, 284 rules, built-in Tailscale routing) and shadowrocket-home.conf (283 rules).'
