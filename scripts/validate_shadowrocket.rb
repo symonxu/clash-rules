@@ -43,7 +43,7 @@ anki_line = lines.find { |l| l.start_with?('XM-Anki =') }
 abort 'XM-Anki must be select' unless anki_line&.include?('= select,')
 
 sys_line = lines.find { |l| l.start_with?('XM-系统更新 =') }
-abort 'XM-系统更新 must be select with DIRECT' unless sys_line&.include?('= select, DIRECT,')
+abort 'XM-系统更新 must be select with DIRECT only (no auto nodes)' unless sys_line&.strip == 'XM-系统更新 = select, DIRECT'
 
 web3_line = lines.find { |l| l.start_with?('XM-Web3 =') }
 abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香港') && web3_line&.include?('台湾') && web3_line&.include?('新加坡') && web3_line&.include?('美国')

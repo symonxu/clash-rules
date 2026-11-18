@@ -107,27 +107,30 @@ def check_file(root, file)
   groups = clash.fetch('proxy-groups')
   abort "#{file}: groups must be exactly the seven XM groups in order" unless groups.map { |g| g['name'] } == GROUP_NAMES
   allowed_keys = %w[name type include-all filter exclude-filter url interval tolerance timeout]
-  manual = %w[XM-Anki XM-系统更新]
+  manual = %w[XM-Anki]
   pinned = prof[:pinned] || {}
   samples = prof[:samples] + HK_SAMPLES + prof[:expected].values.flatten.uniq.flat_map { |n| hk_variants(n) }
   hk_direct = HK_SAMPLES + (1..15).flat_map { |n| ['🇭🇰 香港 %02d' % n, '🇭🇰 香港_%02d' % n, '🇭🇰 香港HKT家宽%d' % n] + TIERS.map { |t| "🇭🇰 香港#{t} IEPL 专线 #{n}" } }
   groups.each do |g|
     name = g['name']
+    if name == 'XM-系统更新'
+      # 只保留 DIRECT：系统更新走规则直连，不自动纳入节点，避免记忆状态把组切到日本节点。
+      abort "#{file}: XM-系统更新 must be select with proxies [DIRECT] only" unless g['type'] == 'select' && g['proxies'] == ['DIRECT'] && (g.keys - %w[name type proxies]).empty?
+      next
+    end
     if (proxies = pinned[name])
       abort "#{file}: #{name} must be a select of #{proxies.inspect}" unless g['type'] == 'select' && g['proxies'] == proxies && (g.keys - %w[name type proxies]).empty?
       next
     end
-    keys_ok = name == 'XM-系统更新' ? allowed_keys + ['proxies'] : allowed_keys
+    keys_ok = allowed_keys
     abort "#{file}: #{name} has unexpected keys #{(g.keys - keys_ok).inspect}" unless (g.keys - keys_ok).empty?
-    # XM-系统更新：proxies 只能是 DIRECT（默认第一项），不得写任何节点。
-    abort "#{file}: #{name} proxies must be exactly [DIRECT]" if name == 'XM-系统更新' && g['proxies'] != ['DIRECT']
     abort "#{file}: #{name} must take nodes via include-all + filter only" unless g['include-all'] == true && g['filter'].is_a?(String)
     abort "#{file}: #{name} must have exclude-filter" unless g['exclude-filter'].is_a?(String)
     excl = Regexp.new(g['exclude-filter'])
     abort "#{file}: #{name} exclude-filter must remove every Hong Kong node" unless HK_SAMPLES.all? { |n| excl.match?(n) }
     abort "#{file}: #{name} exclude-filter must remove info nodes" unless prof[:info].all? { |n| excl.match?(n) }
     if manual.include?(name)
-      # XM-Anki / XM-系统更新 是手动 select 组，不测速，由用户自己选节点。
+      # XM-Anki 是手动 select 组，不测速，由用户自己选节点。
       abort "#{file}: #{name} must be select without test options" unless g['type'] == 'select' && (g.keys & %w[url interval tolerance timeout]).empty?
     else
       abort "#{file}: #{name} wrong test options" unless g['url'] == TEST_URL && g['interval'] == prof[:interval] && g['timeout'] == 5000

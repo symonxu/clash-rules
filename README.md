@@ -56,9 +56,9 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 | XM-日常上网 | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | url-test |
 | XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | url-test |
 | XM-Anki | 日本_01 / 日本_02 / 日本_03 | 日本高级 IEPL 专线 1 / 2 / 3 | select（手动选一个固定节点，避免同步中途切换） |
-| XM-系统更新 | DIRECT（默认）+ 日本_01–03 | DIRECT（默认）+ 日本高级 IEPL 专线 1–3 | select（系统更新默认直连走大陆 CDN，失败可手动切日本） |
+| XM-系统更新 | 仅 DIRECT | 仅 DIRECT | select（系统更新只走大陆 CDN 直连；组里只放 DIRECT，避免客户端记住手动选的日本节点导致更新卡住；后期需代理救急再手动加节点） |
 
-花云版多数组 6–7 个节点（XM-Web3 4 个，XM-Anki 3 个，XM-系统更新 DIRECT + 3 个）（同地区高级 + 标准），不用实验性节点；信息条目另外排除英文的 `Traffic` / `Expire`。
+花云版多数组 6–7 个节点（XM-Web3 4 个，XM-Anki 3 个，XM-系统更新仅 DIRECT）（同地区高级 + 标准），不用实验性节点；信息条目另外排除英文的 `Traffic` / `Expire`。
 
 - url-test：用 `https://www.gstatic.com/generate_204` 测速，超时 5 秒。极速云每 900 秒测速、快超过 20ms 才切换；花云每 300 秒测速、快超过 10ms 就切换。
 - XM-Anki（两份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
@@ -86,7 +86,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 7. **直连**：App Store 商店页与下载更新（`apps.apple.com`、`itunes.apple.com`、`mzstatic.com`）、iCloud、Apple 地图、Game Center、Apple 推送、微信、QQ。
 8. **XM-Apple**（仅 Apple TV 片库与鉴权，美国节点）：`tv.apple.com`、`pancake.apple.com`、`uts-api.itunes.apple.com`。Apple TV 视频流 CDN（`vod-ap-aoc` / `vod-ap2-aoc` / `vod-ak-aoc.tv.apple.com`、`play-edge` / `hls` / `np-edge.itunes.apple.com`）走 `DIRECT`（不消耗花云节点流量，代价是播放可能卡顿）；相关规则排在宽泛的 `itunes.apple.com` 直连规则之前，保证优先命中。App Store 不走美国节点；iCloud、推送、CloudKit（`apple-cloudkit.com`、`apple-livephotoskit.com`，Notability 等 App 的 iCloud 同步）、`aaplimg.com` 等仍直连，系统更新走 XM-系统更新（CI 校验）。
    - App Store：`apps.apple.com`、`itunes.apple.com`、`mzstatic.com` 均 **DIRECT**；`cdn-apple.com` 走 XM-系统更新。
-   - **XM-系统更新**（iOS/macOS OTA，参考 Apple 企业网络 Software updates）：`cdn-apple.com`（DOMAIN-SUFFIX，含 updates*/fcs-keys 等）、`appldnld`、`swcdn`、`swdist`、`swdownload`、`swscan`、`swquery`、`swpost`、`mesu`、`gdmf`、`gdmf-ados`、`gs`、`gsra`、`gg`、`ig`、`skl`、`xp`、`configuration`、`oscdn`、`osrecovery`、`cds`、`download.info.apple.com`、`ocsp2.apple.com`； DNS：这些 Apple 下载域名用 nameserver-policy （含 CNAME 落点 ks-cdn/ksyuncdn/alikunlun）走 DoH `https://223.5.5.5/dns-query` + `https://doh.pub/dns-query` 并跳过 fake-ip（TUN 下 system 会回环到 mihomo，明文 UDP 223/119 对这些域名超时/SERVFAIL）；默认 DIRECT（整条同出口，避免校验卡住），失败可手动切日本。不影响 XM-Apple / Apple TV。
+   - **XM-系统更新**（iOS/macOS OTA，参考 Apple 企业网络 Software updates）：`cdn-apple.com`（DOMAIN-SUFFIX，含 updates*/fcs-keys 等）、`appldnld`、`swcdn`、`swdist`、`swdownload`、`swscan`、`swquery`、`swpost`、`mesu`、`gdmf`、`gdmf-ados`、`gs`、`gsra`、`gg`、`ig`、`skl`、`xp`、`configuration`、`oscdn`、`osrecovery`、`cds`、`download.info.apple.com`、`ocsp2.apple.com`； DNS：这些 Apple 下载域名用 nameserver-policy （含 CNAME 落点 ks-cdn/ksyuncdn/alikunlun）走 DoH `https://223.5.5.5/dns-query` + `https://doh.pub/dns-query` 并跳过 fake-ip（TUN 下 system 会回环到 mihomo，明文 UDP 223/119 对这些域名超时/SERVFAIL）；该组只放 DIRECT（整条同出口，避免校验卡住；客户端 store-selected 若记住手动选过的日本节点会让更新走代理卡住，故不放日本节点，后期需救急再手动加回）。不影响 XM-Apple / Apple TV。
 9. 中国大陆 IP（`GEOIP,CN`）直连。
 10. 其余流量走 **XM-日常上网**。
 
