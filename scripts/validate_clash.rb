@@ -3,11 +3,10 @@ Encoding.default_external = Encoding::UTF_8
 Encoding.default_internal = Encoding::UTF_8
 require 'yaml'
 root = File.expand_path('..', __dir__)
-# XM-Clash-JSY.yaml（极速云）与 XM-Clash-HY.yaml（花云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置，节点来自 App 里另外导入的订阅。
-# 两份单订阅文件的 rules 部分（从「# 规则从上到下匹配」到文件末尾）必须逐字节一致；各家节点命名不同，分组筛选各用一套虚构样例检查。
+# XM-Clash-HY.yaml（花云）：Clash App（clash.md，iPhone / iPad / Mac）用的规则配置，节点来自 App 里另外导入的订阅。
 # 花云另有 hosts：3 个 *.aws-agent.org 写成国内入口 IP。Clash 组合规则方案时丢掉订阅里的 hosts。
-# 不含节点或订阅；两份用 include-all + filter + exclude-filter。
-FILES = ['XM-Clash-Verge-HY.yaml'].freeze
+# 不含节点或订阅；使用 include-all + filter + exclude-filter。
+FILES = ['XM-Clash-HY.yaml'].freeze
 GROUP_NAMES = ['XM-AI工具', 'XM-Web3', 'XM-Bybit', 'XM-日常上网', 'XM-Apple', 'XM-Anki', 'XM-系统更新'].freeze
 QUIC_RULE = 'AND,((NETWORK,UDP),(DST-PORT,443)),REJECT'.freeze
 OPENBOT_UDP_RULES = [
@@ -68,18 +67,17 @@ HY_SAMPLES = JSY_SAMPLES + hy.call('🇯🇵', '日本', 1..12) + hy.call('🇸�
 INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：example'].freeze
 
 PROFILES = {
-  'XM-Clash-Verge-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                                bybit_order: nil, pinned: { 'XM-AI工具' => ['🇯🇵 日本高级 IEPL 专线 2', '🇯🇵 日本标准 IEPL 专线 1', '🇯🇵 日本标准 IEPL 专线 3', '🇯🇵 日本高级 IEPL 专线 3', '🇯🇵 日本标准 IEPL 专线 2', '🇨🇳 台湾高级 IEPL 专线 2', '🇨🇳 台湾标准 IEPL 专线 3', '🇨🇳 台湾高级 IEPL 专线 3'] } }
+  'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
+                          bybit_order: nil, pinned: { 'XM-AI工具' => ['🇯🇵 日本高级 IEPL 专线 2', '🇯🇵 日本标准 IEPL 专线 1', '🇯🇵 日本标准 IEPL 专线 3', '🇯🇵 日本高级 IEPL 专线 3', '🇯🇵 日本标准 IEPL 专线 2', '🇨🇳 台湾高级 IEPL 专线 2', '🇨🇳 台湾标准 IEPL 专线 3', '🇨🇳 台湾高级 IEPL 专线 3'] } }
 }.freeze
 
 def check_file(root, file)
   prof = PROFILES.fetch(file)
   clash = YAML.safe_load(File.read(File.join(root, file)))
-  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent keep-alive-idle keep-alive-interval disable-keep-alive geox-url profile dns tun hosts proxy-providers proxy-groups rules]
+  expected_keys = %w[mode log-level ipv6 unified-delay tcp-concurrent keep-alive-idle keep-alive-interval disable-keep-alive geox-url profile dns tun hosts proxy-groups rules]
   abort "#{file}: TCP keepalive must be idle 30s, interval 15s, and enabled" unless clash['keep-alive-idle'] == 30 && clash['keep-alive-interval'] == 15 && clash['disable-keep-alive'] == false
   abort "#{file}: unexpected top-level fields" unless clash.keys.sort == expected_keys.sort
-  abort "#{file}: must not contain nodes or rule-providers" if %w[proxies rule-providers].any? { |k| clash.key?(k) }
-  abort "#{file}: proxy-providers must be empty hash" unless clash['proxy-providers'] == {}
+  abort "#{file}: must not contain nodes or proxy/rule providers" if %w[proxies proxy-providers rule-providers].any? { |k| clash.key?(k) }
   abort "#{file}: mode must be rule and IPv6 off" unless clash['mode'] == 'rule' && clash['ipv6'] == false
   abort "#{file}: geox-url must be exactly the jsDelivr MetaCubeX mirror" unless clash['geox-url'] == { 'geoip' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.dat', 'geosite' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geosite.dat', 'mmdb' => 'https://testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/country.mmdb' }
   dns = clash.fetch('dns')

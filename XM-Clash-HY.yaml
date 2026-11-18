@@ -1,7 +1,7 @@
-# XM Clash Verge 规则配置 · 花云版（与 XM-Clash-HY.yaml 同步，仅增加空 proxy-providers: {} 占位以通过 Clash Verge 远程订阅校验；节点由本地扩展脚本挂载）。
+# XM Clash 规则配置 · 花云版（App：Clash - 基于规则的网络代理工具，iPhone / iPad / Mac 通用；说明见 README.md）
 # 本文件有分组、规则、DNS 和花云节点入口的 hosts，没有节点、没有订阅地址，也不需要手动编辑：用 App 的「配置链接」导入，自动跟随仓库更新。
-# 节点来自在 App 里另外导入的花云订阅（节点来源）。XM-AI工具 手动选择下面 5 条日本线路。其余组用 include-all + 节点名正则筛选，url-test 自动选延迟最低。
-# 规则部分必须与 XM-Clash-JSY.yaml 完全一致（CI 校验）。
+# 节点来自在 App 里另外导入的花云订阅（节点来源）。XM-AI工具 手动选择下面 5 条日本 + 3 条台湾线路。其余组用 include-all + 节点名正则筛选，url-test 自动选延迟最低。
+# 本仓库主维护花云单订阅配置，并与小火箭两份配置保持分流同步（CI 校验）。
 # hosts 把花云订阅里的 3 个节点域名改写到国内入口。Clash 组合规则方案时不会带上订阅里的 hosts，所以写在这里。订阅换了这 3 个域名就要一起改。
 # 任何分组都不得包含香港节点：每组都用 exclude-filter 排除（CI 校验）。
 mode: rule
@@ -76,7 +76,6 @@ hosts:
   e3585sh2-3ad5.aws-agent.org: 180.188.20.131
   fd025gz0-c617.aws-agent.org: 119.147.195.213
   0bc52bj8-10e0.aws-agent.org: 58.247.187.127
-proxy-providers: {}
 proxy-groups:
   # Google、AI、OpenBot 合成一组，手动从 5 条日本 + 3 条台湾线路里选（2026-11-15 实测台湾高级 2 / 标准 3 / 高级 3 延迟最低）。
   - name: XM-AI工具
