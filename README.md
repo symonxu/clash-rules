@@ -42,7 +42,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 5. **启用 Tailscale 模块**：进入「设置 → Tailscale」，填入 Tailscale Auth Key 并启用模块；控制服务器保持默认，出口节点留空。不要同时开启独立的官方 Tailscale App。
 6. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
 
-`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同；小火箭默认不拿 `[Host]` 去连节点，必须配上 `use-local-host-item-for-proxy = true`，节点才会连到国内入口而不是 `147.90.*`。节点入口和国内 DNS 写在 `skip-proxy`、`tun-excluded-routes` 里，避免手机把节点连接吸进隧道后全部超时。TUN 模式下，`100.64.0.0/10` 和 `*.ts.net` 必须留在隧道中，分别由 `TAILSCALE` 规则交给内置模块；不要把它们加入 `skip-proxy` 或 `tun-excluded-routes`。控制面域名 `tailscale.com` / `tailscale.io` 直连。此配置关闭 IPv6，因此按 IPv4 Tailnet 地址连接。`XM-AI工具` 是 select，含 5 条日本线路，Google、AI、OpenBot 都走这一组。
+`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同；小火箭默认不拿 `[Host]` 去连节点，必须配上 `use-local-host-item-for-proxy = true`，节点才会连到国内入口而不是 `147.90.*`。节点入口和国内 DNS 写在 `skip-proxy`、`tun-excluded-routes` 里，避免手机把节点连接吸进隧道后全部超时。TUN 模式下，`100.64.0.0/10` 和 `*.ts.net` 必须留在隧道中，分别由 `TAILSCALE` 规则交给内置模块；不要把它们加入 `skip-proxy` 或 `tun-excluded-routes`。控制面域名 `tailscale.com` / `tailscale.io` 直连。此配置关闭 IPv6，因此按 IPv4 Tailnet 地址连接。`XM-AI工具` 是 select，含 7 个节点（日本标准 1/3、台湾高级 2/3、美国标准 6/7、韩国标准 2），Google、AI、OpenBot 都走这一组；`XM-日常上网` 也是 select，节点完全一致。
 
 ## 分组
 
@@ -50,10 +50,10 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 | 分组 | 极速云（`XM-Clash-JSY.yaml`） | 花云（`XM-Clash-HY.yaml`） | 类型 |
 | --- | --- | --- | --- |
-| XM-AI工具 | 日本_*（自动测速） | 日本高级 2、标准 1、标准 3、高级 3、标准 2（手动选） | 极速云 url-test；花云 select |
+| XM-AI工具 | 日本_*（自动测速） | 日本标准 1/3 + 台湾高级 2/3 + 美国标准 6/7 + 韩国标准 2（手动选，7 个） | 极速云 url-test；花云 select |
 | XM-Web3 | 马来西亚、菲律宾、越南、新加坡_* | 韩国标准 IEPL 专线 1–2 + 越南标准 1 + 印尼标准 1（4 个；新加坡/台湾被 Hyperliquid HIP-4 限制，日本隐藏预测市场） | url-test |
 | XM-Bybit | 台湾_01 → 台湾_02 → 其余台湾_* | 台湾高级 IEPL 专线 1–3 + 台湾标准 1–3（6 个） | 极速云 fallback；花云 url-test |
-| XM-日常上网 | 日本_* | 日本高级 IEPL 专线 1–3 + 日本标准 1–4（7 个；不用实验性） | url-test |
+| XM-日常上网 | 日本_* | 同 XM-AI工具：日本标准 1/3 + 台湾高级 2/3 + 美国标准 6/7 + 韩国标准 2（7 个） | select（手动选，2026-11-19 起） |
 | XM-Apple | 美国_01–03（3 个） | 美国高级 IEPL 专线 1–3 + 美国标准 1–4（7 个） | url-test |
 | XM-Anki | 日本_01 / 日本_02 / 日本_03 | 日本高级 IEPL 专线 1 / 2 / 3 | select（手动选一个固定节点，避免同步中途切换） |
 | XM-系统更新 | 仅 DIRECT | 仅 DIRECT | select（系统更新只走大陆 CDN 直连；组里只放 DIRECT，避免客户端记住手动选的日本节点导致更新卡住；后期需代理救急再手动加节点） |
@@ -63,7 +63,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 - url-test：用 `https://www.gstatic.com/generate_204` 测速，超时 5 秒。极速云每 900 秒测速、快超过 20ms 才切换；花云每 300 秒测速、快超过 10ms 就切换。
 - XM-Anki（两份都有）：手动 select 组，只有三个日本节点（花云 日本高级 1–3，极速云 日本_01–03），在 App 里自己选一个固定使用，不测速、不自动切换；只用于 AnkiWeb 同步（`ankiweb.net`、`ankiuser.net`）。
 - 极速云 XM-Bybit：fallback，900 秒 / 5 秒；排第一的节点可用就一直用它，失败才往后切，固定出口 IP 更稳
-- **XM-AI工具**：Google、AI、OpenBot 合成这一组。花云 Clash 和小火箭是 select，5 条日本线路按 2026-11-12 测速从快到慢排列，由你手动选。极速云同名组仍是 url-test，自动选 `日本_*`。
+- **XM-AI工具**：Google、AI、OpenBot 合成这一组。花云 Clash 和小火箭是 select，7 个节点（日本标准 1/3、台湾高级 2/3、美国标准 6/7、韩国标准 2），由你手动选。2026-11-19 实测日本出口访问谷歌主站/YouTube/账号全部 TLS 超时、美国节点约 220ms 正常，因此加入美国与韩国节点；若谷歌再卡，把这一组手动切到美国标准 6 或 7。`XM-日常上网` 节点完全相同、同样改为 select，可与本组一起切换。极速云同名组仍是 url-test，自动选 `日本_*`。
 - **MULTI 的 XM-OpenBot 例外**：用极速云日本_01 → 07 → 05 → 08 → 06 → 04 → 02 → 03，并且 rules 里比另外四份多两条 `AND,((NETWORK,UDP),(DOMAIN-SUFFIX,openbot.run|openbot.site)),REJECT`。原因是极速云 AnyTLS 的 UDP 转发撑不住 TURN（连续 15 次 STUN 掉了 6 次），把 UDP 拒掉后客户端改走 TURN 的 TCP 443，只借用极速云的 TCP 线路。花云故障期间 OpenBot 和 Web3 曾经全废（花云节点健康检查全挂），所以 MULTI 的两个组都以极速云为主、花云垫底。
 - **任何分组都不用香港节点**（Google 对香港 IP 不提供 Gemini 等服务）。CI 会检查每组都有香港排除，且 `filter` 本身也不能匹配香港节点名。
 - 机场如果改了节点名，对应分组会筛不到节点，需要改对应文件的 `filter`。

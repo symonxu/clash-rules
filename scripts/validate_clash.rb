@@ -48,9 +48,9 @@ hy_tw = (1..5).map { |n| "🇨🇳 台湾高级 IEPL 专线 #{n}" }
 hy_tw_other = (1..5).flat_map { |n| ["🇨🇳 台湾标准 IEPL 专线 #{n}", "🇨🇳 台湾实验性 IEPL 专线 #{n}"] }
 # 花云：每组同地区高级 1–3 + 标准 1–4（台湾标准只有 1–3），全部 url-test，300 秒 / 10ms。
 hy_pick = ->(flag, place, std) { (1..3).map { |n| "#{flag} #{place}高级 IEPL 专线 #{n}" } + (1..std).map { |n| "#{flag} #{place}标准 IEPL 专线 #{n}" } }
-hy_jp_pick = hy_pick.call('🇯🇵', '日本', 4)
+# 2026-11-19：日本出口访问谷歌主站/YouTube/账号全部超时，美国节点正常；AI工具与日常上网两组统一为同样的 7 个手动节点。
+HY_PINNED_NODES = ['🇯🇵 日本标准 IEPL 专线 1', '🇯🇵 日本标准 IEPL 专线 3', '🇨🇳 台湾高级 IEPL 专线 2', '🇨🇳 台湾高级 IEPL 专线 3', '🇺🇸 美国标准 IEPL 专线 6', '🇺🇸 美国标准 IEPL 专线 7', '🇰🇷 韩国标准 IEPL 专线 2'].freeze
 HY_EXPECTED = {
-  'XM-日常上网' => hy_jp_pick,
   # Web3：Hyperliquid HIP-4 限制新加坡/台湾、日本隐藏预测市场，只用韩国标准 1–2、越南标准 1、印尼标准 1（花云这三地没有高级线路）。
   'XM-Web3' => ['🇰🇷 韩国标准 IEPL 专线 1', '🇰🇷 韩国标准 IEPL 专线 2', '🇻🇳 越南标准 IEPL 专线 1', '🇮🇩 印尼标准 IEPL 专线 1'],
   'XM-Bybit' => hy_pick.call('🇨🇳', '台湾', 3),
@@ -68,7 +68,7 @@ INFO = ['剩余流量：100.00 GB', '套餐到期：长期有效', '官网：exa
 
 PROFILES = {
   'XM-Clash-HY.yaml' => { interval: 300, tolerance: 10, fallback: [], expected: HY_EXPECTED, samples: HY_SAMPLES, info: INFO + ['Traffic: 1 GB | 100 GB', 'Expire: 2030-01-01', 'TRAFFIC 1 GB'],
-                          bybit_order: nil, pinned: { 'XM-AI工具' => ['🇯🇵 日本高级 IEPL 专线 2', '🇯🇵 日本标准 IEPL 专线 1', '🇯🇵 日本标准 IEPL 专线 3', '🇯🇵 日本高级 IEPL 专线 3', '🇯🇵 日本标准 IEPL 专线 2', '🇨🇳 台湾高级 IEPL 专线 2', '🇨🇳 台湾标准 IEPL 专线 3', '🇨🇳 台湾高级 IEPL 专线 3'] } }
+                          bybit_order: nil, pinned: { 'XM-AI工具' => HY_PINNED_NODES, 'XM-日常上网' => HY_PINNED_NODES } }
 }.freeze
 
 def check_file(root, file)
