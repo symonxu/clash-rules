@@ -33,8 +33,12 @@ groups = content.scan(/^([A-Za-z0-9\u4e00-\u9fa5-]+)\s*=\s*(select|url-test|fall
 abort "shadowrocket-away.conf: groups must match expected 7 groups (found #{groups.inspect})" unless groups == expected_groups
 
 lines = content.lines.map(&:strip)
+# 2026-11-19：AI工具与日常上网统一为同样的 7 个手动节点（2 日本 + 2 台湾 + 2 美国 + 1 韩国）。
+AI_GROUP_REGEX = '^(?!.*(香港|HK|Hong ?Kong|🇭🇰|实验性|备用|只有备用|剩余|流量|套餐|到期|官网)).*(日本(标准 IEPL 专线 1|标准 IEPL 专线 3)|台湾(高级 IEPL 专线 2|高级 IEPL 专线 3)|美国(标准 IEPL 专线 6|标准 IEPL 专线 7)|韩国标准 IEPL 专线 2)$'.freeze
 japan = lines.find { |l| l.start_with?('XM-AI工具 =') }
-abort 'XM-AI工具 must be a manual select filtered to the five Japan lines and three Taiwan lines, without hardcoded emoji names' unless japan == 'XM-AI工具 = select, policy-regex-filter=^(?!.*(香港|HK|Hong ?Kong|🇭🇰|实验性|备用|只有备用|剩余|流量|套餐|到期|官网)).*(日本(高级 IEPL 专线 2|标准 IEPL 专线 1|标准 IEPL 专线 3|高级 IEPL 专线 3|标准 IEPL 专线 2)|台湾(高级 IEPL 专线 2|标准 IEPL 专线 3|高级 IEPL 专线 3))$'
+abort 'XM-AI工具 must be a manual select with the seven 2026-11-19 nodes, without hardcoded emoji names' unless japan == "XM-AI工具 = select, policy-regex-filter=#{AI_GROUP_REGEX}"
+daily = lines.find { |l| l.start_with?('XM-日常上网 =') }
+abort 'XM-日常上网 must be a manual select with the same seven nodes as XM-AI工具' unless daily == "XM-日常上网 = select, policy-regex-filter=#{AI_GROUP_REGEX}"
 
 bybit_line = lines.find { |l| l.start_with?('XM-Bybit =') }
 abort 'XM-Bybit must be fallback' unless bybit_line&.include?('= fallback,')
