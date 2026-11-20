@@ -70,14 +70,14 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 
 ## DNS
 
-`223.5.5.5`、`119.29.29.29`，极速云与花云两份 Clash 配置全部采用标准 fake-ip 方案（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则走 XM-AI工具。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。Clash YAML 中 `+.ts.net` 跳过 fake-ip 并通过 `nameserver-policy` 交给 Tailscale MagicDNS（`100.100.100.100`），`tun.route-exclude-address` 排除 `100.64.0.0/10`，并在规则段加入两条精确 `PROCESS-NAME` 直连（`io.tailscale.ipn.macsys.network-extension` 与 `Tailscale`，覆盖 macOS 官方 Tailscale 守护进程与 STUN 探针，共 282 条规则）；这些设置用于 Clash YAML 与官方 Tailscale App 共存。小火箭使用内置 Tailscale 模块，应将 tailnet 流量留在 TUN 并交给 `TAILSCALE` 策略，不能沿用上述旁路设置，仍保持 280 条域名与 IP 规则。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），Clash 在 iOS 上会安全跳过精确 `PROCESS-NAME` 规则（不使用通配/正则进程匹配）。
+`223.5.5.5`、`119.29.29.29`，极速云与花云两份 Clash 配置全部采用标准 fake-ip 方案（局域网、captive.apple.com、time.apple.com、微软联网检测不走 fake-ip）；IPv6 关闭。Apple 系统更新相关域名（cdn-apple.com、swcdn/swdist/swscan/ocsp2、aaplimg、akadns、akamaiedge 及 CDN 落点 ks-cdn/ksyuncdn/alikunlun）用 `nameserver-policy` 走 DoH（`https://223.5.5.5/dns-query`、`https://doh.pub/dns-query`）并跳过 fake-ip；TUN 下不要用 `system`（会回环到 mihomo）。`+.openbot.run` 和 `+.openbot.site` 跳过 fake-ip（返回真实 IP），规则走 XM-AI工具。原因是 TURN/WebRTC 不能用 198.18.0.0/16 假地址。GEOIP 数据库（`geox-url`）用 jsDelivr 镜像 `testingcf.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release`，大陆可下载。Clash YAML 中 `+.ts.net` 跳过 fake-ip 并通过 `nameserver-policy` 交给 Tailscale MagicDNS（`100.100.100.100`），`tun.route-exclude-address` 排除 `100.64.0.0/10`，并在规则段加入两条精确 `PROCESS-NAME` 直连（`io.tailscale.ipn.macsys.network-extension` 与 `Tailscale`，覆盖 macOS 官方 Tailscale 守护进程与 STUN 探针，共 282 条规则）；这些设置用于 Clash YAML 与官方 Tailscale App 共存。小火箭使用内置 Tailscale 模块，应将 tailnet 流量留在 TUN 并交给 `TAILSCALE` 策略，不能沿用上述旁路设置，外出/在家两份分别为 283 / 282 条域名与 IP 规则。iOS 不能按进程分流（见 https://clash.md/zh/guide/config/apple-platforms ），Clash 在 iOS 上会安全跳过精确 `PROCESS-NAME` 规则（不使用通配/正则进程匹配）。
 
 ## 主要分流
 
 规则从上到下匹配，第一条命中即生效：
 
 1. 局域网域名和私有地址直连。
-   - 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。
+   - Clash 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。小火箭（2026-11-20）改在 `[General]` 用 `block-quic = all-proxy` 只封走代理的连接，直连域名保留 HTTP/3，避免 App Store 每次连接先重试 QUIC 再回退 TCP 造成首屏卡顿；同时把 `dns-server` 换成加密 DoH `https://dns.alidns.com/dns-query`，避免明文 UDP/53 被劫持或拿到苹果 CDN 池里的不可达 IP（CI 校验）。
 2. **XM-Web3**：常用链上 RPC（Infura、Alchemy、Ankr、LlamaRPC、BlockPI、BlastAPI、Omnia Tech、Stackup、Arbitrum 等公链 RPC）、钱包（MetaMask、Phantom、WalletConnect 等）、DEX 与交易站（Uniswap、Jupiter、pump.fun、Bitget、PancakeSwap、Hyperliquid、Polymarket、Across、CoinGecko 等）。
 3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
 4. **XM-AI工具**：Google、Gmail、YouTube、Gemini、Cursor、ChatGPT、Claude、Notion、Slack、Apple 隐私中继，以及 `openbot.run`、`openbot.site`。花云这一组手动选节点。排在 `GEOIP,CN` 之前。
