@@ -10,14 +10,16 @@ abort 'shadowrocket-away.conf: [General] section missing' unless content.include
 abort 'shadowrocket-away.conf: [Host] section missing' unless content.include?('[Host]')
 abort 'shadowrocket-away.conf: [Proxy Group] section missing' unless content.include?('[Proxy Group]')
 abort 'shadowrocket-away.conf: [Rule] section missing' unless content.include?('[Rule]')
-expected_real_ip = 'always-real-ip = *.openbot.run, *.openbot.site, *.aws-agent.org, *.mzstatic.com, *.itunes.apple.com, captive.apple.com, time.apple.com, *.cdn-apple.com, swcdn.apple.com, swdist.apple.com, swscan.apple.com, ocsp2.apple.com, *.aaplimg.com, *.akadns.net, *.akamaiedge.net, *.ks-cdn.com, *.ksyuncdn.com, *.alikunlun.com'
-abort 'shadowrocket-away.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains' unless content.include?(expected_real_ip)
+expected_real_ip = 'always-real-ip = *.openbot.run, *.openbot.site, *.aws-agent.org, *.mzstatic.com, *.itunes.apple.com, captive.apple.com, *.cdn-apple.com, swcdn.apple.com, swdist.apple.com, swscan.apple.com, ocsp2.apple.com, *.aaplimg.com, *.akadns.net, *.akamaiedge.net, *.ks-cdn.com, *.ksyuncdn.com, *.alikunlun.com'
+abort 'shadowrocket-away.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains (without time.apple.com)' unless content.include?(expected_real_ip)
 abort 'shadowrocket-away.conf: [Host] must be used for proxy connections (use-local-host-item-for-proxy = true)' unless content.match?(/^use-local-host-item-for-proxy = true$/)
 general = content.split('[General]', 2).last.split('[Host]', 2).first
 skip_proxy = general.lines.find { |line| line.start_with?('skip-proxy =') }.to_s
 tun_excluded_routes = general.lines.find { |line| line.start_with?('tun-excluded-routes =') }.to_s
 abort 'shadowrocket-away.conf: tailnet routes must not bypass the built-in Tailscale module' if skip_proxy.include?('100.64.0.0/10') || skip_proxy.include?('*.ts.net') || tun_excluded_routes.include?('100.64.0.0/10')
-%w[180.188.20.131 119.147.195.213 58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
+away_active_lines = content.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
+abort 'shadowrocket-away.conf: dead Guangzhou IP 119.147.195.213 must be removed' if away_active_lines.any? { |l| l.include?('119.147.195.213') }
+%w[180.188.20.131 58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
   abort "shadowrocket-away.conf: #{ip} must bypass the tunnel" unless skip_proxy.include?(ip) && tun_excluded_routes.include?(ip)
 end
 # 2026-11-21：双路纯 IP DoH（阿里 + 腾讯），省去 DoH 域名引导并避免单点超时，同时防明文劫持与 App Store 坏 IP。
@@ -58,7 +60,7 @@ web3_line = lines.find { |l| l.start_with?('XM-Web3 =') }
 abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香港') && web3_line&.include?('台湾') && web3_line&.include?('新加坡') && web3_line&.include?('美国')
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "shadowrocket-away.conf: rule count must be 283 (found #{rule_lines.size})" unless rule_lines.size == 283
+abort "shadowrocket-away.conf: rule count must be 284 (found #{rule_lines.size})" unless rule_lines.size == 284
 apple_tv_api_rules = [
   'DOMAIN-SUFFIX,tv.apple.com,XM-Apple',
   'DOMAIN-SUFFIX,pancake.apple.com,XM-Apple',
@@ -86,6 +88,8 @@ validate_apple_routes = lambda do |file, rules|
     abort "#{file}: Apple TV route must precede App Store iTunes direct" unless rules.index(rule) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i
   end
   abort "#{file}: App Store must use DIRECT" unless app_store_rules.all? { |rule| rules.include?(rule) }
+  edge_rule = 'DOMAIN,amp-api-edge.apps.apple.com,XM-日常上网'
+  abort "#{file}: amp-api-edge.apps.apple.com must use XM-日常上网 before apps.apple.com" unless rules.include?(edge_rule) && rules.index(edge_rule) < rules.index('DOMAIN-SUFFIX,apps.apple.com,DIRECT').to_i
   abort "#{file}: only Apple TV catalog/auth domains may use XM-Apple" unless rules.select { |rule| rule.end_with?(',XM-Apple') }.sort == apple_tv_api_rules.sort
 end
 validate_apple_routes.call('shadowrocket-away.conf', rule_lines)
@@ -110,7 +114,7 @@ home_content = File.read(home_path)
 home_active_lines = home_content.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 abort 'shadowrocket-home.conf must not reference TAILSCALE policy or [Tailscale] section' if home_active_lines.any? { |l| l.match?(/,TAILSCALE(?:\b|$)/) || l.match?(/^\[Tailscale\]/i) }
 home_rules = home_content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "shadowrocket-home.conf: rule count must be 282 (found #{home_rules.size})" unless home_rules.size == 282
+abort "shadowrocket-home.conf: rule count must be 283 (found #{home_rules.size})" unless home_rules.size == 283
 validate_apple_routes.call('shadowrocket-home.conf', home_rules)
 abort 'shadowrocket-home.conf: must route 100.64.0.0/10 to DIRECT' unless home_rules.include?('IP-CIDR,100.64.0.0/10,DIRECT,no-resolve')
 abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_rules.last == 'FINAL,XM-日常上网'
@@ -119,12 +123,13 @@ abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_
 home_general = home_content.split('[General]', 2).last.split('[Host]', 2).first
 home_skip_proxy = home_general.lines.find { |line| line.start_with?('skip-proxy =') }.to_s
 home_tun_excluded = home_general.lines.find { |line| line.start_with?('tun-excluded-routes =') }.to_s
-%w[180.188.20.131 119.147.195.213 58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
+abort 'shadowrocket-home.conf: dead Guangzhou IP 119.147.195.213 must be removed' if home_active_lines.any? { |l| l.include?('119.147.195.213') }
+%w[180.188.20.131 58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
   abort "shadowrocket-home.conf: #{ip} must bypass the tunnel" unless home_skip_proxy.include?(ip) && home_tun_excluded.include?(ip)
 end
-abort 'shadowrocket-home.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains' unless home_content.include?(expected_real_ip)
+abort 'shadowrocket-home.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains (without time.apple.com)' unless home_content.include?(expected_real_ip)
 abort 'shadowrocket-home.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 1.12.12.12)' unless home_content.include?('dns-server = https://223.5.5.5/dns-query, https://1.12.12.12/dns-query')
 abort 'shadowrocket-home.conf: QUIC block must be all-proxy (DIRECT connections keep HTTP/3)' unless home_content.match?(/^block-quic = all-proxy$/)
 abort 'shadowrocket-home.conf: global QUIC REJECT rule must be removed' if home_rules.any? { |l| l.include?('DST-PORT,443)),REJECT') }
 
-puts 'Validated shadowrocket-away.conf (7 proxy groups, 283 rules, encrypted DNS, all-proxy QUIC block, built-in Tailscale routing) and shadowrocket-home.conf (282 rules).'
+puts 'Validated shadowrocket-away.conf (7 proxy groups, 284 rules, encrypted DNS, all-proxy QUIC block, built-in Tailscale routing) and shadowrocket-home.conf (283 rules).'

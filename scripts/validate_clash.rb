@@ -88,11 +88,11 @@ def check_file(root, file)
   abort "#{file}: fake-ip-filter missing +.apt-agent.org" unless dns.fetch('fake-ip-filter').include?('+.apt-agent.org')
   expected_hosts = {
     'e3585sh2-3ad5.aws-agent.org' => '180.188.20.131',
-    'fd025gz0-c617.aws-agent.org' => '119.147.195.213',
+    'fd025gz0-c617.aws-agent.org' => '58.247.187.127',
     '0bc52bj8-10e0.aws-agent.org' => '58.247.187.127'
   }
   abort "#{file}: hosts must map the current Flower entrances" unless clash['hosts'] == expected_hosts
-  abort "#{file}: dead Beijing entrance must not be pinned" if clash['hosts'].value?('116.242.224.8')
+  abort "#{file}: dead Beijing/Guangzhou entrances must not be pinned" if clash['hosts'].value?('116.242.224.8') || clash['hosts'].value?('119.147.195.213')
   apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.mzstatic.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
   expected_policy = {
     apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query],
