@@ -42,7 +42,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 5. **启用 Tailscale 模块**：进入「设置 → Tailscale」，填入 Tailscale Auth Key 并启用模块；控制服务器保持默认，出口节点留空。不要同时开启独立的官方 Tailscale App。
 6. **开启代理**：返回主界面，全局路由选择「配置」（Config），开启小火箭主开关即可。
 
-`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site` 在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`）。`[Host]` 与花云 Clash 的 hosts 相同；小火箭默认不拿 `[Host]` 去连节点，必须配上 `use-local-host-item-for-proxy = true`，节点才会连到国内入口而不是 `147.90.*`。节点入口和国内 DNS 写在 `skip-proxy`、`tun-excluded-routes` 里，避免手机把节点连接吸进隧道后全部超时。TUN 模式下，`100.64.0.0/10` 和 `*.ts.net` 必须留在隧道中，分别由 `TAILSCALE` 规则交给内置模块；不要把它们加入 `skip-proxy` 或 `tun-excluded-routes`。控制面域名 `tailscale.com` / `tailscale.io` 直连。此配置关闭 IPv6，因此按 IPv4 Tailnet 地址连接。`XM-AI工具` 是 select，含 7 个节点（日本标准 1/3、台湾高级 2/3、美国标准 6/7、韩国标准 2），Google、AI、OpenBot 都走这一组；`XM-日常上网` 也是 select，节点完全一致。
+`[General]` 里 `always-real-ip` 让 `openbot.run`、`openbot.site`、花云节点域与苹果/国内 CDN、校时及门户域名在假 IP 模式下仍解析成真地址（TURN / WebRTC 不能用 `198.18.0.0/16`，同时与 Clash `fake-ip-filter` 对齐）。`[Host]` 与花云 Clash 的 hosts 相同；小火箭默认不拿 `[Host]` 去连节点，必须配上 `use-local-host-item-for-proxy = true`，节点才会连到国内入口而不是 `147.90.*`。节点入口和公共 DNS IP（`223.5.5.5`、`223.6.6.6`、`1.12.12.12`、`119.29.29.29`）写在 `skip-proxy`、`tun-excluded-routes` 里，避免手机把节点连接或 DoH 上游吸进隧道后超时。TUN 模式下，`100.64.0.0/10` 和 `*.ts.net` 必须留在隧道中，分别由 `TAILSCALE` 规则交给内置模块；不要把它们加入 `skip-proxy` 或 `tun-excluded-routes`。控制面域名 `tailscale.com` / `tailscale.io` 直连。此配置关闭 IPv6，因此按 IPv4 Tailnet 地址连接。`XM-AI工具` 是 select，含 7 个节点（日本标准 1/3、台湾高级 2/3、美国标准 6/7、韩国标准 2），Google、AI、OpenBot 都走这一组；`XM-日常上网` 也是 select，节点完全一致。
 
 ## 分组
 
@@ -77,7 +77,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 规则从上到下匹配，第一条命中即生效：
 
 1. 局域网域名和私有地址直连。
-   - Clash 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。小火箭（2026-11-20）改在 `[General]` 用 `block-quic = all-proxy` 只封走代理的连接，直连域名保留 HTTP/3，避免 App Store 每次连接先重试 QUIC 再回退 TCP 造成首屏卡顿；同时把 `dns-server` 换成加密 DoH `https://dns.alidns.com/dns-query`，避免明文 UDP/53 被劫持或拿到苹果 CDN 池里的不可达 IP（CI 校验）。
+   - Clash 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。小火箭（2026-11-20）改在 `[General]` 用 `block-quic = all-proxy` 只封走代理的连接，直连域名保留 HTTP/3，避免 App Store 每次连接先重试 QUIC 再回退 TCP 造成首屏卡顿；同时把 `dns-server` 换成双路纯 IP 加密 DoH `https://223.5.5.5/dns-query, https://1.12.12.12/dns-query` 并补齐 `always-real-ip`，省去 DoH 域名引导、避免单点超时与明文 UDP/53 劫持或拿到苹果 CDN 池里的不可达 IP（CI 校验）。
 2. **XM-Web3**：常用链上 RPC（Infura、Alchemy、Ankr、LlamaRPC、BlockPI、BlastAPI、Omnia Tech、Stackup、Arbitrum 等公链 RPC）、钱包（MetaMask、Phantom、WalletConnect 等）、DEX 与交易站（Uniswap、Jupiter、pump.fun、Bitget、PancakeSwap、Hyperliquid、Polymarket、Across、CoinGecko 等）。
 3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
 4. **XM-AI工具**：Google、Gmail、YouTube、Gemini、Cursor、ChatGPT、Claude、Notion、Slack、Apple 隐私中继，以及 `openbot.run`、`openbot.site`。花云这一组手动选节点。排在 `GEOIP,CN` 之前。

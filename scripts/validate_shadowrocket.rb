@@ -10,17 +10,18 @@ abort 'shadowrocket-away.conf: [General] section missing' unless content.include
 abort 'shadowrocket-away.conf: [Host] section missing' unless content.include?('[Host]')
 abort 'shadowrocket-away.conf: [Proxy Group] section missing' unless content.include?('[Proxy Group]')
 abort 'shadowrocket-away.conf: [Rule] section missing' unless content.include?('[Rule]')
-abort 'shadowrocket-away.conf: OpenBot and node domains must use always-real-ip' unless content.include?('always-real-ip = *.openbot.run, *.openbot.site, *.aws-agent.org')
+expected_real_ip = 'always-real-ip = *.openbot.run, *.openbot.site, *.aws-agent.org, *.mzstatic.com, *.itunes.apple.com, captive.apple.com, time.apple.com, *.cdn-apple.com, swcdn.apple.com, swdist.apple.com, swscan.apple.com, ocsp2.apple.com, *.aaplimg.com, *.akadns.net, *.akamaiedge.net, *.ks-cdn.com, *.ksyuncdn.com, *.alikunlun.com'
+abort 'shadowrocket-away.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains' unless content.include?(expected_real_ip)
 abort 'shadowrocket-away.conf: [Host] must be used for proxy connections (use-local-host-item-for-proxy = true)' unless content.match?(/^use-local-host-item-for-proxy = true$/)
 general = content.split('[General]', 2).last.split('[Host]', 2).first
 skip_proxy = general.lines.find { |line| line.start_with?('skip-proxy =') }.to_s
 tun_excluded_routes = general.lines.find { |line| line.start_with?('tun-excluded-routes =') }.to_s
 abort 'shadowrocket-away.conf: tailnet routes must not bypass the built-in Tailscale module' if skip_proxy.include?('100.64.0.0/10') || skip_proxy.include?('*.ts.net') || tun_excluded_routes.include?('100.64.0.0/10')
-%w[180.188.20.131 119.147.195.213 58.247.187.127 223.5.5.5 119.29.29.29].each do |ip|
-  abort "shadowrocket-away.conf: #{ip} must bypass the tunnel" unless content.include?(ip) && content.match?(/^tun-excluded-routes = .*#{Regexp.escape(ip)}/)
+%w[180.188.20.131 119.147.195.213 58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
+  abort "shadowrocket-away.conf: #{ip} must bypass the tunnel" unless skip_proxy.include?(ip) && tun_excluded_routes.include?(ip)
 end
-# 2026-11-20：直连的 App Store 域名用本地 DNS 解析，明文 UDP/53 会被劫持或拿到苹果 CDN 池的不可达 IP，故强制加密 DNS。
-abort 'shadowrocket-away.conf: dns-server must be encrypted DoH (https://dns.alidns.com/dns-query)' unless content.include?('dns-server = https://dns.alidns.com/dns-query')
+# 2026-11-21：双路纯 IP DoH（阿里 + 腾讯），省去 DoH 域名引导并避免单点超时，同时防明文劫持与 App Store 坏 IP。
+abort 'shadowrocket-away.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 1.12.12.12)' unless content.include?('dns-server = https://223.5.5.5/dns-query, https://1.12.12.12/dns-query')
 # 2026-11-20：QUIC 屏蔽只封代理连接，直连（App Store / iCloud 等）保留 HTTP/3，避免每次连接先重试 QUIC 再回退 TCP。
 abort 'shadowrocket-away.conf: QUIC block must be all-proxy (DIRECT connections keep HTTP/3)' unless content.match?(/^block-quic = all-proxy$/)
 
@@ -114,8 +115,15 @@ validate_apple_routes.call('shadowrocket-home.conf', home_rules)
 abort 'shadowrocket-home.conf: must route 100.64.0.0/10 to DIRECT' unless home_rules.include?('IP-CIDR,100.64.0.0/10,DIRECT,no-resolve')
 abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_rules.last == 'FINAL,XM-日常上网'
 
-# home 配置同样必须加密 DNS，且不得残留全局 QUIC REJECT 规则。
-abort 'shadowrocket-home.conf: dns-server must be encrypted DoH (https://dns.alidns.com/dns-query)' unless home_content.include?('dns-server = https://dns.alidns.com/dns-query')
+# home 配置同样必须使用双路纯 IP DoH、补齐 always-real-ip 与旁路 IP，且不得残留全局 QUIC REJECT 规则。
+home_general = home_content.split('[General]', 2).last.split('[Host]', 2).first
+home_skip_proxy = home_general.lines.find { |line| line.start_with?('skip-proxy =') }.to_s
+home_tun_excluded = home_general.lines.find { |line| line.start_with?('tun-excluded-routes =') }.to_s
+%w[180.188.20.131 119.147.195.213 58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
+  abort "shadowrocket-home.conf: #{ip} must bypass the tunnel" unless home_skip_proxy.include?(ip) && home_tun_excluded.include?(ip)
+end
+abort 'shadowrocket-home.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains' unless home_content.include?(expected_real_ip)
+abort 'shadowrocket-home.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 1.12.12.12)' unless home_content.include?('dns-server = https://223.5.5.5/dns-query, https://1.12.12.12/dns-query')
 abort 'shadowrocket-home.conf: QUIC block must be all-proxy (DIRECT connections keep HTTP/3)' unless home_content.match?(/^block-quic = all-proxy$/)
 abort 'shadowrocket-home.conf: global QUIC REJECT rule must be removed' if home_rules.any? { |l| l.include?('DST-PORT,443)),REJECT') }
 
