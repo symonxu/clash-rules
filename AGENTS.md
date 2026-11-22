@@ -33,7 +33,7 @@
    - QUIC 屏蔽按客户端区分：Clash YAML 必须保留紧跟局域网直连规则的 `AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`，且位于第一条业务分流之前（CI 校验），屏蔽 UDP/443 让流量回落 TCP 以命中域名规则。小火箭两份配置（2026-11-20）改用 `[General] block-quic = all-proxy`，只封走代理的连接，直连域名（App Store、iCloud 等）保留 HTTP/3，避免每次新连接先重试 QUIC 再回退 TCP 造成首屏卡顿；规则段不得再有全局 QUIC REJECT（CI 校验）。Tailscale 内置模块规则仍须位于第一条业务规则之前。
    - 小火箭 DNS（2026-11-21）：`dns-server = https://223.5.5.5/dns-query, https://1.12.12.12/dns-query`（阿里 + 腾讯双路纯 IP DoH，省去 DoH 域名引导查询并防单点超时），不得用明文 `223.5.5.5, 119.29.29.29`；直连域名由本地加密 DNS 解析，避免 UDP/53 被劫持或拿到苹果 CDN 池里的不可达 IP 导致 App Store 卡首屏。`skip-proxy` / `tun-excluded-routes` 须放行 `223.5.5.5`、`223.6.6.6`、`1.12.12.12`、`119.29.29.29`（CI 校验）。
    - 规则不得重复，不得被排在前面的更宽泛 `DOMAIN-SUFFIX` 规则遮蔽；`gemini.google.com` 等 AI 域名必须排在 `google.com` 之前；Clash 结尾三条固定为 `GEOSITE,CN,DIRECT`、`GEOIP,CN,DIRECT` 与 `MATCH,XM-日常上网`（小火箭不支持 `GEOSITE`，结尾两条为 `GEOIP,CN,DIRECT` 与 `FINAL,XM-日常上网`）。
-   - `Clash.app` 入口监控面板模块位于 `modules/flower-entry-monitor.sgmodule`（搭配 `modules/flower-entry-monitor.js`），可在客户端「配置库 › 模块」通过链接添加，定时/切网探测花云代表节点与入口解析并在异常时发送系统通知。
+   - `Clash.app` 入口监控面板模块位于 `modules/flower-entry-monitor.sgmodule`（搭配 `modules/flower-entry-monitor.js`），可在客户端「配置库 › 模块」通过链接添加并在模块本地设置填入外部控制器密钥，定时/切网通过本机 `127.0.0.1:9090` 实测花云代表节点真实延迟与入口解析，并在异常时发送系统通知。
 3. **每次修改必跑校验**：
    - 修改任何文件后必须自动运行 `ruby scripts/validate_rules.rb`。
 
