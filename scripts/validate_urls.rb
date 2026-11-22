@@ -19,6 +19,7 @@ allowed_urls = Set.new([
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/modules/flower-entry-monitor.sgmodule',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/modules/flower-entry-monitor.js',
   'https://223.5.5.5/resolve',
+  'http://127.0.0.1:9090',
   'https://clash.md/zh/guide/ios',
   'https://clash.md/zh/guide/macos',
   'https://clash.md/zh/guide/modules',
