@@ -87,12 +87,12 @@ def check_file(root, file)
   abort "#{file}: proxy-server-nameserver must be UDP 223.5.5.5 / 119.29.29.29" unless dns['proxy-server-nameserver'] == %w[223.5.5.5 119.29.29.29]
   abort "#{file}: fake-ip-filter missing +.apt-agent.org" unless dns.fetch('fake-ip-filter').include?('+.apt-agent.org')
   expected_hosts = {
-    'e3585sh2-3ad5.aws-agent.org' => '180.188.20.131',
+    'e3585sh2-3ad5.aws-agent.org' => '58.247.187.127',
     'fd025gz0-c617.aws-agent.org' => '58.247.187.127',
     '0bc52bj8-10e0.aws-agent.org' => '58.247.187.127'
   }
   abort "#{file}: hosts must map the current Flower entrances" unless clash['hosts'] == expected_hosts
-  abort "#{file}: dead Beijing/Guangzhou entrances must not be pinned" if clash['hosts'].value?('116.242.224.8') || clash['hosts'].value?('119.147.195.213')
+  abort "#{file}: dead Beijing/Guangzhou/Shanghai entrances must not be pinned" if %w[116.242.224.8 119.147.195.213 180.188.20.131].any? { |ip| clash['hosts'].value?(ip) }
   apple_dns_key = '+.cdn-apple.com,swcdn.apple.com,swdist.apple.com,swscan.apple.com,ocsp2.apple.com,+.aaplimg.com,+.mzstatic.com,+.akadns.net,+.akamaiedge.net,+.ks-cdn.com,+.ksyuncdn.com,+.alikunlun.com'
   expected_policy = {
     apple_dns_key => %w[https://223.5.5.5/dns-query https://doh.pub/dns-query],

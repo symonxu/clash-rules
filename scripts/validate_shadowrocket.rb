@@ -18,8 +18,8 @@ skip_proxy = general.lines.find { |line| line.start_with?('skip-proxy =') }.to_s
 tun_excluded_routes = general.lines.find { |line| line.start_with?('tun-excluded-routes =') }.to_s
 abort 'shadowrocket-away.conf: tailnet routes must not bypass the built-in Tailscale module' if skip_proxy.include?('100.64.0.0/10') || skip_proxy.include?('*.ts.net') || tun_excluded_routes.include?('100.64.0.0/10')
 away_active_lines = content.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort 'shadowrocket-away.conf: dead Guangzhou IP 119.147.195.213 must be removed' if away_active_lines.any? { |l| l.include?('119.147.195.213') }
-%w[180.188.20.131 58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
+abort 'shadowrocket-away.conf: dead Guangzhou IP 119.147.195.213 and Shanghai IP 180.188.20.131 must be removed' if away_active_lines.any? { |l| l.include?('119.147.195.213') || l.include?('180.188.20.131') }
+%w[58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
   abort "shadowrocket-away.conf: #{ip} must bypass the tunnel" unless skip_proxy.include?(ip) && tun_excluded_routes.include?(ip)
 end
 # 2026-11-21：双路纯 IP DoH（阿里 + 腾讯），省去 DoH 域名引导并避免单点超时，同时防明文劫持与 App Store 坏 IP。
@@ -123,8 +123,8 @@ abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_
 home_general = home_content.split('[General]', 2).last.split('[Host]', 2).first
 home_skip_proxy = home_general.lines.find { |line| line.start_with?('skip-proxy =') }.to_s
 home_tun_excluded = home_general.lines.find { |line| line.start_with?('tun-excluded-routes =') }.to_s
-abort 'shadowrocket-home.conf: dead Guangzhou IP 119.147.195.213 must be removed' if home_active_lines.any? { |l| l.include?('119.147.195.213') }
-%w[180.188.20.131 58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
+abort 'shadowrocket-home.conf: dead Guangzhou IP 119.147.195.213 and Shanghai IP 180.188.20.131 must be removed' if home_active_lines.any? { |l| l.include?('119.147.195.213') || l.include?('180.188.20.131') }
+%w[58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
   abort "shadowrocket-home.conf: #{ip} must bypass the tunnel" unless home_skip_proxy.include?(ip) && home_tun_excluded.include?(ip)
 end
 abort 'shadowrocket-home.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains (without time.apple.com)' unless home_content.include?(expected_real_ip)
