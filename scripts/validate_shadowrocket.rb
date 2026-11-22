@@ -60,7 +60,7 @@ web3_line = lines.find { |l| l.start_with?('XM-Web3 =') }
 abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香港') && web3_line&.include?('台湾') && web3_line&.include?('新加坡') && web3_line&.include?('美国')
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "shadowrocket-away.conf: rule count must be 284 (found #{rule_lines.size})" unless rule_lines.size == 284
+abort "shadowrocket-away.conf: rule count must be 288 (found #{rule_lines.size})" unless rule_lines.size == 288
 apple_tv_api_rules = [
   'DOMAIN-SUFFIX,tv.apple.com,XM-Apple',
   'DOMAIN-SUFFIX,pancake.apple.com,XM-Apple',
@@ -77,19 +77,32 @@ apple_tv_vod_rules = [
   'DOMAIN,np-edge.itunes.apple.com,DIRECT'
 ].freeze
 apple_tv_rules = apple_tv_api_rules + apple_tv_vod_rules
-app_store_rules = [
+app_store_direct_rules = [
   'DOMAIN-SUFFIX,apps.apple.com,DIRECT',
-  'DOMAIN-SUFFIX,itunes.apple.com,DIRECT',
-  'DOMAIN-SUFFIX,mzstatic.com,DIRECT'
+  'DOMAIN-SUFFIX,itunes.apple.com,DIRECT'
+].freeze
+app_store_itunes_proxy_rules = [
+  'DOMAIN,bag.itunes.apple.com,XM-日常上网',
+  'DOMAIN,sf-api-token-service.itunes.apple.com,XM-日常上网'
+].freeze
+app_store_apps_proxy_rules = [
+  'DOMAIN,amp-api-edge.apps.apple.com,XM-日常上网',
+  'DOMAIN,amp-api.apps.apple.com,XM-日常上网',
+  'DOMAIN,amp-api-search-edge.apps.apple.com,XM-日常上网'
 ].freeze
 validate_apple_routes = lambda do |file, rules|
   apple_tv_rules.each do |rule|
     abort "#{file}: Apple TV route missing #{rule}" unless rules.include?(rule)
     abort "#{file}: Apple TV route must precede App Store iTunes direct" unless rules.index(rule) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i
   end
-  abort "#{file}: App Store must use DIRECT" unless app_store_rules.all? { |rule| rules.include?(rule) }
-  edge_rule = 'DOMAIN,amp-api-edge.apps.apple.com,XM-日常上网'
-  abort "#{file}: amp-api-edge.apps.apple.com must use XM-日常上网 before apps.apple.com" unless rules.include?(edge_rule) && rules.index(edge_rule) < rules.index('DOMAIN-SUFFIX,apps.apple.com,DIRECT').to_i
+  abort "#{file}: App Store downloads must stay DIRECT" unless app_store_direct_rules.all? { |rule| rules.include?(rule) }
+  app_store_itunes_proxy_rules.each do |rule|
+    abort "#{file}: #{rule} must precede itunes.apple.com" unless rules.include?(rule) && rules.index(rule) < rules.index('DOMAIN-SUFFIX,itunes.apple.com,DIRECT').to_i
+  end
+  app_store_apps_proxy_rules.each do |rule|
+    abort "#{file}: #{rule} must precede apps.apple.com" unless rules.include?(rule) && rules.index(rule) < rules.index('DOMAIN-SUFFIX,apps.apple.com,DIRECT').to_i
+  end
+  abort "#{file}: mzstatic.com icons/assets must use XM-日常上网" unless rules.include?('DOMAIN-SUFFIX,mzstatic.com,XM-日常上网')
   abort "#{file}: only Apple TV catalog/auth domains may use XM-Apple" unless rules.select { |rule| rule.end_with?(',XM-Apple') }.sort == apple_tv_api_rules.sort
 end
 validate_apple_routes.call('shadowrocket-away.conf', rule_lines)
@@ -114,7 +127,7 @@ home_content = File.read(home_path)
 home_active_lines = home_content.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 abort 'shadowrocket-home.conf must not reference TAILSCALE policy or [Tailscale] section' if home_active_lines.any? { |l| l.match?(/,TAILSCALE(?:\b|$)/) || l.match?(/^\[Tailscale\]/i) }
 home_rules = home_content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "shadowrocket-home.conf: rule count must be 283 (found #{home_rules.size})" unless home_rules.size == 283
+abort "shadowrocket-home.conf: rule count must be 287 (found #{home_rules.size})" unless home_rules.size == 287
 validate_apple_routes.call('shadowrocket-home.conf', home_rules)
 abort 'shadowrocket-home.conf: must route 100.64.0.0/10 to DIRECT' unless home_rules.include?('IP-CIDR,100.64.0.0/10,DIRECT,no-resolve')
 abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_rules.last == 'FINAL,XM-日常上网'
@@ -132,4 +145,4 @@ abort 'shadowrocket-home.conf: dns-server must use dual pure-IP DoH (223.5.5.5 +
 abort 'shadowrocket-home.conf: QUIC block must be all-proxy (DIRECT connections keep HTTP/3)' unless home_content.match?(/^block-quic = all-proxy$/)
 abort 'shadowrocket-home.conf: global QUIC REJECT rule must be removed' if home_rules.any? { |l| l.include?('DST-PORT,443)),REJECT') }
 
-puts 'Validated shadowrocket-away.conf (7 proxy groups, 284 rules, encrypted DNS, all-proxy QUIC block, built-in Tailscale routing) and shadowrocket-home.conf (283 rules).'
+puts 'Validated shadowrocket-away.conf (7 proxy groups, 288 rules, encrypted DNS, all-proxy QUIC block, built-in Tailscale routing) and shadowrocket-home.conf (287 rules).'
