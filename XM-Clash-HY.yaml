@@ -439,5 +439,6 @@ rules:
   - DOMAIN-SUFFIX,pscp.tv,XM-日常上网
   - DOMAIN-SUFFIX,periscope.tv,XM-日常上网
   - DOMAIN-SUFFIX,twittercdn.com,XM-日常上网
+  - GEOSITE,CN,DIRECT
   - GEOIP,CN,DIRECT
   - MATCH,XM-日常上网

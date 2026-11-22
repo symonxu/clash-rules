@@ -16,8 +16,12 @@ allowed_urls = Set.new([
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-JSY.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Clash-HY.yaml',
   'https://raw.githubusercontent.com/symonxu/clash-rules/main/XM-Shadowrocket-HY.conf',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/modules/flower-entry-monitor.sgmodule',
+  'https://raw.githubusercontent.com/symonxu/clash-rules/main/modules/flower-entry-monitor.js',
+  'https://223.5.5.5/resolve',
   'https://clash.md/zh/guide/ios',
   'https://clash.md/zh/guide/macos',
+  'https://clash.md/zh/guide/modules',
   'https://github.com/ProjectClash/Clash-Client',
   'https://clash.md/zh/guide/config/apple-platforms'
 ])
