@@ -188,8 +188,8 @@ def check_file(root, file)
       abort "Clash: expected IP-CIDR*,cidr,target[,no-resolve] in #{rule}" unless [3, 4].include?(fields.size)
       abort "Clash: fourth field must be no-resolve in #{rule}" if fields.size == 4 && fields[3] != 'no-resolve'
       condition, target = fields[1], fields[2]
-    elsif type == 'GEOIP'
-      abort "Clash: expected GEOIP,code,target in #{rule}" unless fields.size == 3
+    elsif %w[GEOIP GEOSITE].include?(type)
+      abort "Clash: expected #{type},code,target in #{rule}" unless fields.size == 3
       condition, target = fields[1], fields[2]
     elsif type == 'PROCESS-NAME'
       abort "Clash: expected PROCESS-NAME,name,target in #{rule}" unless fields.size == 3
@@ -208,9 +208,10 @@ def check_file(root, file)
 
   abort 'Clash: last rule must be MATCH,XM-日常上网' unless rules.last == 'MATCH,XM-日常上网'
   abort 'Clash: second-to-last rule must be GEOIP,CN,DIRECT' unless rules[-2] == 'GEOIP,CN,DIRECT'
-  # X / Twitter 走 XM-日常上网，必须排在 GEOIP,CN 之前（否则根据 DNS 结果被 GEOIP 误判直连）。
+  abort 'Clash: third-to-last rule must be GEOSITE,CN,DIRECT' unless rules[-3] == 'GEOSITE,CN,DIRECT'
+  # X / Twitter 走 XM-日常上网，必须排在 GEOSITE,CN / GEOIP,CN 之前（否则根据 DNS 结果被误判直连）。
   x_rules = %w[x.com twitter.com twimg.com t.co pscp.tv periscope.tv twittercdn.com].map { |d| "DOMAIN-SUFFIX,#{d},XM-日常上网" }
-  geoip_at = rules.index('GEOIP,CN,DIRECT')
+  geoip_at = rules.index('GEOSITE,CN,DIRECT')
   abort 'Clash: X/Twitter must use XM-日常上网 before GEOIP,CN' unless x_rules.all? { |r| rules.include?(r) && rules.index(r) < geoip_at }
   abort 'Clash: QUIC (UDP 443) must be rejected right after the LAN rules, before any domain rule' unless rules[11] == QUIC_RULE && rules.count(QUIC_RULE) == 1
   # Tailscale 的控制面、DERP/STUN 探针和 MagicDNS 必须直连，并且排在第一条走策略组的域名规则之前。

@@ -1,0 +1,12 @@
+#!name=花云入口监控与告警
+#!desc=定时及切网时检测花云各地区代表节点与公网入口解析，在面板展示结果；发现超时自动发系统通知告警。
+#!arguments=巡检间隔:*/30 * * * *
+#!arguments-desc=Cron 表达式（分 时 日 月 星期），默认每 30 分钟运行一次；调整后立即生效。
+
+[Script]
+花云入口定时巡检 = type=cron, cronexp="{{{巡检间隔}}}", timeout=15, script-path=https://raw.githubusercontent.com/symonxu/clash-rules/main/modules/flower-entry-monitor.js, argument="mode=cron"
+花云入口切网巡检 = type=event, event-name=network-changed, timeout=15, script-path=https://raw.githubusercontent.com/symonxu/clash-rules/main/modules/flower-entry-monitor.js, argument="mode=network"
+花云入口监控面板 = type=generic, timeout=15, script-path=https://raw.githubusercontent.com/symonxu/clash-rules/main/modules/flower-entry-monitor.js, argument="mode=panel"
+
+[Panel]
+花云入口监控面板 = title=花云入口状态, content=点击右侧刷新立即检测花云入口连通性, script-name=花云入口监控面板, update-interval=1800
