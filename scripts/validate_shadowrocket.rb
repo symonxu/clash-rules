@@ -22,8 +22,8 @@ abort 'shadowrocket-away.conf: dead Guangzhou IP 119.147.195.213 and Shanghai IP
 %w[58.247.187.127 223.5.5.5 223.6.6.6 1.12.12.12 119.29.29.29].each do |ip|
   abort "shadowrocket-away.conf: #{ip} must bypass the tunnel" unless skip_proxy.include?(ip) && tun_excluded_routes.include?(ip)
 end
-# 2026-11-21：双路纯 IP DoH（阿里 + 腾讯），省去 DoH 域名引导并避免单点超时，同时防明文劫持与 App Store 坏 IP。
-abort 'shadowrocket-away.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 1.12.12.12)' unless content.include?('dns-server = https://223.5.5.5/dns-query, https://1.12.12.12/dns-query')
+# 2026-11-23：阿里双路纯 IP DoH（223.5.5.5 + 223.6.6.6），省去 DoH 域名引导并避免 1.12.12.12 高延迟与单点超时，同时防明文劫持与 App Store 坏 IP。
+abort 'shadowrocket-away.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 223.6.6.6)' unless content.include?('dns-server = https://223.5.5.5/dns-query, https://223.6.6.6/dns-query')
 # 2026-11-20：QUIC 屏蔽只封代理连接，直连（App Store / iCloud 等）保留 HTTP/3，避免每次连接先重试 QUIC 再回退 TCP。
 abort 'shadowrocket-away.conf: QUIC block must be all-proxy (DIRECT connections keep HTTP/3)' unless content.match?(/^block-quic = all-proxy$/)
 
@@ -141,7 +141,7 @@ abort 'shadowrocket-home.conf: dead Guangzhou IP 119.147.195.213 and Shanghai IP
   abort "shadowrocket-home.conf: #{ip} must bypass the tunnel" unless home_skip_proxy.include?(ip) && home_tun_excluded.include?(ip)
 end
 abort 'shadowrocket-home.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains (without time.apple.com)' unless home_content.include?(expected_real_ip)
-abort 'shadowrocket-home.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 1.12.12.12)' unless home_content.include?('dns-server = https://223.5.5.5/dns-query, https://1.12.12.12/dns-query')
+abort 'shadowrocket-home.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 223.6.6.6)' unless home_content.include?('dns-server = https://223.5.5.5/dns-query, https://223.6.6.6/dns-query')
 abort 'shadowrocket-home.conf: QUIC block must be all-proxy (DIRECT connections keep HTTP/3)' unless home_content.match?(/^block-quic = all-proxy$/)
 abort 'shadowrocket-home.conf: global QUIC REJECT rule must be removed' if home_rules.any? { |l| l.include?('DST-PORT,443)),REJECT') }
 

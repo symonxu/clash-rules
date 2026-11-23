@@ -6,6 +6,7 @@ allowed_urls = Set.new([
   'https://github.com/symonxu/clash-rules',
   'https://www.gstatic.com/generate_204',
   'https://223.5.5.5/dns-query',
+  'https://223.6.6.6/dns-query',
   'https://1.12.12.12/dns-query',
   'https://doh.pub/dns-query',
   'https://dns.pub/dns-query',
