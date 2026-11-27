@@ -24,8 +24,8 @@ abort 'shadowrocket-away.conf: dead Guangzhou IP 119.147.195.213 and Shanghai IP
 end
 # 2026-11-23：阿里双路纯 IP DoH（223.5.5.5 + 223.6.6.6），省去 DoH 域名引导并避免 1.12.12.12 高延迟与单点超时，同时防明文劫持与 App Store 坏 IP。
 abort 'shadowrocket-away.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 223.6.6.6)' unless content.include?('dns-server = https://223.5.5.5/dns-query, https://223.6.6.6/dns-query')
-# 2026-11-20：QUIC 屏蔽只封代理连接，直连（App Store / iCloud 等）保留 HTTP/3，避免每次连接先重试 QUIC 再回退 TCP。
-abort 'shadowrocket-away.conf: QUIC block must be all-proxy (DIRECT connections keep HTTP/3)' unless content.match?(/^block-quic = all-proxy$/)
+# 2026-11-27：全局封 QUIC（all），直连与代理都不再重试 UDP/443——抖音/微信直连在弱网下卡在 QUIC 重试后回退 TCP，DoH 也被 alt-svc 升级到 h3，全部回落 TCP。
+abort 'shadowrocket-away.conf: QUIC block must be all (global UDP/443 block)' unless content.match?(/^block-quic = all$/)
 
 hy_path = File.join(root, 'XM-Clash-HY.yaml')
 abort 'XM-Clash-HY.yaml missing' unless File.exist?(hy_path)
@@ -115,7 +115,7 @@ tailscale_rules = [
 tailscale_rules.each do |rule|
   abort "shadowrocket-away.conf: missing built-in Tailscale rule #{rule}" unless rule_lines.include?(rule)
 end
-abort 'shadowrocket-away.conf: global QUIC REJECT rule must be removed (use [General] block-quic = all-proxy)' if rule_lines.any? { |l| l.include?('DST-PORT,443)),REJECT') }
+abort 'shadowrocket-away.conf: global QUIC REJECT rule must be removed (use [General] block-quic = all)' if rule_lines.any? { |l| l.include?('DST-PORT,443)),REJECT') }
 first_service_rule_index = rule_lines.index('DOMAIN-SUFFIX,infura.io,XM-Web3')
 abort 'shadowrocket-away.conf: Tailscale rules must precede service-domain rules' unless tailscale_rules.all? { |rule| rule_lines.index(rule) < first_service_rule_index }
 abort 'shadowrocket-away.conf: must end with FINAL,XM-日常上网' unless rule_lines.last == 'FINAL,XM-日常上网'
@@ -142,7 +142,7 @@ abort 'shadowrocket-home.conf: dead Guangzhou IP 119.147.195.213 and Shanghai IP
 end
 abort 'shadowrocket-home.conf: always-real-ip must cover OpenBot, node, Apple, and CN CDN domains (without time.apple.com)' unless home_content.include?(expected_real_ip)
 abort 'shadowrocket-home.conf: dns-server must use dual pure-IP DoH (223.5.5.5 + 223.6.6.6)' unless home_content.include?('dns-server = https://223.5.5.5/dns-query, https://223.6.6.6/dns-query')
-abort 'shadowrocket-home.conf: QUIC block must be all-proxy (DIRECT connections keep HTTP/3)' unless home_content.match?(/^block-quic = all-proxy$/)
+abort 'shadowrocket-home.conf: QUIC block must be all (global UDP/443 block)' unless home_content.match?(/^block-quic = all$/)
 abort 'shadowrocket-home.conf: global QUIC REJECT rule must be removed' if home_rules.any? { |l| l.include?('DST-PORT,443)),REJECT') }
 
-puts 'Validated shadowrocket-away.conf (7 proxy groups, 288 rules, encrypted DNS, all-proxy QUIC block, built-in Tailscale routing) and shadowrocket-home.conf (287 rules).'
+puts 'Validated shadowrocket-away.conf (7 proxy groups, 288 rules, encrypted DNS, global QUIC block, built-in Tailscale routing) and shadowrocket-home.conf (287 rules).'

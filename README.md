@@ -77,7 +77,7 @@ Mac 上不要同时开着 Clash App 和其他代理软件的 TUN（例如 Clash 
 规则从上到下匹配，第一条命中即生效：
 
 1. 局域网域名和私有地址直连。
-   - Clash 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。小火箭（2026-11-20）改在 `[General]` 用 `block-quic = all-proxy` 只封走代理的连接，直连域名保留 HTTP/3，避免 App Store 每次连接先重试 QUIC 再回退 TCP 造成首屏卡顿；同时把 `dns-server` 换成阿里双路纯 IP 加密 DoH `https://223.5.5.5/dns-query, https://223.6.6.6/dns-query` 并补齐 `always-real-ip`，省去 DoH 域名引导、避免 `1.12.12.12` 高延迟/单点超时与明文 UDP/53 劫持或拿到苹果 CDN 池里的不可达 IP（CI 校验）。
+   - Clash 紧接着屏蔽 QUIC：`AND,((NETWORK,UDP),(DST-PORT,443)),REJECT`。没开嗅探时 UDP 只能按 IP 匹配（会误走 GEOIP,CN 直连或兜底直连），屏蔽后 App 回落到 TCP，域名规则才生效（CI 校验它是局域网规则后的第一条）。小火箭 QUIC 屏蔽（2026-11-27 更新）：`[General]` 用 `block-quic = all` 全局封 UDP/443，直连与代理都不再重试 QUIC。此前为 `all-proxy`（只封代理、直连保留 HTTP/3），但实测弱网下抖音/微信等国内直连域名卡在 QUIC 重试后才回退 TCP，且阿里 DoH 被 alt-svc 升级成 DNS-over-QUIC(h3)，同样受 UDP/443 丢包拖累，故改为全局封——代价是 App Store 首屏可能重新出现先重试再回退的短暂延迟，若出现可再评估。规则段仍不得有全局 QUIC REJECT。`dns-server` 保持阿里双路纯 IP 加密 DoH `https://223.5.5.5/dns-query, https://223.6.6.6/dns-query` 并补齐 `always-real-ip`，省去 DoH 域名引导、避免 `1.12.12.12` 高延迟/单点超时与明文 UDP/53 劫持或拿到苹果 CDN 池里的不可达 IP（CI 校验）。
 2. **XM-Web3**：常用链上 RPC（Infura、Alchemy、Ankr、LlamaRPC、BlockPI、BlastAPI、Omnia Tech、Stackup、Arbitrum 等公链 RPC）、钱包（MetaMask、Phantom、WalletConnect 等）、DEX 与交易站（Uniswap、Jupiter、pump.fun、Bitget、PancakeSwap、Hyperliquid、Polymarket、Across、CoinGecko 等）。
 3. **XM-Bybit**：bybit.com、bybit.biz、byabcde.com、bycsi.com。
 4. **XM-AI工具**：Google、Gmail、YouTube、Gemini、Cursor、ChatGPT、Claude、Notion、Slack、Apple 隐私中继，以及 `openbot.run`、`openbot.site`。花云这一组手动选节点。排在 `GEOIP,CN` 之前。
