@@ -60,7 +60,7 @@ web3_line = lines.find { |l| l.start_with?('XM-Web3 =') }
 abort 'XM-Web3 regex must exclude HK/TW/SG/US' unless web3_line&.include?('香港') && web3_line&.include?('台湾') && web3_line&.include?('新加坡') && web3_line&.include?('美国')
 
 rule_lines = content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "shadowrocket-away.conf: rule count must be 288 (found #{rule_lines.size})" unless rule_lines.size == 288
+abort "shadowrocket-away.conf: rule count must be 309 (found #{rule_lines.size})" unless rule_lines.size == 309
 apple_tv_api_rules = [
   'DOMAIN-SUFFIX,tv.apple.com,XM-Apple',
   'DOMAIN-SUFFIX,pancake.apple.com,XM-Apple',
@@ -127,8 +127,38 @@ home_content = File.read(home_path)
 home_active_lines = home_content.lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
 abort 'shadowrocket-home.conf must not reference TAILSCALE policy or [Tailscale] section' if home_active_lines.any? { |l| l.match?(/,TAILSCALE(?:\b|$)/) || l.match?(/^\[Tailscale\]/i) }
 home_rules = home_content.split('[Rule]')[1].lines.map(&:strip).reject { |l| l.empty? || l.start_with?('#') }
-abort "shadowrocket-home.conf: rule count must be 287 (found #{home_rules.size})" unless home_rules.size == 287
+abort "shadowrocket-home.conf: rule count must be 308 (found #{home_rules.size})" unless home_rules.size == 308
 validate_apple_routes.call('shadowrocket-home.conf', home_rules)
+domestic_direct_rules = [
+  'DOMAIN-SUFFIX,xiaohongshu.com,DIRECT',
+  'DOMAIN-SUFFIX,xhscdn.com,DIRECT',
+  'DOMAIN-SUFFIX,xhslink.com,DIRECT',
+  'DOMAIN-SUFFIX,douyin.com,DIRECT',
+  'DOMAIN-SUFFIX,douyinpic.com,DIRECT',
+  'DOMAIN-SUFFIX,douyinvod.com,DIRECT',
+  'DOMAIN-SUFFIX,douyinstatic.com,DIRECT',
+  'DOMAIN-SUFFIX,snssdk.com,DIRECT',
+  'DOMAIN-SUFFIX,amemv.com,DIRECT',
+  'DOMAIN-SUFFIX,bytedance.com,DIRECT',
+  'DOMAIN-SUFFIX,byteimg.com,DIRECT',
+  'DOMAIN-SUFFIX,pstatp.com,DIRECT',
+  'DOMAIN-SUFFIX,zijieapi.com,DIRECT',
+  'DOMAIN-SUFFIX,ecombdapi.com,DIRECT',
+  'DOMAIN-SUFFIX,bdurl.net,DIRECT',
+  'DOMAIN-SUFFIX,ibytedtos.com,DIRECT',
+  'DOMAIN-SUFFIX,meituan.com,DIRECT',
+  'DOMAIN-SUFFIX,meituan.net,DIRECT',
+  'DOMAIN-SUFFIX,dianping.com,DIRECT',
+  'DOMAIN-SUFFIX,sankuai.com,DIRECT',
+  'DOMAIN-SUFFIX,httpdns.qcloud.com,DIRECT'
+].freeze
+{ 'shadowrocket-away.conf' => rule_lines, 'shadowrocket-home.conf' => home_rules }.each do |file, rules|
+  geoip_idx = rules.index('GEOIP,CN,DIRECT')
+  domestic_direct_rules.each do |rule|
+    abort "#{file}: missing domestic direct rule #{rule}" unless rules.include?(rule)
+    abort "#{file}: #{rule} must precede GEOIP,CN,DIRECT" unless rules.index(rule) < geoip_idx
+  end
+end
 abort 'shadowrocket-home.conf: must route 100.64.0.0/10 to DIRECT' unless home_rules.include?('IP-CIDR,100.64.0.0/10,DIRECT,no-resolve')
 abort 'shadowrocket-home.conf: must preserve FINAL,XM-日常上网' unless home_rules.last == 'FINAL,XM-日常上网'
 
@@ -145,4 +175,4 @@ abort 'shadowrocket-home.conf: dns-server must use dual pure-IP DoH (223.5.5.5 +
 abort 'shadowrocket-home.conf: QUIC block must be all (global UDP/443 block)' unless home_content.match?(/^block-quic = all$/)
 abort 'shadowrocket-home.conf: global QUIC REJECT rule must be removed' if home_rules.any? { |l| l.include?('DST-PORT,443)),REJECT') }
 
-puts 'Validated shadowrocket-away.conf (7 proxy groups, 288 rules, encrypted DNS, global QUIC block, built-in Tailscale routing) and shadowrocket-home.conf (287 rules).'
+puts 'Validated shadowrocket-away.conf (7 proxy groups, 309 rules, encrypted DNS, global QUIC block, built-in Tailscale routing) and shadowrocket-home.conf (308 rules).'
